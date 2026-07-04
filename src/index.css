@@ -1,0 +1,308 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: "Times New Roman", "Tinos", "Times", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-500: #10b981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
+  --color-brand-800: #065f46;
+  --color-brand-900: #064e3b;
+}
+
+/* Dynamic document font classes to allow users to switch fonts and customize templates */
+.document-font-times,
+.document-font-times * {
+  font-family: "Times New Roman", "Tinos", "Times", Georgia, serif !important;
+}
+.document-font-times .font-mono,
+.document-font-times input[type="number"] {
+  font-family: "JetBrains Mono", ui-monospace, monospace !important;
+}
+
+.document-font-sans,
+.document-font-sans * {
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif !important;
+}
+.document-font-sans .font-mono,
+.document-font-sans input[type="number"] {
+  font-family: "JetBrains Mono", ui-monospace, monospace !important;
+}
+
+.document-font-mono,
+.document-font-mono * {
+  font-family: "JetBrains Mono", ui-monospace, monospace !important;
+}
+
+/* Custom modern scrollbar styles for our workspace tables */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Fade in animation styles */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom black-and-white high contrast A5 spreadsheet print styling */
+.vouchers-table {
+  border-collapse: collapse !important;
+}
+.vouchers-table td, .vouchers-table th {
+  border: none !important;
+  font-family: "Times New Roman", Times, "Playfair Display", serif !important;
+  color: #000000 !important;
+}
+.vouchers-table td.text-red-printed, .vouchers-table td.text-red-printed * {
+  color: #DC2626 !important; /* Perfect vibrant red that stays red */
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 3mm 4mm 3mm 4mm !important;
+  }
+
+  /* Force background graphics and colors to render accurately */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Force print containers to fit nicely on exactly one A4 page without spillover */
+  #wood-inspection-document, 
+  #wood-payment-document {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0mm !important;
+    margin: 0 auto !important;
+    font-size: 10.2px !important;
+    line-height: 1.12 !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Force all internal table structures, headers, and cells to render with crisp, high-contrast solid black lines */
+  #wood-inspection-document table,
+  #wood-payment-document table {
+    border-collapse: collapse !important;
+    border: 1.5px solid #000000 !important;
+    width: 100% !important;
+  }
+
+  #wood-inspection-document th,
+  #wood-inspection-document td,
+  #wood-payment-document th,
+  #wood-payment-document td {
+    border: 1px solid #000000 !important;
+    border-color: #000000 !important;
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+    font-size: 10.2px !important;
+    color: #000000 !important;
+    line-height: 1.12 !important;
+  }
+
+  /* Shrink inputs/dropdowns inside document to match new font size and reduce row height */
+  #wood-inspection-document input,
+  #wood-inspection-document textarea,
+  #wood-inspection-document select,
+  #wood-payment-document input,
+  #wood-payment-document textarea,
+  #wood-payment-document select {
+    font-size: 10.2px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+    line-height: 1.12 !important;
+  }
+
+  /* Shrink specifically styled larger text fields to avoid breaking layout */
+  #wood-inspection-document .text-\[14\.5px\],
+  #wood-inspection-document input.text-\[14\.5px\],
+  #wood-payment-document .text-\[14px\],
+  #wood-payment-document input.text-\[14px\] {
+    font-size: 12.5px !important;
+  }
+
+  #wood-inspection-document .text-\[13px\],
+  #wood-inspection-document textarea.text-\[13px\] {
+    font-size: 11px !important;
+  }
+
+  /* Shrink Brand Logo in Header */
+  #wood-inspection-document .brand-logo-text .text-4xl,
+  #wood-payment-document .brand-logo-text .text-4xl {
+    font-size: 20px !important;
+  }
+  #wood-inspection-document .brand-logo-text .text-\[11px\],
+  #wood-payment-document .brand-logo-text .text-\[11px\] {
+    font-size: 8px !important;
+    margin-top: 0px !important;
+  }
+
+  /* Turn all custom Tailwind borders into solid black for flawless printing */
+  #wood-inspection-document [class*="border"],
+  #wood-payment-document [class*="border"],
+  #wood-inspection-document div,
+  #wood-payment-document div,
+  #wood-inspection-document span,
+  #wood-payment-document span,
+  #wood-inspection-document td,
+  #wood-payment-document td {
+    border-color: #000000 !important;
+  }
+
+  #wood-inspection-document tr,
+  #wood-payment-document tr {
+    border-bottom: 1px solid #000000 !important;
+  }
+
+  /* Force check boxes inside FSC certificate status table to draw solid borders */
+  #wood-inspection-document span.border,
+  #wood-payment-document span.border,
+  #wood-inspection-document .border,
+  #wood-payment-document .border {
+    border: 1px solid #000000 !important;
+  }
+
+  /* Compress vertical space to fit everything beautifully onto 1 A4 page */
+  .mt-1, .mt-2, .mt-3, .mt-3.5, .mt-4, .mt-5, .mt-6, .mt-7, .mt-8, .pt-4, .pt-6, .mt-12, .py-2.5, .py-3.5 {
+    margin-top: 2px !important;
+    padding-top: 0px !important;
+  }
+
+  #wood-inspection-document h4,
+  #wood-payment-document h4 {
+    margin-top: 2px !important;
+    margin-bottom: 1px !important;
+    font-size: 10px !important;
+  }
+
+  /* Ultra-compress the signatures for print to ensure they stay on 1 page and fit beautifully */
+  #wood-inspection-document .h-32, 
+  #wood-inspection-document .h-28,
+  #wood-payment-document .h-32,
+  #wood-payment-document .h-28 {
+    height: 88px !important;
+  }
+
+  #wood-inspection-document .mt-12,
+  #wood-payment-document .mt-12 {
+    margin-top: 12px !important;
+  }
+
+  /* Prevent page breaking inside signatures or table sections */
+  .break-inside-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #wood-inspection-document .mt-7,
+  #wood-payment-document .mt-7 {
+    margin-top: 3px !important;
+  }
+
+  .a5-print-page-scoped {
+    width: 148mm !important;
+    height: 210mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Universal print hidden helpers */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Expand right workspace panel to full page width on printing */
+  .lg\:col-span-8 {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  /* Disable container outer borders and shadow boxes when printing, but keep table borders solid */
+  .bg-white, .border, .shadow-sm, .shadow-3xs {
+    box-shadow: none !important;
+  }
+
+  /* Make inputs/dropdown numbers clean and look like plain text on hard document prints */
+  input[type="number"], 
+  input[type="text"], 
+  select {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    color: #000000 !important;
+    text-align: inherit !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  /* Remove input outline and border completely */
+  input, select, textarea {
+    border: none !important;
+    outline: none !important;
+  }
+}
+
+/* Styling for read-only document inputs to mimic plain static text perfectly */
+.document-read-only input:not([data-always-editable="true"]),
+.document-read-only textarea:not([data-always-editable="true"]),
+.document-read-only select:not([data-always-editable="true"]) {
+  border: none !important;
+  background: transparent !important;
+  pointer-events: none !important;
+  user-select: text !important;
+  box-shadow: none !important;
+  outline: none !important;
+  appearance: none !important;
+  -moz-appearance: none !important;
+  -webkit-appearance: none !important;
+  color: #000000 !important;
+  cursor: default !important;
+}
+
+.document-read-only input:not([data-always-editable="true"])::placeholder,
+.document-read-only textarea:not([data-always-editable="true"])::placeholder {
+  color: transparent !important;
+}
+
+/* Ensure the brand logo retains its bold, modern italic sans-serif style */
+.brand-logo-text,
+.brand-logo-text * {
+  font-family: "Plus Jakarta Sans", "Arial Black", "Arial", sans-serif !important;
+}
+
+

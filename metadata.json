@@ -1,0 +1,8 @@
+{
+  "name": "NFC462026",
+  "description": "Hệ thống lập và quản lý biên bản nghiệm thu gỗ keo xẻ thô cho NFC.company",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
