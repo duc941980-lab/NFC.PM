@@ -2301,7 +2301,7 @@ Bạn có thể hỏi tôi những câu như:
 
       return {
         id: bb.id,
-        employee: bb.nhan_vien_kinh_doanh || bb.nguoi_ky_nguoi_lap || 'Chưa phân công',
+        employee: bb.nhan_vien_kinh_doanh || 'Chưa phân công',
         region: rName,
         volume: vol,
         date: bb.ngay_nt ? bb.ngay_nt.substring(0, 7) : '2026-06',
@@ -17702,7 +17702,7 @@ Bạn có thể hỏi tôi những câu như:
                             }
                             const bb = combinedList.find(x => x.id === val || x.ma_bbnt === val);
                             if (bb) {
-                              const emp = bb.nhan_vien_kinh_doanh || bb.nguoi_ky_nguoi_lap || 'Chưa phân công';
+                              const emp = bb.nhan_vien_kinh_doanh || '';
                               let rName = bb.vung_quan_ly;
                               if (!rName) {
                                 const sName = bb.don_vi_cung_ung || '';

@@ -1106,70 +1106,48 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   const sigTitleRow = ledgerCurrentRow + 2; // leaves double blank rows space
   worksheet.getRow(sigTitleRow).height = 24;
 
-  const rolesList = [
-    { name: meta?.nguoiLapTitle || 'Người lập biểu', cols: [1] },
-    { name: 'Đại diện lâm sản', cols: [2] },
-    { name: 'Phòng vật tư QLNT', cols: [3] },
-    { name: 'Thủ kho nguyên liệu', cols: [4] },
-    { name: meta?.truongBoPhanTitle || 'Trưởng bộ phận (Duyệt)', cols: [] } // spans from 5 to numCols
-  ];
+  // Chỉ giữ 2 chân ký: Người lập biểu và Trưởng bộ phận
+  worksheet.mergeCells(sigTitleRow, 1, sigTitleRow, 2);
+  const leftTitle = worksheet.getCell(sigTitleRow, 1);
+  leftTitle.value = meta?.nguoiLapTitle || 'Người lập biểu';
+  leftTitle.font = fontBold;
+  leftTitle.alignment = alignCenter;
 
-  // Set roles titles
-  rolesList.forEach((role, rIdx) => {
-    if (rIdx === 4) {
-      // Span remaining columns
-      worksheet.mergeCells(sigTitleRow, 5, sigTitleRow, numCols);
-      const cell = worksheet.getCell(sigTitleRow, 5);
-      cell.value = role.name;
-      cell.font = fontBold;
-      cell.alignment = alignCenter;
-    } else {
-      const cell = worksheet.getCell(sigTitleRow, role.cols[0]);
-      cell.value = role.name;
-      cell.font = fontBold;
-      cell.alignment = alignCenter;
-    }
-  });
+  worksheet.mergeCells(sigTitleRow, 4, sigTitleRow, numCols);
+  const rightTitle = worksheet.getCell(sigTitleRow, 4);
+  rightTitle.value = meta?.truongBoPhanTitle || 'Trưởng bộ phận (Duyệt)';
+  rightTitle.font = fontBold;
+  rightTitle.alignment = alignCenter;
 
   const sigSignRow = sigTitleRow + 1;
   worksheet.getRow(sigSignRow).height = 20;
-  for (let c = 1; c <= 4; c++) {
-    const cell = worksheet.getCell(sigSignRow, c);
-    cell.value = '(Ký & ghi rõ họ tên)';
-    cell.font = fontItalicVal;
-    cell.alignment = alignCenter;
-  }
-  worksheet.mergeCells(sigSignRow, 5, sigSignRow, numCols);
-  const cellRightSign = worksheet.getCell(sigSignRow, 5);
-  cellRightSign.value = '(Ký, đóng dấu & phê duyệt)';
-  cellRightSign.font = fontItalicVal;
-  cellRightSign.alignment = alignCenter;
+
+  worksheet.mergeCells(sigSignRow, 1, sigSignRow, 2);
+  const leftSign = worksheet.getCell(sigSignRow, 1);
+  leftSign.value = '(Ký & ghi rõ họ tên)';
+  leftSign.font = fontItalicVal;
+  leftSign.alignment = alignCenter;
+
+  worksheet.mergeCells(sigSignRow, 4, sigSignRow, numCols);
+  const rightSign = worksheet.getCell(sigSignRow, 4);
+  rightSign.value = '(Ký, đóng dấu & phê duyệt)';
+  rightSign.font = fontItalicVal;
+  rightSign.alignment = alignCenter;
 
   const sigNameRow = sigSignRow + 4;
   worksheet.getRow(sigNameRow).height = 24;
 
-  const namesList = [
-    { name: meta?.nguoiLapName || bb.nguoi_ky_nguoi_lap || 'Ngô Văn Trường', col: 1 },
-    { name: bb.nguoi_ky_dai_dien_ncc || 'Chưa ký', col: 2 },
-    { name: '', col: 3 },
-    { name: bb.nguoi_ky_thu_kho || 'Thủ kho BM', col: 4 },
-    { name: meta?.truongBoPhanName || 'Trần Anh Tuấn', col: 5 } // spans
-  ];
+  worksheet.mergeCells(sigNameRow, 1, sigNameRow, 2);
+  const leftName = worksheet.getCell(sigNameRow, 1);
+  leftName.value = meta?.nguoiLapName || bb.nguoi_ky_nguoi_lap || 'Ngô Văn Trường';
+  leftName.font = fontBold;
+  leftName.alignment = alignCenter;
 
-  namesList.forEach((nItem, nIdx) => {
-    if (nIdx === 4) {
-      worksheet.mergeCells(sigNameRow, 5, sigNameRow, numCols);
-      const cell = worksheet.getCell(sigNameRow, 5);
-      cell.value = nItem.name;
-      cell.font = fontBold;
-      cell.alignment = alignCenter;
-    } else {
-      const cell = worksheet.getCell(sigNameRow, nItem.col);
-      cell.value = nItem.name;
-      cell.font = fontBold;
-      cell.alignment = alignCenter;
-    }
-  });
+  worksheet.mergeCells(sigNameRow, 4, sigNameRow, numCols);
+  const rightName = worksheet.getCell(sigNameRow, 4);
+  rightName.value = meta?.truongBoPhanName || 'Trần Anh Tuấn';
+  rightName.font = fontBold;
+  rightName.alignment = alignCenter;
 
   // Output File Download
   const buffer = await workbook.xlsx.writeBuffer();
