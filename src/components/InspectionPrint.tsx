@@ -771,7 +771,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
       {(printMode === 'qc' || printMode === 'both') && (
         <div 
           id="wood-inspection-document"
-          className={`max-w-4xl mx-auto bg-white border border-black p-6 md:p-10 shadow-sm print:shadow-none print:border-none print:p-0 text-xs leading-tight ${
+          className={`max-w-4xl mx-auto bg-white border border-black p-6 md:p-10 shadow-sm print:shadow-none print:border-none print:p-0 text-[12.5px] leading-snug ${
             selectedFont === 'times' ? 'document-font-times' : selectedFont === 'sans' ? 'document-font-sans' : 'document-font-mono'
           } ${!isEditable ? 'document-read-only' : ''} ${
             printMode === 'both' ? 'print:break-after-page' : ''
@@ -783,74 +783,74 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
         >
           
           {/* UPPER PRIMARY HEADER GRID */}
-          <table className="w-full table-fixed border-collapse border border-black text-center text-[11px] leading-tight font-sans">
+          <table className="w-full table-fixed border-collapse border border-black text-center text-[12.5px] leading-snug font-sans">
             <tbody>
               <tr>
                 <td rowSpan={2} className="border-r border-b border-black w-[22%] text-center p-2 bg-white">
                   <div className="brand-logo-text flex flex-col items-center justify-center select-none">
-                    <span className="text-[#0d733e] italic text-[42px] tracking-tighter leading-none" style={{ fontFamily: '"Arial Black", Impact, sans-serif', fontWeight: 900, fontStyle: 'italic' }}>
+                    <span className="text-[#0d733e] italic text-[46px] tracking-tighter leading-none" style={{ fontFamily: '"Arial Black", Impact, sans-serif', fontWeight: 900, fontStyle: 'italic' }}>
                       NFC
                     </span>
-                    <span className="text-[#0d733e] font-sans font-extrabold italic text-[9.5px] tracking-[0.24em] leading-none uppercase -mt-0.5" style={{ fontStyle: 'italic' }}>
+                    <span className="text-[#0d733e] font-sans font-extrabold italic text-[10.5px] tracking-[0.24em] leading-none uppercase -mt-0.5" style={{ fontStyle: 'italic' }}>
                       NAFOCO
                     </span>
                   </div>
                 </td>
-                <td className="border-r border-b border-black py-2 font-bold uppercase tracking-wide text-[11.5px] text-black w-[53%] text-center">
+                <td className="border-r border-b border-black py-2 font-bold uppercase tracking-wide text-[12.5px] text-black w-[53%] text-center">
                   <input
                     type="text"
                     value={quyTrinhTitle1}
                     onChange={(e) => setQuyTrinhTitle1(e.target.value)}
-                    className="bg-transparent text-center font-bold uppercase tracking-wide text-[11.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                    className="bg-transparent text-center font-bold uppercase tracking-wide text-[12.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                   />
                 </td>
-                <td className="border-b border-black text-left px-3 py-2 text-[10px] w-[25%]">
+                <td className="border-b border-black text-left px-3 py-2 text-[11.5px] w-[25%]">
                   <div className="flex items-center gap-1 whitespace-nowrap">
                     <strong className="shrink-0">Mã số:</strong>
-                    <span className="hidden print:inline font-mono text-[10px] text-black">
+                    <span className="hidden print:inline font-mono text-[11.5px] text-black">
                       {maSoQc}
                     </span>
                     <input
                       type="text"
                       value={maSoQc}
                       onChange={(e) => setMaSoQc(e.target.value)}
-                      className="bg-transparent text-left font-mono text-[10px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:hidden"
+                      className="bg-transparent text-left font-mono text-[11.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:hidden"
                     />
                   </div>
                 </td>
               </tr>
               <tr>
-                <td className="border-r border-black font-bold text-[14.5px] py-3.5 uppercase text-black tracking-tight text-center w-[53%]">
+                <td className="border-r border-black font-bold text-[18px] py-3.5 uppercase text-black tracking-tight text-center w-[53%]">
                   <input
                     type="text"
                     value={bienBanTitle1}
                     onChange={(e) => setBienBanTitle1(e.target.value)}
-                    className="bg-transparent text-center font-bold uppercase tracking-tight text-[14.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                    className="bg-transparent text-center font-bold uppercase tracking-tight text-[18px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                   />
                 </td>
-                <td className="text-left px-3 py-1 text-[10px] w-[25%]">
+                <td className="text-left px-3 py-1 text-[11.5px] w-[25%]">
                   <div className="border-b border-dashed border-black/20 pb-1 flex items-center gap-1 whitespace-nowrap">
                     <strong className="shrink-0">Lần ban hành:</strong>
-                    <span className="hidden print:inline text-[10px] text-black">
+                    <span className="hidden print:inline text-[11.5px] text-black">
                       {lanBanHanhQc}
                     </span>
                     <input
                       type="text"
                       value={lanBanHanhQc}
                       onChange={(e) => setLanBanHanhQc(e.target.value)}
-                      className="bg-transparent text-left text-[10px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:hidden"
+                      className="bg-transparent text-left text-[11.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:hidden"
                     />
                   </div>
                   <div className="pt-1 flex items-center gap-1 whitespace-nowrap">
                     <strong className="shrink-0">Ngày ban hành:</strong>
-                    <span className="hidden print:inline text-[10px] text-black">
+                    <span className="hidden print:inline text-[11.5px] text-black">
                       {ngayBanHanhQc}
                     </span>
                     <input
                       type="text"
                       value={ngayBanHanhQc}
                       onChange={(e) => setNgayBanHanhQc(e.target.value)}
-                      className="bg-transparent text-left text-[10px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:hidden"
+                      className="bg-transparent text-left text-[11.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:hidden"
                     />
                   </div>
                 </td>
@@ -859,7 +859,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
           </table>
 
           {/* SECONDARY INFO GRID (Attendees and Suppliers) */}
-          <table className="w-full table-fixed border-collapse border-b border-l border-r border-black text-left text-[11.5px] leading-tight font-sans text-black">
+          <table className="w-full table-fixed border-collapse border-b border-l border-r border-black text-left text-[12.5px] leading-tight font-sans text-black">
             <thead>
               <tr className="border-b border-black text-center font-bold">
                 <th className="border-r border-black w-[5%] py-1">TT</th>
@@ -921,13 +921,13 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                       />
                     </td>
                     {isFirst && (
-                      <td className="border-r border-black px-3 py-1 text-center font-bold text-[13px] uppercase leading-tight w-[31%]" rowSpan={members.length}>
+                      <td className="border-r border-black px-3 py-1 text-center font-bold text-[15px] uppercase leading-tight w-[31%]" rowSpan={members.length}>
                         <div className="flex flex-col items-center justify-center gap-1 h-full py-1">
                           <textarea
                             rows={2}
                             value={donViCungUng}
                             onChange={(e) => setDonViCungUng(e.target.value)}
-                            className="bg-transparent text-center font-bold text-[13.5px] uppercase leading-tight text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent resize-none overflow-hidden"
+                            className="bg-transparent text-center font-bold text-[15.5px] uppercase leading-tight text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent resize-none overflow-hidden"
                             placeholder="ĐƠN VỊ CUNG ỨNG"
                           />
                         </div>
@@ -956,7 +956,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
           </table>
 
           {/* CORE SPECIFICATIONS METADATA SUMMARY TABLE (PART A & B COMBINED) */}
-          <table className="w-full table-fixed border-collapse border-b border-l border-r border-black text-left text-[11px] leading-tight font-sans text-black">
+          <table className="w-full table-fixed border-collapse border-b border-l border-r border-black text-left text-[12.5px] leading-snug font-sans text-black">
             <tbody>
               <tr className="border-b border-black">
                 <td className="px-3 py-2 border-r border-black" colSpan={4}>
@@ -964,7 +964,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                     <span className="font-bold text-black">Tên - chủng loại gỗ:</span>
                     <span className="font-bold text-black uppercase">Gỗ keo rừng trồng</span>
                   </div>
-                  <div className="text-center font-bold text-black mt-1 py-1 text-[11.5px] flex items-center justify-center gap-1">
+                  <div className="text-center font-bold text-black mt-1 py-1 text-[12.5px] flex items-center justify-center gap-1">
                     <span>Gỗ sơ chế thông thường -</span>
                     <span className="hidden print:inline-block font-bold text-black uppercase">
                       {loaiGo}
@@ -996,25 +996,25 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                     <span className="font-bold text-black">Trạng thái môi trường:</span>
                     <span className="flex items-center gap-2 cursor-pointer select-none" onClick={() => setFscOption('fsc100')}>
                       FSC 100%
-                      <span className="inline-flex items-center justify-center w-5 h-5 border border-black font-sans text-[11.5px] font-black bg-white">
+                      <span className="inline-flex items-center justify-center w-5 h-6 border border-black font-sans text-[12.5px] font-black bg-white">
                         {fscOption === 'fsc100' ? 'v' : ' '}
                       </span>
                     </span>
                     <span className="flex items-center gap-2 cursor-pointer select-none" onClick={() => setFscOption('fscMix')}>
                       FSC Mix
-                      <span className="inline-flex items-center justify-center w-5 h-5 border border-black font-sans text-[11.5px] font-black bg-white">
+                      <span className="inline-flex items-center justify-center w-5 h-6 border border-black font-sans text-[12.5px] font-black bg-white">
                         {fscOption === 'fscMix' ? 'v' : ' '}
                       </span>
                     </span>
                     <span className="flex items-center gap-2 cursor-pointer select-none" onClick={() => setFscOption('fscCw')}>
                       FSC CW
-                      <span className="inline-flex items-center justify-center w-5 h-5 border border-black font-sans text-[11.5px] font-black bg-white">
+                      <span className="inline-flex items-center justify-center w-5 h-6 border border-black font-sans text-[12.5px] font-black bg-white">
                         {fscOption === 'fscCw' ? 'v' : ' '}
                       </span>
                     </span>
                     <span className="flex items-center gap-2 cursor-pointer select-none" onClick={() => setFscOption('kls')}>
                       KLS
-                      <span className="inline-flex items-center justify-center w-5 h-5 border border-black font-sans text-[11.5px] font-black bg-white">
+                      <span className="inline-flex items-center justify-center w-5 h-6 border border-black font-sans text-[12.5px] font-black bg-white">
                         {fscOption === 'kls' ? 'v' : ' '}
                       </span>
                     </span>
@@ -1026,10 +1026,10 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
 
           {/* A. Tổng khối lượng giao nhận SPECIFICATION TABLE */}
           <div className="mt-3.5 text-black">
-            <h4 className="font-bold text-[12px] uppercase text-black mb-1">
+            <h4 className="font-bold text-[14px] uppercase text-black mb-1">
               A. Tổng khối lượng giao nhận
             </h4>
-            <table className="w-full table-fixed border-collapse border border-black text-center text-[11.5px] font-sans text-black">
+            <table className="w-full table-fixed border-collapse border border-black text-center text-[12.5px] font-sans text-black">
               <thead>
                 <tr className="bg-white font-bold border-b border-black h-7">
                   <th className="border-r border-black text-center py-1 w-[8%]">TT</th>
@@ -1042,7 +1042,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                 {quyCachA.map((row, index) => {
                   const cleanKichThuoc = (row.kich_thuoc_mm || "").replace(/×/g, 'x');
                   return (
-                    <tr key={row.id || index} className="border-b border-black h-6.5 text-black font-bold">
+                    <tr key={row.id || index} className="border-b border-black h-7 text-black font-bold">
                       <td className="border-r border-black p-1 text-center w-[8%]">{index + 1}</td>
                       <td className="border-r border-black px-3 py-1 text-center w-[52%]">
                         <input
@@ -1088,13 +1088,13 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
 
           {/* MAIN GRID BLOCK SPECIFICATIONS DETAILS */}
           <div className="mt-4 text-black">
-            <h4 className="font-bold text-[12px] uppercase text-black mb-1">
+            <h4 className="font-bold text-[14px] uppercase text-black mb-1">
               B. Kết luận khối lượng gỗ thực tế nhập kho
             </h4>
 
-            <table className="w-full table-fixed border-collapse border border-black text-center font-sans text-[11.5px] text-black">
+            <table className="w-full table-fixed border-collapse border border-black text-center font-sans text-[12.5px] text-black">
               <thead>
-                <tr className="bg-white font-bold border-b border-black text-[11.5px] h-8">
+                <tr className="bg-white font-bold border-b border-black text-[12.5px] h-9">
                   <th className="border-r border-black w-[6%] text-center py-1">TT</th>
                   <th className="border-r border-black w-[32%] text-center px-1 py-1">Quy cách kích thước</th>
                   <th className="border-r border-black w-[18%] text-center px-3 py-1">K. Lượng nguyên thuỷ</th>
@@ -1106,7 +1106,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
               <tbody>
                 {bRowsHtml}
                 {/* Grand total summaries matching standard layout exactly */}
-                <tr className="bg-white font-bold border-t border-black uppercase text-[11.5px] h-7.5 text-black">
+                <tr className="bg-white font-bold border-t border-black uppercase text-[12.5px] h-8 text-black">
                   <td className="border-r border-black p-1 text-center font-bold" colSpan={2}>Cộng</td>
                   <td className="border-r border-black px-3 py-1 text-center font-bold text-red-650">
                     {formatVolume(totalVolA)}
@@ -1121,27 +1121,27 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
             </table>
 
             {/* Spell out spelling-words line directly derived from image and user requirements */}
-            <div className="border-l border-r border-b border-black px-3 py-2 font-bold text-[11.5px] bg-white text-black leading-normal">
-              <span className="text-black font-extrabold uppercase text-[10px] mr-2">Bằng chữ:</span>
+            <div className="border-l border-r border-b border-black px-3 py-2 font-bold text-[12.5px] bg-white text-black leading-normal">
+              <span className="text-black font-extrabold uppercase text-[11.5px] mr-2">Bằng chữ:</span>
               <span className="font-sans font-bold text-black">
                 {numberToVietnameseWords(totalVolB, false)} ./.
               </span>
             </div>
 
             {/* SECTION C: Active conclusions */}
-            <div className="border-l border-r border-b border-black px-3 py-2.5 bg-white text-[11px] font-bold flex items-center gap-12 text-black">
-              <span className="font-bold text-[11px] uppercase tracking-tight text-black">C. Kết luận chung lô hàng:</span>
+            <div className="border-l border-r border-b border-black px-3 py-2.5 bg-white text-[12.5px] font-bold flex items-center gap-12 text-black">
+              <span className="font-bold text-[12.5px] uppercase tracking-tight text-black">C. Kết luận chung lô hàng:</span>
               
               <div className="flex items-center gap-12 text-black font-bold">
                 <span className="flex items-center gap-2 font-bold cursor-pointer select-none" onClick={() => setKetLuan('Đạt')}>
                   Đạt yêu cầu nhập kho
-                  <span className="inline-flex items-center justify-center w-5 h-5 border border-black font-sans text-[11.5px] font-black bg-white select-none">
+                  <span className="inline-flex items-center justify-center w-5 h-6 border border-black font-sans text-[12.5px] font-black bg-white select-none">
                     {ketLuan === 'Đạt' ? 'v' : ' '}
                   </span>
                 </span>
                 <span className="flex items-center gap-2 font-bold cursor-pointer select-none" onClick={() => setKetLuan('Không đạt')}>
                   Không đạt yêu cầu nhập kho
-                  <span className="inline-flex items-center justify-center w-5 h-5 border border-black font-sans text-[11.5px] font-black bg-white select-none">
+                  <span className="inline-flex items-center justify-center w-5 h-6 border border-black font-sans text-[12.5px] font-black bg-white select-none">
                     {ketLuan !== 'Đạt' ? 'v' : ' '}
                   </span>
                 </span>
@@ -1151,20 +1151,20 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
 
           {/* DYNAMIC SYSTEM SIGNATURES ROW LINKED FROM DETAILED PARTICIPANTS - EXACT ORDER FROM USER IMAGE */}
           <div className="mt-8 pt-6 print:mt-2 print:pt-2 break-inside-avoid">
-            <div className="grid grid-cols-5 gap-1.5 text-center text-[11px] font-bold leading-snug font-sans text-black break-inside-avoid">
+            <div className="grid grid-cols-5 gap-1.5 text-center text-[12.5px] font-bold leading-snug font-sans text-black break-inside-avoid">
               {/* 1. Phó TGĐ */}
               <div className="flex flex-col justify-between h-28 text-center">
                 <input
                   type="text"
                   value={sigPhoTgdTitle}
                   onChange={(e) => setSigPhoTgdTitle(e.target.value)}
-                  className="bg-transparent text-center uppercase font-bold text-[11px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                  className="bg-transparent text-center uppercase font-bold text-[12.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                 />
                 <input
                   type="text"
                   value={sigPhoTgdName}
                   onChange={(e) => setSigPhoTgdName(e.target.value)}
-                  className="bg-transparent text-center font-bold italic text-[11.5px] text-black mt-12 border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                  className="bg-transparent text-center font-bold italic text-[12.5px] text-black mt-12 border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                   placeholder="Nhập họ tên"
                 />
               </div>
@@ -1175,13 +1175,13 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                   type="text"
                   value={sigTpPqlclTitle}
                   onChange={(e) => setSigTpPqlclTitle(e.target.value)}
-                  className="bg-transparent text-center uppercase font-bold text-[11px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                  className="bg-transparent text-center uppercase font-bold text-[12.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                 />
                 <input
                   type="text"
                   value={sigTpPqlclName}
                   onChange={(e) => setSigTpPqlclName(e.target.value)}
-                  className="bg-transparent text-center font-bold italic text-[11.5px] text-black mt-12 border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                  className="bg-transparent text-center font-bold italic text-[12.5px] text-black mt-12 border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                   placeholder="Nhập họ tên"
                 />
               </div>
@@ -1192,13 +1192,13 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                   type="text"
                   value={sigThuKhoTitle}
                   onChange={(e) => setSigThuKhoTitle(e.target.value)}
-                  className="bg-transparent text-center uppercase font-bold text-[11px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                  className="bg-transparent text-center uppercase font-bold text-[12.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                 />
                 <input
                   type="text"
                   value={sigThuKhoName}
                   onChange={(e) => setSigThuKhoName(e.target.value)}
-                  className="bg-transparent text-center font-bold italic text-[11.5px] text-black mt-12 border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                  className="bg-transparent text-center font-bold italic text-[12.5px] text-black mt-12 border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                   placeholder="Nhập họ tên"
                 />
               </div>
@@ -1209,13 +1209,13 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                   type="text"
                   value={sigDaiDienNccTitle}
                   onChange={(e) => setSigDaiDienNccTitle(e.target.value)}
-                  className="bg-transparent text-center uppercase font-bold text-[11px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent leading-tight"
+                  className="bg-transparent text-center uppercase font-bold text-[12.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent leading-tight"
                 />
                 <input
                   type="text"
                   value={sigDaiDienNccName}
                   onChange={(e) => setSigDaiDienNccName(e.target.value)}
-                  className="bg-transparent text-center font-bold italic text-[11.5px] text-black mt-12 border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                  className="bg-transparent text-center font-bold italic text-[12.5px] text-black mt-12 border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                   placeholder="Nhập họ tên"
                 />
               </div>
@@ -1226,13 +1226,13 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                   type="text"
                   value={sigNguoiLapTitle}
                   onChange={(e) => setSigNguoiLapTitle(e.target.value)}
-                  className="bg-transparent text-center uppercase font-bold text-[11px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                  className="bg-transparent text-center uppercase font-bold text-[12.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                 />
                 <input
                   type="text"
                   value={sigNguoiLapName}
                   onChange={(e) => setSigNguoiLapName(e.target.value)}
-                  className="bg-transparent text-center font-bold italic text-[11.5px] text-black mt-12 border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                  className="bg-transparent text-center font-bold italic text-[12.5px] text-black mt-12 border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                   placeholder="Nhập họ tên"
                 />
               </div>
