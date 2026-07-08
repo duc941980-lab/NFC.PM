@@ -80,6 +80,10 @@ export interface BienBan {
   trang_thai_thanh_toan?: 'Chờ hạch toán' | 'Chưa thanh toán' | 'Đã thanh toán';
   nhan_vien_kinh_doanh?: string; // Sales staff assigned to this report
   da_luu_thanh_toan?: boolean; // True if saved from payment/billing screens
+
+  // Thông tin hợp đồng phục vụ xuất bảng chi tiết thanh toán
+  so_hop_dong?: string;
+  ngay_hop_dong?: string;
   
   created_at: string;
 }

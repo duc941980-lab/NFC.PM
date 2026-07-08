@@ -734,9 +734,9 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
     },
   };
 
-  const fontRegular = { name: 'Times New Roman', size: 14, bold: false };
-  const fontBold = { name: 'Times New Roman', size: 14, bold: true };
-  const fontItalic = { name: 'Times New Roman', size: 14, italic: true };
+  const fontRegular = { name: 'Times New Roman', size: 11, bold: false };
+  const fontBold = { name: 'Times New Roman', size: 11, bold: true };
+  const fontItalic = { name: 'Times New Roman', size: 11, italic: true };
   const fontHeader = { name: 'Times New Roman', size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
   const fontTitle = { name: 'Times New Roman', size: 22, bold: true, color: { argb: 'FFFFFFFF' } };
   const fontSign = { name: 'Times New Roman', size: 14, bold: true };
@@ -837,7 +837,10 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   worksheet.mergeCells('B5:G5');
   const loaiGo = (bb.loai_go || 'gỗ keo xẻ thô').trim();
   const descCell = worksheet.getCell('B5');
-  descCell.value = `Gỗ sơ chế thông thường - ${loaiGo} theo HĐ số:`;
+  const hopDongText = bb.so_hop_dong
+    ? ` theo HĐ số: ${bb.so_hop_dong}${bb.ngay_hop_dong ? ` ngày ${bb.ngay_hop_dong}` : ''}`
+    : '';
+  descCell.value = `Gỗ sơ chế thông thường - ${loaiGo}${hopDongText}`;
   descCell.font = fontItalic;
   descCell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
   descCell.fill = lightGreenFill;
