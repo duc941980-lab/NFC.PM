@@ -81,7 +81,7 @@ export interface BienBan {
   nhan_vien_kinh_doanh?: string; // Sales staff assigned to this report
   da_luu_thanh_toan?: boolean; // True if saved from payment/billing screens
 
-  // Thông tin hợp đồng phục vụ xuất bảng chi tiết thanh toán
+  // Thông tin hợp đồng dùng cho bảng chi tiết thanh toán
   so_hop_dong?: string;
   ngay_hop_dong?: string;
   

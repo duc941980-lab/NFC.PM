@@ -531,6 +531,8 @@ export default function InspectionForm({
 
   const [maBbnt, setMaBbnt] = useState(initialBienBan?.ma_bbnt || '');
   const [ngayNt, setNgayNt] = useState(initialBienBan?.ngay_nt || new Date().toISOString().split('T')[0]);
+  const [soHopDong, setSoHopDong] = useState(initialBienBan?.so_hop_dong || '');
+  const [ngayHopDong, setNgayHopDong] = useState(initialBienBan?.ngay_hop_dong || '');
   const [donViCungUng, setDonViCungUng] = useState(initialBienBan?.don_vi_cung_ung || '');
   const [maNcc, setMaNcc] = useState(initialBienBan?.ma_ncc || '');
   const [loaiGo, setLoaiGo] = useState(initialBienBan?.loai_go || '');
@@ -3119,6 +3121,8 @@ Bạn có thể hỏi tôi những câu như:
     setId(bb.id);
     setMaBbnt(bb.ma_bbnt);
     setNgayNt(bb.ngay_nt || new Date().toISOString().split('T')[0]);
+    setSoHopDong(bb.so_hop_dong || '');
+    setNgayHopDong(bb.ngay_hop_dong || '');
     setDonViCungUng(bb.don_vi_cung_ung || '');
     setMaNcc(bb.ma_ncc || '');
     setLoaiGo(bb.loai_go || '');
@@ -3150,6 +3154,8 @@ Bạn có thể hỏi tôi những câu như:
     setId(bb.id);
     setMaBbnt(bb.ma_bbnt);
     setNgayNt(bb.ngay_nt || new Date().toISOString().split('T')[0]);
+    setSoHopDong(bb.so_hop_dong || '');
+    setNgayHopDong(bb.ngay_hop_dong || '');
     setDonViCungUng(bb.don_vi_cung_ung || '');
     setMaNcc(bb.ma_ncc || '');
     setLoaiGo(bb.loai_go || '');
@@ -3431,6 +3437,8 @@ Bạn có thể hỏi tôi những câu như:
     setIsAutoApplyPrice(found.is_auto_apply_price !== undefined ? found.is_auto_apply_price : true);
     setBangDuyetGia(finalDuyetGia);
     setBangThanhToan(found.bang_thanh_toan || []);
+    setSoHopDong(found.so_hop_dong || '');
+    setNgayHopDong(found.ngay_hop_dong || '');
 
     const syntheticBienBan: BienBan = {
       ...found,
@@ -4846,6 +4854,8 @@ Bạn có thể hỏi tôi những câu như:
       id,
       ma_bbnt: maBbnt,
       ngay_nt: ngayNt,
+      so_hop_dong: soHopDong.trim(),
+      ngay_hop_dong: ngayHopDong.trim(),
       don_vi_cung_ung: donViCungUng,
       ma_ncc: maNcc,
       loai_go: loaiGo,
@@ -5723,6 +5733,8 @@ Bạn có thể hỏi tôi những câu như:
       created_at: (initialBienBan?.created_at || loadedBienBan?.created_at || new Date().toISOString()),
       ma_bbnt: maBbnt,
       ngay_nt: ngayNt,
+      so_hop_dong: soHopDong.trim(),
+      ngay_hop_dong: ngayHopDong.trim(),
       don_vi_cung_ung: donViCungUng,
       ma_ncc: maNcc,
       loai_go: loaiGo,
@@ -14219,6 +14231,35 @@ Bạn có thể hỏi tôi những câu như:
                     <Plus className="w-3.5 h-3.5" />
                     Thêm dòng bổ sung ngoài quy cách
                   </button>
+                </div>
+                <div className="bg-emerald-50/60 border-b border-emerald-100 px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-black text-emerald-900 uppercase tracking-wider mb-1.5">
+                      Số hợp đồng thanh toán
+                    </label>
+                    <input
+                      type="text"
+                      value={soHopDong}
+                      onChange={(e) => setSoHopDong(e.target.value)}
+                      placeholder="Ví dụ: 01-2026/HĐ"
+                      className="w-full bg-white border border-emerald-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg px-3 py-2 text-sm font-mono font-bold text-slate-900 shadow-3xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-black text-emerald-900 uppercase tracking-wider mb-1.5">
+                      Ngày hợp đồng
+                    </label>
+                    <input
+                      type="text"
+                      value={ngayHopDong}
+                      onChange={(e) => setNgayHopDong(e.target.value)}
+                      placeholder="Ví dụ: 02/01/2026"
+                      className="w-full bg-white border border-emerald-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg px-3 py-2 text-sm font-mono font-bold text-slate-900 shadow-3xs"
+                    />
+                  </div>
+                  <div className="md:col-span-2 text-[11.5px] text-emerald-900 font-semibold bg-white/70 border border-emerald-100 rounded-lg px-3 py-2">
+                    Khi xuất Excel, hệ thống sẽ tự tạo dòng: <span className="font-bold italic">Gỗ sơ chế thông thường - {loaiGo || 'gỗ keo xẻ thô'}{soHopDong ? ` theo HĐ số: ${soHopDong}${ngayHopDong ? ` ngày ${ngayHopDong}` : ''}` : ''}</span>
+                  </div>
                 </div>
                 <div className="overflow-x-auto overflow-y-auto max-h-[600px] border-b border-slate-200">
                   <table className="w-full border-collapse text-left text-xs" style={{ minWidth: "1200px" }}>

@@ -737,10 +737,10 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   const fontRegular = { name: 'Times New Roman', size: 11, bold: false };
   const fontBold = { name: 'Times New Roman', size: 11, bold: true };
   const fontItalic = { name: 'Times New Roman', size: 11, italic: true };
-  const fontHeader = { name: 'Times New Roman', size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
-  const fontTitle = { name: 'Times New Roman', size: 22, bold: true, color: { argb: 'FFFFFFFF' } };
-  const fontSign = { name: 'Times New Roman', size: 14, bold: true };
-  const fontSignName = { name: 'Times New Roman', size: 14, bold: true, italic: true };
+  const fontHeader = { name: 'Times New Roman', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
+  const fontTitle = { name: 'Times New Roman', size: 18, bold: true, color: { argb: 'FFFFFFFF' } };
+  const fontSign = { name: 'Times New Roman', size: 11, bold: true };
+  const fontSignName = { name: 'Times New Roman', size: 11, bold: true, italic: true };
 
   const alignCenter: Partial<ExcelJS.Alignment> = { vertical: 'middle' as const, horizontal: 'center' as const };
   const alignLeft: Partial<ExcelJS.Alignment> = { vertical: 'middle' as const, horizontal: 'left' as const };
@@ -789,7 +789,7 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
 
   applyBorderToRange(worksheet, 'E1', 'G1', thinBorder);
 
-  worksheet.getRow(2).height = 46;
+  worksheet.getRow(2).height = 36;
   worksheet.mergeCells('A2:G2');
   const titleCell = worksheet.getCell('A2');
   titleCell.value = meta?.bienBanTitle || 'BẢNG CHI TIẾT THANH TOÁN';
@@ -805,7 +805,7 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   // -------------------------------------------------------------
   // 2. Ledger header
   // -------------------------------------------------------------
-  worksheet.getRow(4).height = 40;
+  worksheet.getRow(4).height = 32;
   const headerCells = [
     { cell: 'A4', value: 'STT' },
     { cell: 'D4', value: 'Đvt' },
@@ -833,7 +833,7 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   // -------------------------------------------------------------
   // 3. Description row
   // -------------------------------------------------------------
-  worksheet.getRow(5).height = 38;
+  worksheet.getRow(5).height = 30;
   worksheet.mergeCells('B5:G5');
   const loaiGo = (bb.loai_go || 'gỗ keo xẻ thô').trim();
   const descCell = worksheet.getCell('B5');
@@ -854,7 +854,7 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   let rowIdx = 6;
 
   paymentRows.forEach((p, idx) => {
-    worksheet.getRow(rowIdx).height = 42;
+    worksheet.getRow(rowIdx).height = 30;
     worksheet.mergeCells(rowIdx, 2, rowIdx, 3);
 
     const cellTT = worksheet.getCell(rowIdx, 1);
@@ -900,22 +900,22 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   const totalVolume = paymentRows.reduce((sum, r) => sum + Number(r.kl || 0), 0);
   const finalGrandTotal = paymentRows.reduce((sum, r) => sum + Number(r.thanh_tien || 0), 0);
 
-  worksheet.getRow(rowIdx).height = 40;
+  worksheet.getRow(rowIdx).height = 32;
   worksheet.mergeCells(rowIdx, 2, rowIdx, 4);
 
   worksheet.getCell(rowIdx, 1).value = '';
   worksheet.getCell(rowIdx, 2).value = 'Cộng';
-  worksheet.getCell(rowIdx, 2).font = { name: 'Times New Roman', size: 15, bold: true };
+  worksheet.getCell(rowIdx, 2).font = { name: 'Times New Roman', size: 12, bold: true };
   worksheet.getCell(rowIdx, 2).alignment = alignCenter;
 
   worksheet.getCell(rowIdx, 5).value = Number(totalVolume);
   worksheet.getCell(rowIdx, 5).numFmt = '#,##0.###';
-  worksheet.getCell(rowIdx, 5).font = { name: 'Times New Roman', size: 15, bold: true };
+  worksheet.getCell(rowIdx, 5).font = { name: 'Times New Roman', size: 12, bold: true };
   worksheet.getCell(rowIdx, 5).alignment = alignRight;
 
   worksheet.getCell(rowIdx, 7).value = Number(finalGrandTotal);
   worksheet.getCell(rowIdx, 7).numFmt = '#,##0';
-  worksheet.getCell(rowIdx, 7).font = { name: 'Times New Roman', size: 15, bold: true };
+  worksheet.getCell(rowIdx, 7).font = { name: 'Times New Roman', size: 12, bold: true };
   worksheet.getCell(rowIdx, 7).alignment = alignRight;
 
   for (let c = 1; c <= 7; c++) {
@@ -931,12 +931,12 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   worksheet.mergeCells(rowIdx, 2, rowIdx, 7);
   const bangChuLabel = worksheet.getCell(rowIdx, 1);
   bangChuLabel.value = 'Bằng chữ:';
-  bangChuLabel.font = { name: 'Times New Roman', size: 15, bold: true };
+  bangChuLabel.font = { name: 'Times New Roman', size: 11, bold: true };
   bangChuLabel.alignment = alignLeft;
 
   const bangChuValue = worksheet.getCell(rowIdx, 2);
   bangChuValue.value = finalGrandTotal > 0 ? `${translateMoneyToWords(finalGrandTotal)} ./.` : '';
-  bangChuValue.font = { name: 'Times New Roman', size: 14, bold: true, italic: true };
+  bangChuValue.font = { name: 'Times New Roman', size: 11, bold: true, italic: true };
   bangChuValue.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
 
   for (let c = 1; c <= 7; c++) {
