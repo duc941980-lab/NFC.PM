@@ -1263,7 +1263,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
       {(printMode === 'payment' || printMode === 'both') && (
         <div 
           id="wood-payment-document"
-          className={`max-w-4xl mx-auto bg-white border border-black p-8 md:p-12 shadow-sm print:shadow-none print:border-none print:p-0 text-xs leading-tight ${
+          className={`max-w-[794px] mx-auto bg-white border border-black p-8 md:p-10 shadow-sm print:shadow-none print:border-none print:p-0 text-xs leading-tight ${
             selectedFont === 'times' ? 'document-font-times' : selectedFont === 'sans' ? 'document-font-sans' : 'document-font-mono'
           } ${!isEditable ? 'document-read-only' : ''}`}
           style={{}}
@@ -1325,9 +1325,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
             <div className="bg-[#0f5d32] text-white text-center font-bold text-[22px] uppercase tracking-wide py-1 border border-black border-b-0 font-serif">
               BẢNG CHI TIẾT THANH TOÁN
             </div>
-            <div className="border-l border-r border-black px-1 py-0.5 text-left text-[11.5px] italic text-black font-serif">
-              {paymentContractLine}
-            </div>
+            <div className="h-9 border-l border-r border-black bg-white"></div>
             <table className="w-full border-collapse border border-black text-center text-[11.5px] font-sans text-black">
               <thead>
                 <tr className="bg-[#0f5d32] text-white text-center font-bold text-[11px] border-b border-black h-8">

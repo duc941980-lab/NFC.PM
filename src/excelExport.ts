@@ -720,7 +720,7 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   worksheet.views = [{ showGridLines: true }];
   worksheet.pageSetup = {
     paperSize: 9, // A4
-    orientation: 'landscape',
+    orientation: 'portrait',
     fitToPage: true,
     fitToWidth: 1,
     fitToHeight: 0,
@@ -831,13 +831,10 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
     : '';
   const paymentDescription = `Gỗ sơ chế thông thường - ${loaiGo}${hopDongText}`;
 
+  // Row 4 intentionally left blank to match the official payment template.
+  // Contract/payment description is shown only once in the green detail row below the table header.
   worksheet.getRow(4).height = 22;
   worksheet.mergeCells('A4:G4');
-  const contractLineCell = worksheet.getCell('A4');
-  contractLineCell.value = paymentDescription;
-  contractLineCell.font = { name: 'Times New Roman', size: 11, bold: false };
-  contractLineCell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-  applyBorderToRange(worksheet, 'A5', 'G5', thinBorder);
 
   // -------------------------------------------------------------
   // 2. Ledger header
