@@ -758,6 +758,25 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   const lightGrayFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFF8FAFC' } };
   const lightPeachFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFFF7ED' } };
 
+  const formatVietnameseLongDate = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const raw = dateStr.trim();
+    let d = 0, m = 0, y = 0;
+    if (/^\d{4}-\d{1,2}-\d{1,2}/.test(raw)) {
+      const parts = raw.split('T')[0].split('-');
+      y = parseInt(parts[0], 10);
+      m = parseInt(parts[1], 10);
+      d = parseInt(parts[2], 10);
+    } else if (/^\d{1,2}[\/.-]\d{1,2}[\/.-]\d{4}$/.test(raw)) {
+      const parts = raw.split(/[\/.-]/);
+      d = parseInt(parts[0], 10);
+      m = parseInt(parts[1], 10);
+      y = parseInt(parts[2], 10);
+    }
+    if (!d || !m || !y) return raw;
+    return `Ngày ${d} tháng ${m} năm ${y}`;
+  };
+
   worksheet.columns = [
     { key: 'A', width: 8 },   // STT
     { key: 'B', width: 28 },  // Tên hàng
@@ -789,33 +808,51 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
 
   applyBorderToRange(worksheet, 'E1', 'G1', thinBorder);
 
-  worksheet.getRow(2).height = 36;
+  worksheet.getRow(2).height = 22;
   worksheet.mergeCells('A2:G2');
-  const titleCell = worksheet.getCell('A2');
+  const dateTitleCell = worksheet.getCell('A2');
+  dateTitleCell.value = formatVietnameseLongDate(meta?.ngayThanhToan || bb.ngay_nt);
+  dateTitleCell.font = { name: 'Times New Roman', size: 11, bold: true };
+  dateTitleCell.alignment = alignCenter;
+  applyBorderToRange(worksheet, 'A2', 'G2', thinBorder);
+
+  worksheet.getRow(3).height = 30;
+  worksheet.mergeCells('A3:G3');
+  const titleCell = worksheet.getCell('A3');
   titleCell.value = meta?.bienBanTitle || 'BẢNG CHI TIẾT THANH TOÁN';
   titleCell.font = fontTitle;
   titleCell.alignment = alignCenter;
   titleCell.fill = greenFill;
-  applyBorderToRange(worksheet, 'A2', 'G2', thinBorder);
-
-  worksheet.getRow(3).height = 28;
-  worksheet.mergeCells('A3:G3');
   applyBorderToRange(worksheet, 'A3', 'G3', thinBorder);
+
+  const loaiGo = (bb.loai_go || 'gỗ keo xẻ thô').trim();
+  const hopDongText = bb.so_hop_dong
+    ? ` theo HĐ số: ${bb.so_hop_dong}${bb.ngay_hop_dong ? ` ngày ${bb.ngay_hop_dong}` : ''}`
+    : '';
+  const paymentDescription = `Gỗ sơ chế thông thường - ${loaiGo}${hopDongText}`;
+
+  worksheet.getRow(4).height = 22;
+  worksheet.mergeCells('A4:G4');
+  const contractLineCell = worksheet.getCell('A4');
+  contractLineCell.value = paymentDescription;
+  contractLineCell.font = { name: 'Times New Roman', size: 11, bold: false };
+  contractLineCell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+  applyBorderToRange(worksheet, 'A5', 'G5', thinBorder);
 
   // -------------------------------------------------------------
   // 2. Ledger header
   // -------------------------------------------------------------
-  worksheet.getRow(4).height = 32;
+  worksheet.getRow(5).height = 28;
   const headerCells = [
-    { cell: 'A4', value: 'STT' },
-    { cell: 'D4', value: 'Đvt' },
-    { cell: 'E4', value: 'KL' },
-    { cell: 'F4', value: 'Đơn giá' },
-    { cell: 'G4', value: 'Thành tiền' },
+    { cell: 'A5', value: 'STT' },
+    { cell: 'D5', value: 'Đvt' },
+    { cell: 'E5', value: 'KL' },
+    { cell: 'F5', value: 'Đơn giá' },
+    { cell: 'G5', value: 'Thành tiền' },
   ];
 
-  worksheet.mergeCells('B4:C4');
-  const tenHangHeader = worksheet.getCell('B4');
+  worksheet.mergeCells('B5:C5');
+  const tenHangHeader = worksheet.getCell('B5');
   tenHangHeader.value = 'Tên hàng';
   tenHangHeader.font = fontHeader;
   tenHangHeader.alignment = alignCenter;
@@ -828,30 +865,26 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
     cell.alignment = alignCenter;
     cell.fill = greenFill;
   });
-  applyBorderToRange(worksheet, 'A4', 'G4', thinBorder);
+  applyBorderToRange(worksheet, 'A5', 'G5', thinBorder);
 
   // -------------------------------------------------------------
   // 3. Description row
   // -------------------------------------------------------------
-  worksheet.getRow(5).height = 30;
-  worksheet.mergeCells('B5:G5');
-  const loaiGo = (bb.loai_go || 'gỗ keo xẻ thô').trim();
-  const descCell = worksheet.getCell('B5');
-  const hopDongText = bb.so_hop_dong
-    ? ` theo HĐ số: ${bb.so_hop_dong}${bb.ngay_hop_dong ? ` ngày ${bb.ngay_hop_dong}` : ''}`
-    : '';
-  descCell.value = `Gỗ sơ chế thông thường - ${loaiGo}${hopDongText}`;
+  worksheet.getRow(6).height = 30;
+  worksheet.mergeCells('B6:G6');
+  const descCell = worksheet.getCell('B6');
+  descCell.value = paymentDescription;
   descCell.font = fontItalic;
   descCell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
   descCell.fill = lightGreenFill;
-  worksheet.getCell('A5').fill = lightGreenFill;
-  applyBorderToRange(worksheet, 'A5', 'G5', thinBorder);
+  worksheet.getCell('A6').fill = lightGreenFill;
+  applyBorderToRange(worksheet, 'A6', 'G6', thinBorder);
 
   // -------------------------------------------------------------
   // 4. Ledger rows
   // -------------------------------------------------------------
   const paymentRows = bb.bang_thanh_toan || [];
-  let rowIdx = 6;
+  let rowIdx = 7;
 
   paymentRows.forEach((p, idx) => {
     worksheet.getRow(rowIdx).height = 30;

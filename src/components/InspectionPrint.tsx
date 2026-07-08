@@ -153,6 +153,9 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
     return bienBan.ngay_nt ? new Date(bienBan.ngay_nt).toLocaleDateString('vi-VN') : "";
   });
 
+  const [soHopDongPay, setSoHopDongPay] = useState(() => (bienBan as any).so_hop_dong || "");
+  const [ngayHopDongPay, setNgayHopDongPay] = useState(() => (bienBan as any).ngay_hop_dong || "");
+
   const [vungQuanLy, setVungQuanLy] = useState(bienBan.vung_quan_ly || "Vùng Thanh Hóa");
   const [phuongAnLogistics, setPhuongAnLogistics] = useState(bienBan.phuong_thuc_van_chuyen || "Cước vận tải ghép");
   const [danhMucLamSan, setDanhMucLamSan] = useState(bienBan.loai_go || "Gỗ keo xẻ trồng rừng chuẩn FSC");
@@ -503,6 +506,8 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
   );
   const grandTotal = Math.max(0, baseTotal + incurredTotal);
 
+  const paymentContractLine = `Gỗ sơ chế thông thường - ${danhMucLamSan || loaiGo || 'gỗ keo xẻ thô'}${soHopDongPay ? ` theo HĐ số: ${soHopDongPay}${ngayHopDongPay ? ` ngày ${ngayHopDongPay}` : ''}` : ''}`;
+
   const hasThuongColumn = (paymentRows || []).some(p => p.thuong !== 0 && p.thuong !== undefined && p.thuong !== null);
   const hasVanChuyenColumn = (paymentRows || []).some(p => p.van_chuyen !== 0 && p.van_chuyen !== undefined && p.van_chuyen !== null && p.van_chuyen !== '' && p.van_chuyen !== '0');
   const hasFscColumn = (paymentRows || []).some(p => p.hd_fsc !== 0 && p.hd_fsc !== undefined && p.hd_fsc !== null && p.hd_fsc !== '' && p.hd_fsc !== '0');
@@ -672,10 +677,13 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                       ma_ncc: maNcc,
                       vung_quan_ly: vungQuanLy,
                       phuong_thuc_van_chuyen: phuongAnLogistics,
+                      ngay_nt: rawDate,
                       loai_go: danhMucLamSan,
                       dia_diem_nhap: diemDoBai,
                       bang_thanh_toan: paymentRows,
                       phat_sinh_chi_phi: phatSinhChiPhi,
+                      so_hop_dong: soHopDongPay,
+                      ngay_hop_dong: ngayHopDongPay,
                     };
                     exportPaymentToExcel(merged, {
                       maSo: maSoPay,
@@ -1261,8 +1269,8 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
           style={{}}
         >
           
-          {/* HEADER BAR SHEET 2 - CENTERED & EXACTLY LIKE IMAGE */}
-          <div className="flex flex-col items-center justify-center mb-6">
+          {/* HEADER BAR SHEET 2 - MATCH PAYMENT EXCEL TEMPLATE */}
+          <div className="flex flex-col items-center justify-center mb-4">
             <div className="text-center font-bold text-[18px] uppercase tracking-wide text-black font-sans flex items-center justify-center gap-1.5">
               <span>SỐ:</span>
               <input 
@@ -1273,29 +1281,56 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                 placeholder="SỐ"
               />
             </div>
-            
-            <div className="text-center italic text-[14px] text-black font-serif mt-1">
-              <span className="print:hidden">
-                Ngày thanh toán: 
+
+            <div className="text-center font-bold text-[12.5px] text-black font-serif mt-1">
+              Ngày {parseDateParts(ngayThanhToanPay).day} tháng {parseDateParts(ngayThanhToanPay).month} năm {parseDateParts(ngayThanhToanPay).year}
+            </div>
+
+            <div className="print:hidden mt-3 w-full max-w-2xl grid grid-cols-1 md:grid-cols-3 gap-2 text-[11px]">
+              <label className="flex items-center gap-2 font-bold">
+                <span className="whitespace-nowrap">Ngày thanh toán:</span>
                 <input 
                   type="text" 
                   value={ngayThanhToanPay} 
                   onChange={(e) => setNgayThanhToanPay(e.target.value)} 
-                  className="bg-transparent text-center italic text-[14px] text-black border-b border-slate-300 hover:border-black/20 focus:border-indigo-500 focus:outline-none w-28 ml-1"
-                  placeholder="26/05/2026"
+                  className="bg-transparent text-center border-b border-slate-300 focus:border-indigo-500 focus:outline-none w-full"
+                  placeholder="08/07/2026"
                 />
-              </span>
-              <span className="hidden print:inline">
-                Ngày {parseDateParts(ngayThanhToanPay).day} tháng {parseDateParts(ngayThanhToanPay).month} năm {parseDateParts(ngayThanhToanPay).year}
-              </span>
+              </label>
+              <label className="flex items-center gap-2 font-bold">
+                <span className="whitespace-nowrap">Số HĐ:</span>
+                <input 
+                  type="text" 
+                  value={soHopDongPay} 
+                  onChange={(e) => setSoHopDongPay(e.target.value)} 
+                  className="bg-transparent text-center border-b border-slate-300 focus:border-indigo-500 focus:outline-none w-full"
+                  placeholder="01-2026/HĐ"
+                />
+              </label>
+              <label className="flex items-center gap-2 font-bold">
+                <span className="whitespace-nowrap">Ngày HĐ:</span>
+                <input 
+                  type="text" 
+                  value={ngayHopDongPay} 
+                  onChange={(e) => setNgayHopDongPay(e.target.value)} 
+                  className="bg-transparent text-center border-b border-slate-300 focus:border-indigo-500 focus:outline-none w-full"
+                  placeholder="02/01/2026"
+                />
+              </label>
             </div>
           </div>
 
           {/* DETAILED LEDGER PAYMENTS TABLE */}
-          <div className="mt-4">
+          <div className="mt-2">
+            <div className="bg-[#0f5d32] text-white text-center font-bold text-[22px] uppercase tracking-wide py-1 border border-black border-b-0 font-serif">
+              BẢNG CHI TIẾT THANH TOÁN
+            </div>
+            <div className="border-l border-r border-black px-1 py-0.5 text-left text-[11.5px] italic text-black font-serif">
+              {paymentContractLine}
+            </div>
             <table className="w-full border-collapse border border-black text-center text-[11.5px] font-sans text-black">
               <thead>
-                <tr className="bg-white text-center font-bold text-[11px] border-b border-black text-black h-11">
+                <tr className="bg-[#0f5d32] text-white text-center font-bold text-[11px] border-b border-black h-8">
                   <th className="border-r border-b border-black p-1.5 w-10 text-center font-bold">STT</th>
                   <th className="border-r border-b border-black p-1.5 text-center font-bold min-w-[200px]">Tên hàng</th>
                   <th className="border-r border-b border-black p-1.5 w-12 text-center font-bold">Đvt</th>
@@ -1324,12 +1359,13 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
               <tbody>
                 {/* Spanning Row: Wood Category & Contract */}
                 <tr>
-                  <td colSpan={colSpanTotal} className="border-r border-b border-black p-2 pl-3 text-left font-bold text-black bg-white">
+                  <td colSpan={colSpanTotal} className="border-r border-b border-black p-2 pl-3 text-left font-bold italic text-black bg-[#d8f5df]">
+                    <span className="print:inline">{paymentContractLine}</span>
                     <input
                       type="text"
                       value={danhMucLamSan}
                       onChange={(e) => setDanhMucLamSan(e.target.value)}
-                      className="bg-transparent text-left font-bold text-[11.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent font-sans"
+                      className="print:hidden bg-transparent text-left font-bold italic text-[11.5px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full font-serif"
                     />
                   </td>
                 </tr>
