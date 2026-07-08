@@ -36,661 +36,448 @@ function colIndexToLabel(idx: number): string {
 }
 
 export async function exportInspectionToExcel(bb: BienBan, meta?: { maSo?: string; lanBanHanh?: string; ngayBanHanh?: string }) {
-  // Create workbook & worksheet
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Phieu nghiem thu QC");
 
-  // Ensure grid lines are visible in Microsoft Excel
   worksheet.views = [{ showGridLines: true }];
+  worksheet.pageSetup = {
+    paperSize: 9, // A4
+    orientation: 'portrait',
+    fitToPage: true,
+    fitToWidth: 1,
+    fitToHeight: 1,
+    margins: {
+      left: 0.25,
+      right: 0.25,
+      top: 0.25,
+      bottom: 0.25,
+      header: 0.1,
+      footer: 0.1,
+    },
+  };
 
-  // Column width configurations
   worksheet.columns = [
-    { key: 'A', width: 6 },   // TT
-    { key: 'B', width: 30 },  // Quy cách kích thước (mm)
-    { key: 'C', width: 14 },  // Đơn vị tính
-    { key: 'D', width: 14 },  // K. lượng nguyên thủy / Tỉ lệ %
-    { key: 'E', width: 22 },  // K. lượng nhập kho
-    { key: 'F', width: 30 },  // Ghi chú
+    { key: 'A', width: 8 },   // TT
+    { key: 'B', width: 26 },  // Thành phần / Quy cách
+    { key: 'C', width: 24 },  // Chức vụ / Đơn vị tính
+    { key: 'D', width: 18 },  // Đơn vị cung ứng / KL nguyên thủy
+    { key: 'E', width: 18 },  // KL nhập kho
+    { key: 'F', width: 24 },  // BBNT / Ghi chú
   ];
 
-  // Common styles in Times New Roman for ultimate professional print layout
-  const fontRegular = { name: 'Times New Roman', size: 11, bold: false, italic: false };
-  const fontBold = { name: 'Times New Roman', size: 11, bold: true, italic: false };
-  const fontItalicVal = { name: 'Times New Roman', size: 11, italic: true };
-  const fontBoldItalicVal = { name: 'Times New Roman', size: 11, bold: true, italic: true };
-  const fontRedBold = { name: 'Times New Roman', size: 11, bold: true, color: { argb: 'FFFF0000' }, italic: false };
-  const fontRedBoldItalic = { name: 'Times New Roman', size: 11, bold: true, italic: true, color: { argb: 'FFFF0000' } };
+  const fontRegular = { name: 'Times New Roman', size: 12, bold: false, italic: false };
+  const fontSmall = { name: 'Times New Roman', size: 11, bold: false, italic: false };
+  const fontBold = { name: 'Times New Roman', size: 12, bold: true, italic: false };
+  const fontTitle = { name: 'Times New Roman', size: 14, bold: true, italic: false };
+  const fontMainTitle = { name: 'Times New Roman', size: 16, bold: true, italic: false };
+  const fontBoldItalicVal = { name: 'Times New Roman', size: 12, bold: true, italic: true };
 
-  const alignCenter: Partial<ExcelJS.Alignment> = { vertical: 'middle' as const, horizontal: 'center' as const };
-  const alignLeft: Partial<ExcelJS.Alignment> = { vertical: 'middle' as const, horizontal: 'left' as const };
-  const alignRight: Partial<ExcelJS.Alignment> = { vertical: 'middle' as const, horizontal: 'right' as const };
+  const alignCenter: Partial<ExcelJS.Alignment> = { vertical: 'middle' as const, horizontal: 'center' as const, wrapText: true };
+  const alignLeft: Partial<ExcelJS.Alignment> = { vertical: 'middle' as const, horizontal: 'left' as const, wrapText: true };
+  const alignRight: Partial<ExcelJS.Alignment> = { vertical: 'middle' as const, horizontal: 'right' as const, wrapText: true };
 
   const thinBorder: Partial<ExcelJS.Borders> = {
     top: { style: 'thin' as const, color: { argb: 'FF000000' } },
     left: { style: 'thin' as const, color: { argb: 'FF000000' } },
     bottom: { style: 'thin' as const, color: { argb: 'FF000000' } },
-    right: { style: 'thin' as const, color: { argb: 'FF000000' } }
+    right: { style: 'thin' as const, color: { argb: 'FF000000' } },
   };
 
+  const applyStyle = (cell: ExcelJS.Cell, font = fontRegular, alignment: Partial<ExcelJS.Alignment> = alignCenter, border = thinBorder) => {
+    cell.font = font;
+    cell.alignment = alignment;
+    cell.border = border;
+  };
+
+  const dateFormatted = bb.ngay_nt
+    ? bb.ngay_nt.split('-').reverse().join('.')
+    : new Date().toLocaleDateString('vi-VN').replace(/\//g, '.');
+
+  const fscText = (bb.chung_chi_fsc || '').toString();
+  const markF100 = fscText.includes('100') ? 'v' : ' ';
+  const markFMix = fscText.toLowerCase().includes('mix') ? 'v' : ' ';
+  const markFCw = fscText.toLowerCase().includes('cw') ? 'v' : ' ';
+  const markKls = (!fscText || fscText.toUpperCase() === 'KLS' || fscText.toUpperCase() === 'V' || fscText.toUpperCase() === 'X') ? 'v' : ' ';
+
   // -------------------------------------------------------------
-  // 1. HEADER BLOCK (Rows 1 & 2)
+  // 1. HEADER - template compact style
   // -------------------------------------------------------------
   worksheet.mergeCells('A1:B2');
   worksheet.mergeCells('C1:E1');
   worksheet.mergeCells('C2:E2');
 
-  const cellLogo = worksheet.getCell('A1');
-  cellLogo.value = {
+  const logo = worksheet.getCell('A1');
+  logo.value = {
     richText: [
-      { text: 'NFC\n', font: { name: 'Arial Black', size: 22, bold: true, italic: true, color: { argb: 'FF0D733E' } } },
-      { text: ' NAFOCO', font: { name: 'Arial', size: 8, bold: true, italic: true, color: { argb: 'FF0D733E' } } }
-    ]
+      { text: 'NFC\n', font: { name: 'Arial Black', size: 28, bold: true, italic: true, color: { argb: 'FF0D733E' } } },
+      { text: 'NAFOCO', font: { name: 'Arial', size: 10, bold: true, italic: true, color: { argb: 'FF0D733E' } } },
+    ],
   };
-  cellLogo.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+  logo.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+  logo.border = thinBorder;
 
-  const cellProcName = worksheet.getCell('C1');
-  cellProcName.value = 'QUY TRÌNH KIỂM HÀNG ĐẦU VÀO';
-  cellProcName.font = { name: 'Times New Roman', size: 12, bold: true };
-  cellProcName.alignment = alignCenter;
+  const proc = worksheet.getCell('C1');
+  proc.value = 'QUY TRÌNH KIỂM HÀNG ĐẦU VÀO';
+  applyStyle(proc, fontTitle);
 
-  const cellDocName = worksheet.getCell('C2');
-  cellDocName.value = 'BIÊN BẢN NGHIỆM THU GỖ KEO XẺ THÔ';
-  cellDocName.font = { name: 'Times New Roman', size: 13, bold: true };
-  cellDocName.alignment = alignCenter;
+  const docName = worksheet.getCell('C2');
+  docName.value = 'BIÊN BẢN NGHIỆM THU GỖ KEO XẺ THÔ';
+  applyStyle(docName, fontMainTitle);
 
-  const cellDocCode = worksheet.getCell('F1');
-  cellDocCode.value = `Mã số: ${meta?.maSo || 'BM01/QT01/QLCL1'}`;
-  cellDocCode.font = { name: 'Times New Roman', size: 9, bold: false };
-  cellDocCode.alignment = alignLeft;
+  const code = worksheet.getCell('F1');
+  code.value = `Mã số: ${meta?.maSo || 'BM01/QT01/QLCL1'}`;
+  applyStyle(code, { name: 'Times New Roman', size: 11, bold: true, italic: false }, alignLeft);
 
-  const cellDocMeta = worksheet.getCell('F2');
-  cellDocMeta.value = `Lần ban hành: ${meta?.lanBanHanh || '07'}\nNgày ban hành: ${meta?.ngayBanHanh || '15/04/2023'}`;
-  cellDocMeta.font = { name: 'Times New Roman', size: 9, bold: false };
-  cellDocMeta.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+  const issue = worksheet.getCell('F2');
+  issue.value = `Lần ban hành: ${meta?.lanBanHanh || '07'}\nNgày ban hành: ${meta?.ngayBanHanh || '15/04/2023'}`;
+  applyStyle(issue, { name: 'Times New Roman', size: 11, bold: true, italic: false }, alignLeft);
 
-  // Apply borders for the header cells
-  applyBorderToRange(worksheet, 'A1', 'B2', thinBorder);
-  applyBorderToRange(worksheet, 'C1', 'E1', thinBorder);
-  applyBorderToRange(worksheet, 'C2', 'E2', thinBorder);
-  worksheet.getCell('F1').border = thinBorder;
-  worksheet.getCell('F2').border = thinBorder;
-
-  worksheet.getRow(1).height = 36;
-  worksheet.getRow(2).height = 32;
+  applyBorderToRange(worksheet, 'A1', 'F2', thinBorder);
+  worksheet.getRow(1).height = 34;
+  worksheet.getRow(2).height = 34;
 
   // -------------------------------------------------------------
-  // 2. DETAILED MEMBERS & SUPPLIER BLOCK (Rows 3 to 6)
+  // 2. MEMBERS / SUPPLIER
   // -------------------------------------------------------------
-  worksheet.mergeCells('A3:B3');
-  const hTP = worksheet.getCell('A3');
-  hTP.value = 'Thành Phần';
-  hTP.font = fontBold;
-  hTP.alignment = alignCenter;
-
-  const hCV = worksheet.getCell('C3');
-  hCV.value = 'Chức vụ';
-  hCV.font = fontBold;
-  hCV.alignment = alignCenter;
-
+  const headers = [
+    { cell: 'A3', value: 'TT' },
+    { cell: 'B3', value: 'Thành Phần' },
+    { cell: 'C3', value: 'Chức vụ' },
+    { cell: 'D3', value: 'Đơn vị cung ứng' },
+    { cell: 'F3', value: bb.ma_bbnt ? `BBNT số: ${bb.ma_bbnt}` : 'BBNT số: GB01' },
+  ];
   worksheet.mergeCells('D3:E3');
-  const hNCC = worksheet.getCell('D3');
-  hNCC.value = 'Đơn vị cung ứng';
-  hNCC.font = fontBold;
-  hNCC.alignment = alignCenter;
+  headers.forEach(h => {
+    const cell = worksheet.getCell(h.cell);
+    cell.value = h.value;
+    applyStyle(cell, fontBold);
+  });
+  applyBorderToRange(worksheet, 'A3', 'F3', thinBorder);
+  worksheet.getRow(3).height = 20;
 
-  const hHS = worksheet.getCell('F3');
-  hHS.value = bb.ma_bbnt ? `BBNT số: ${bb.ma_bbnt}` : 'BBNT số: GB 06.06';
-  hHS.font = fontBold;
-  hHS.alignment = alignLeft;
-
-  applyBorderToRange(worksheet, 'A3', 'B3', thinBorder);
-  hCV.border = thinBorder;
-  applyBorderToRange(worksheet, 'D3', 'E3', thinBorder);
-  hHS.border = thinBorder;
-  worksheet.getRow(3).height = 24;
-
-  const displayMembers: any[] = [];
   const listTP = bb.thanh_phan || [];
+  const members = [
+    {
+      name: listTP[0]?.ho_ten || bb.nguoi_ky_nguoi_lap || 'Ngô Văn Trường',
+      role: listTP[0]?.chuc_vu || 'Người lập biên bản (QC)',
+    },
+    {
+      name: listTP[1]?.ho_ten || bb.nguoi_ky_tp_pqlcl || 'Đặng Văn Tùng',
+      role: listTP[1]?.chuc_vu || 'QC bộ phận QLCL1',
+    },
+    {
+      name: listTP[2]?.ho_ten || bb.nguoi_ky_thu_kho || 'Bùi Thị Hạnh',
+      role: listTP[2]?.chuc_vu || 'Thủ kho gỗ',
+    },
+  ];
 
-  // Always generate exactly 3 rows of members to match the template image precisely
-  for (let i = 0; i < 3; i++) {
-    const tp = listTP[i];
-    if (i === 0) {
-      displayMembers.push({
-        ho_ten: tp?.ho_ten || bb.nguoi_ky_nguoi_lap || "Ngô Văn Trường",
-        chuc_vu: tp?.chuc_vu || "Người lập"
-      });
-    } else if (i === 1) {
-      displayMembers.push({
-        ho_ten: tp?.ho_ten || bb.nguoi_ky_tp_pqlcl || "Đặng Văn Tùng",
-        chuc_vu: tp?.chuc_vu || "QCQLCL1"
-      });
-    } else {
-      displayMembers.push({
-        ho_ten: tp?.ho_ten || bb.nguoi_ky_thu_kho || "Trần Ngọc Ánh",
-        chuc_vu: tp?.chuc_vu || "Thủ kho gỗ"
-      });
-    }
-  }
+  members.forEach((m, idx) => {
+    const r = 4 + idx;
+    worksheet.getRow(r).height = 22;
 
-  // Format date with dot separators to match the image exactly, e.g. "10.06.2026"
-  const dateFormatted = bb.ngay_nt 
-    ? bb.ngay_nt.split('-').reverse().join('.') 
-    : "10.06.2026";
+    const cA = worksheet.getCell(`A${r}`);
+    cA.value = idx + 1;
+    applyStyle(cA, fontBold);
 
-  const memberStartRow = 4;
-  displayMembers.forEach((m, idx) => {
-    const rowNum = memberStartRow + idx;
-    worksheet.getRow(rowNum).height = 22;
+    const cB = worksheet.getCell(`B${r}`);
+    cB.value = m.name;
+    applyStyle(cB, fontBold);
 
-    const cellA = worksheet.getCell(`A${rowNum}`);
-    cellA.value = idx + 1;
-    cellA.font = fontRegular;
-    cellA.alignment = alignCenter;
-    cellA.border = thinBorder;
-
-    const cellB = worksheet.getCell(`B${rowNum}`);
-    cellB.value = m.ho_ten;
-    cellB.font = fontBold;
-    cellB.alignment = alignLeft;
-    cellB.border = thinBorder;
-
-    const cellC = worksheet.getCell(`C${rowNum}`);
-    cellC.value = m.chuc_vu;
-    cellC.font = fontRegular;
-    cellC.alignment = alignLeft;
-    cellC.border = thinBorder;
-
-    const cellF = worksheet.getCell(`F${rowNum}`);
-    if (idx === 0) {
-      cellF.value = `Ngày NT: ${dateFormatted}`;
-      cellF.font = fontBold;
-    } else {
-      cellF.value = "";
-    }
-    cellF.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-    cellF.border = thinBorder;
+    const cC = worksheet.getCell(`C${r}`);
+    cC.value = m.role;
+    applyStyle(cC, fontSmall, alignLeft);
   });
 
-  const memberEndRow = memberStartRow + displayMembers.length - 1; // Row 6
+  worksheet.mergeCells('D4:E6');
+  const supplier = worksheet.getCell('D4');
+  supplier.value = bb.don_vi_cung_ung || 'Công Ty Trường Thịnh Phát';
+  applyStyle(supplier, { name: 'Times New Roman', size: 13, bold: true, italic: false });
 
-  // Merge supplier block over Rows 4, 5, 6
-  worksheet.mergeCells(`D4:E${memberEndRow}`);
-  const supplierCell = worksheet.getCell('D4');
-  let supplierValue = bb.don_vi_cung_ung || 'CTY TNHH SXTM Gia Bảo';
-  supplierCell.value = supplierValue;
-  supplierCell.font = { name: 'Times New Roman', size: 12, bold: true };
-  supplierCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-  applyBorderToRange(worksheet, 'D4', `E${memberEndRow}`, thinBorder);
+  worksheet.mergeCells('F4:F6');
+  const ntDate = worksheet.getCell('F4');
+  ntDate.value = `Ngày NT: ${dateFormatted}`;
+  applyStyle(ntDate, fontBold, alignLeft);
 
-  // Merge date block over Rows 4, 5, 6
-  worksheet.mergeCells(`F4:F${memberEndRow}`);
-  const dateCell = worksheet.getCell('F4');
-  dateCell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-  applyBorderToRange(worksheet, 'F4', `F${memberEndRow}`, thinBorder);
+  applyBorderToRange(worksheet, 'A4', 'F6', thinBorder);
 
   // -------------------------------------------------------------
-  // 3. WOOD DETAILS & ENVIRONMENTAL STATUS (Rows 7, 8, 9)
+  // 3. WOOD INFO + ENVIRONMENT STATUS
   // -------------------------------------------------------------
-  const row7 = memberEndRow + 1; // Row 7
-  worksheet.getRow(row7).height = 24;
-
-  // A7:C7 merged for Wood Type
-  worksheet.mergeCells(`A${row7}:C${row7}`);
-  const cellWoodType = worksheet.getCell(`A${row7}`);
-  cellWoodType.value = {
+  worksheet.getRow(7).height = 20;
+  worksheet.mergeCells('A7:C7');
+  const wood = worksheet.getCell('A7');
+  wood.value = {
     richText: [
       { text: 'Tên - chủng loại gỗ: ', font: fontBold },
-      { text: 'GỖ KEO RỪNG TRỒNG', font: fontBold }
-    ]
+      { text: 'GỖ KEO RỪNG TRỒNG', font: fontBold },
+    ],
   };
-  cellWoodType.alignment = alignLeft;
-  applyBorderToRange(worksheet, `A${row7}`, `C${row7}`, thinBorder);
+  applyStyle(wood, fontBold, alignLeft);
 
-  // D7:F7 merged for Location
-  worksheet.mergeCells(`D${row7}:F${row7}`);
-  const cellLoc = worksheet.getCell(`D${row7}`);
-  cellLoc.value = {
+  worksheet.mergeCells('D7:F7');
+  const loc = worksheet.getCell('D7');
+  loc.value = {
     richText: [
       { text: 'Địa điểm nhập: ', font: fontBold },
-      { text: bb.dia_diem_nhap || 'NMSX đồ gỗ nội thất Xuất Khẩu', font: fontRegular }
-    ]
+      { text: bb.dia_diem_nhap || 'Kho Gỗ .NMBM', font: fontBold },
+    ],
   };
-  cellLoc.alignment = alignLeft;
-  applyBorderToRange(worksheet, `D${row7}`, `F${row7}`, thinBorder);
+  applyStyle(loc, fontBold, alignLeft);
+  applyBorderToRange(worksheet, 'A7', 'F7', thinBorder);
 
-  // Row 8: Sub-title wood details
-  const row8 = row7 + 1; // Row 8
-  worksheet.getRow(row8).height = 24;
-  worksheet.mergeCells(`A${row8}:F${row8}`);
-  const cellSubGo = worksheet.getCell(`A${row8}`);
-  const subGoVal = (bb.loai_go || 'gỗ keo xẻ thô').trim().replace(/\s+/g, ' ');
-  cellSubGo.value = `Gỗ sơ chế thông thường - ${subGoVal}`;
-  cellSubGo.font = fontBold;
-  cellSubGo.alignment = alignCenter;
-  applyBorderToRange(worksheet, `A${row8}`, `F${row8}`, thinBorder);
+  worksheet.getRow(8).height = 22;
+  worksheet.mergeCells('A8:F8');
+  const subWood = worksheet.getCell('A8');
+  const loaiGo = (bb.loai_go || 'gỗ keo xẻ thô').trim().replace(/\s+/g, ' ');
+  subWood.value = `Gỗ sơ chế thông thường - ${loaiGo}`;
+  applyStyle(subWood, fontBold);
 
-  // Row 9: FSC Environmental status checkboxes
-  const row9 = row8 + 1; // Row 9
-  worksheet.getRow(row9).height = 24;
-  worksheet.mergeCells(`A${row9}:F${row9}`);
-  const cellEnv = worksheet.getCell(`A${row9}`);
+  worksheet.getRow(9).height = 22;
+  worksheet.mergeCells('A9:F9');
+  const env = worksheet.getCell('A9');
+  env.value = `Trạng thái môi trường:          FSC 100% [ ${markF100} ]          FSC Mix [ ${markFMix} ]          FSC CW [ ${markFCw} ]          KLS [ ${markKls} ]`;
+  applyStyle(env, fontBold, alignLeft);
+  applyBorderToRange(worksheet, 'A8', 'F9', thinBorder);
 
-  const fscText = bb.chung_chi_fsc || '';
-  const checkF100 = fscText.includes('100') ? 'v' : ' ';
-  const checkFMix = fscText.toLowerCase().includes('mix') ? 'v' : ' ';
-  const checkFCw = fscText.toLowerCase().includes('cw') ? 'v' : ' ';
-  const checkKls = (!fscText || fscText.toUpperCase() === 'KLS' || fscText.toUpperCase() === 'V' || fscText.toUpperCase() === 'X') ? 'v' : ' ';
-
-  cellEnv.value = {
-    richText: [
-      { text: 'Trạng thái môi trường:      ', font: fontBold },
-      { text: 'FSC 100% ', font: fontRegular },
-      { text: `[ ${checkF100} ]          `, font: fontBold },
-      { text: 'FSC Mix ', font: fontRegular },
-      { text: `[ ${checkFMix} ]          `, font: fontBold },
-      { text: 'FSC CW ', font: fontRegular },
-      { text: `[ ${checkFCw} ]          `, font: fontBold },
-      { text: 'KLS ', font: fontRegular },
-      { text: `[ ${checkKls} ]`, font: fontBold }
-    ]
-  };
-  cellEnv.alignment = alignLeft;
-  applyBorderToRange(worksheet, `A${row9}`, `F${row9}`, thinBorder);
+  let cursorRow = 11;
 
   // -------------------------------------------------------------
-  // 4. PART A: TOTAL QUANTITY IMPORT TABLE
+  // 4. PART A
   // -------------------------------------------------------------
-  const partATitleRow = row9 + 1;
-  worksheet.getRow(partATitleRow).height = 24;
-  worksheet.mergeCells(`A${partATitleRow}:F${partATitleRow}`);
-  const cellPartATitle = worksheet.getCell(`A${partATitleRow}`);
-  cellPartATitle.value = 'A. Tông khôi lượng giao nhận'; // exact label to match screen / model
-  cellPartATitle.font = fontBold;
-  cellPartATitle.alignment = alignLeft;
+  worksheet.getRow(cursorRow).height = 24;
+  worksheet.mergeCells(`A${cursorRow}:F${cursorRow}`);
+  const partA = worksheet.getCell(`A${cursorRow}`);
+  partA.value = 'A. Tổng khối lượng giao nhận';
+  partA.font = { name: 'Times New Roman', size: 13, bold: true, italic: false };
+  partA.alignment = alignLeft;
+  cursorRow++;
 
-  const partAHeaderRow = partATitleRow + 1;
-  worksheet.getRow(partAHeaderRow).height = 24;
+  worksheet.getRow(cursorRow).height = 22;
+  worksheet.mergeCells(`B${cursorRow}:D${cursorRow}`);
+  [
+    { cell: `A${cursorRow}`, value: 'TT' },
+    { cell: `B${cursorRow}`, value: 'Quy cách kích thước (mm)' },
+    { cell: `E${cursorRow}`, value: 'Đơn vị tính' },
+    { cell: `F${cursorRow}`, value: 'Khối lượng (m3)' },
+  ].forEach(h => {
+    const cell = worksheet.getCell(h.cell);
+    cell.value = h.value;
+    applyStyle(cell, fontBold);
+  });
+  applyBorderToRange(worksheet, `A${cursorRow}`, `F${cursorRow}`, thinBorder);
+  cursorRow++;
 
-  const hA_tt = worksheet.getCell(`A${partAHeaderRow}`);
-  hA_tt.value = 'TT';
-  hA_tt.font = fontBold;
-  hA_tt.alignment = alignCenter;
-  hA_tt.border = thinBorder;
-
-  const hA_dims = worksheet.getCell(`B${partAHeaderRow}`);
-  hA_dims.value = 'Quy cách kích thước (mm)';
-  hA_dims.font = fontBold;
-  hA_dims.alignment = alignCenter;
-  hA_dims.border = thinBorder;
-
-  const hA_dvt = worksheet.getCell(`C${partAHeaderRow}`);
-  hA_dvt.value = 'Đơn vị tính';
-  hA_dvt.font = fontBold;
-  hA_dvt.alignment = alignCenter;
-  hA_dvt.border = thinBorder;
-
-  worksheet.mergeCells(`D${partAHeaderRow}:F${partAHeaderRow}`);
-  const hA_vol = worksheet.getCell(`D${partAHeaderRow}`);
-  hA_vol.value = 'Khối lượng (m3)';
-  hA_vol.font = fontBold;
-  hA_vol.alignment = alignCenter;
-  applyBorderToRange(worksheet, `D${partAHeaderRow}`, `F${partAHeaderRow}`, thinBorder);
-
-  let cursorRow = partAHeaderRow + 1;
   const listA = bb.quy_cach_a || [];
   listA.forEach((row, idx) => {
     worksheet.getRow(cursorRow).height = 22;
+    worksheet.mergeCells(`B${cursorRow}:D${cursorRow}`);
 
-    const cellTT = worksheet.getCell(`A${cursorRow}`);
-    cellTT.value = idx + 1;
-    cellTT.font = fontRegular;
-    cellTT.alignment = alignCenter;
-    cellTT.border = thinBorder;
+    const c1 = worksheet.getCell(`A${cursorRow}`);
+    c1.value = idx + 1;
+    applyStyle(c1, fontRegular);
 
-    const cellSize = worksheet.getCell(`B${cursorRow}`);
-    cellSize.value = (row.kich_thuoc_mm || '').replace(/×/g, 'x');
-    cellSize.font = fontRegular;
-    cellSize.alignment = alignCenter;
-    cellSize.border = thinBorder;
+    const c2 = worksheet.getCell(`B${cursorRow}`);
+    c2.value = (row.kich_thuoc_mm || '').replace(/×/g, 'x');
+    applyStyle(c2, fontBold);
 
-    const cellDvt = worksheet.getCell(`C${cursorRow}`);
-    cellDvt.value = 'm3';
-    cellDvt.font = fontRegular;
-    cellDvt.alignment = alignCenter;
-    cellDvt.border = thinBorder;
+    const c5 = worksheet.getCell(`E${cursorRow}`);
+    c5.value = 'm3';
+    applyStyle(c5, fontBold);
 
-    worksheet.mergeCells(`D${cursorRow}:F${cursorRow}`);
-    const cellVol = worksheet.getCell(`D${cursorRow}`);
-    const valVol = Number(row.kl_nguyen_thuy);
-    cellVol.value = valVol;
-    cellVol.numFmt = '#,##0.###';
-    cellVol.font = fontRegular;
-    cellVol.alignment = alignRight;
-    applyBorderToRange(worksheet, `D${cursorRow}`, `F${cursorRow}`, thinBorder);
+    const c6 = worksheet.getCell(`F${cursorRow}`);
+    c6.value = Number(row.kl_nguyen_thuy || 0);
+    c6.numFmt = '#,##0.###';
+    applyStyle(c6, fontBold, alignRight);
 
+    applyBorderToRange(worksheet, `A${cursorRow}`, `F${cursorRow}`, thinBorder);
     cursorRow++;
   });
 
-  // Cộng Part A
-  const congRowA = cursorRow;
-  worksheet.getRow(congRowA).height = 24;
-  worksheet.mergeCells(`A${congRowA}:C${congRowA}`);
-  const cellCongLabelA = worksheet.getCell(`A${congRowA}`);
-  cellCongLabelA.value = 'Cộng';
-  cellCongLabelA.font = fontBold;
-  cellCongLabelA.alignment = alignCenter;
-  applyBorderToRange(worksheet, `A${congRowA}`, `C${congRowA}`, thinBorder);
+  const totalVolA = listA.reduce((sum, curr) => sum + Number(curr.kl_nguyen_thuy || 0), 0);
+  worksheet.getRow(cursorRow).height = 22;
+  worksheet.mergeCells(`A${cursorRow}:E${cursorRow}`);
+  const congA = worksheet.getCell(`A${cursorRow}`);
+  congA.value = 'Cộng';
+  applyStyle(congA, fontBold);
+  const congAVal = worksheet.getCell(`F${cursorRow}`);
+  congAVal.value = Number(totalVolA);
+  congAVal.numFmt = '#,##0.###';
+  applyStyle(congAVal, fontBold, alignRight);
+  applyBorderToRange(worksheet, `A${cursorRow}`, `F${cursorRow}`, thinBorder);
+  cursorRow += 2;
 
-  worksheet.mergeCells(`D${congRowA}:F${congRowA}`);
-  const cellCongValA = worksheet.getCell(`D${congRowA}`);
-  const totalVolA = listA.reduce((sum, curr) => sum + curr.kl_nguyen_thuy, 0);
-  const valTotalVolA = Number(totalVolA);
-  cellCongValA.value = valTotalVolA;
-  cellCongValA.numFmt = '#,##0.###';
-  cellCongValA.font = fontBold;
-  cellCongValA.alignment = alignRight;
-  applyBorderToRange(worksheet, `D${congRowA}`, `F${congRowA}`, thinBorder);
-
+  // -------------------------------------------------------------
+  // 5. PART B
+  // -------------------------------------------------------------
+  worksheet.getRow(cursorRow).height = 24;
+  worksheet.mergeCells(`A${cursorRow}:F${cursorRow}`);
+  const partB = worksheet.getCell(`A${cursorRow}`);
+  partB.value = 'B. Kết luận khối lượng gỗ thực tế nhập kho';
+  partB.font = { name: 'Times New Roman', size: 13, bold: true, italic: false };
+  partB.alignment = alignLeft;
   cursorRow++;
 
-  // -------------------------------------------------------------
-  // 5. PART B: ACTUAL RECEIVED QUANTITY AFTER GRADING
-  // -------------------------------------------------------------
-  const partBTitleRow = cursorRow;
-  worksheet.getRow(partBTitleRow).height = 24;
-  worksheet.mergeCells(`A${partBTitleRow}:F${partBTitleRow}`);
-  const cellPartBTitle = worksheet.getCell(`A${partBTitleRow}`);
-  cellPartBTitle.value = 'B. Kết luận khối lượng gỗ thực tế nhập kho';
-  cellPartBTitle.font = fontBold;
-  cellPartBTitle.alignment = alignLeft;
-
-  const partBHeaderRow = partBTitleRow + 1;
-  worksheet.getRow(partBHeaderRow).height = 24;
-
+  worksheet.getRow(cursorRow).height = 22;
   const headersB = [
     { c: 'A', v: 'TT' },
     { c: 'B', v: 'Quy cách kích thước' },
-    { c: 'C', v: 'K. Lượng nguyên thuỷ' },
-    { c: 'D', v: 'Ti lệ %' },
+    { c: 'C', v: 'K. Lượng nguyên thủy' },
+    { c: 'D', v: 'Tỉ lệ %' },
     { c: 'E', v: 'K. Lượng nhập kho' },
-    { c: 'F', v: 'Ghi chú' }
+    { c: 'F', v: 'Ghi chú' },
   ];
-
   headersB.forEach(h => {
-    const cell = worksheet.getCell(`${h.c}${partBHeaderRow}`);
+    const cell = worksheet.getCell(`${h.c}${cursorRow}`);
     cell.value = h.v;
-    cell.font = fontBold;
-    cell.alignment = alignCenter;
-    cell.border = thinBorder;
+    applyStyle(cell, fontBold);
   });
+  applyBorderToRange(worksheet, `A${cursorRow}`, `F${cursorRow}`, thinBorder);
+  cursorRow++;
 
-  cursorRow = partBHeaderRow + 1;
   const listB = bb.quy_cach_b || [];
-  let runningIdxB = 1;
-
+  let idxB = 1;
   listB.forEach(row => {
     const rowA = listA.find(a => a.id === row.id) || { kl_nguyen_thuy: 0 };
     const hasParts = row.co_phan_loai && row.chi_tiet && row.chi_tiet.length > 0;
-
     if (!hasParts) {
       worksheet.getRow(cursorRow).height = 22;
-
-      const c1 = worksheet.getCell(`A${cursorRow}`);
-      c1.value = runningIdxB++;
-      c1.font = fontRegular;
-      c1.alignment = alignCenter;
-      c1.border = thinBorder;
-
-      const c2 = worksheet.getCell(`B${cursorRow}`);
-      c2.value = row.kich_thuoc_mm;
-      c2.font = fontRegular;
-      c2.alignment = alignCenter;
-      c2.border = thinBorder;
-
-      const c3 = worksheet.getCell(`C${cursorRow}`);
-      const valC3 = Number(rowA.kl_nguyen_thuy);
-      c3.value = valC3;
-      c3.numFmt = '#,##0.###';
-      c3.font = fontRegular;
-      c3.alignment = alignRight;
-      c3.border = thinBorder;
-
-      const c4 = worksheet.getCell(`D${cursorRow}`);
-      const valC4 = 100;
-      c4.value = valC4;
-      c4.numFmt = '0';
-      c4.font = fontRegular;
-      c4.alignment = alignCenter;
-      c4.border = thinBorder;
-
-      const c5 = worksheet.getCell(`E${cursorRow}`);
-      const valC5 = Number(rowA.kl_nguyen_thuy);
-      c5.value = valC5;
-      c5.numFmt = '#,##0.###';
-      c5.font = fontRegular;
-      c5.alignment = alignRight;
-      c5.border = thinBorder;
-
-      const c6 = worksheet.getCell(`F${cursorRow}`);
-      c6.value = row.ghi_chu || '';
-      c6.font = fontRegular;
-      c6.alignment = alignLeft;
-      c6.border = thinBorder;
-
+      const values = [
+        { col: 'A', value: idxB++, font: fontRegular, align: alignCenter },
+        { col: 'B', value: (row.kich_thuoc_mm || '').replace(/×/g, 'x'), font: fontRegular, align: alignCenter },
+        { col: 'C', value: Number(rowA.kl_nguyen_thuy || 0), font: fontRegular, align: alignRight, numFmt: '#,##0.###' },
+        { col: 'D', value: 100, font: fontRegular, align: alignCenter, numFmt: '0' },
+        { col: 'E', value: Number(rowA.kl_nguyen_thuy || 0), font: fontBold, align: alignRight, numFmt: '#,##0.###' },
+        { col: 'F', value: row.ghi_chu || '', font: fontRegular, align: alignLeft },
+      ];
+      values.forEach(v => {
+        const cell = worksheet.getCell(`${v.col}${cursorRow}`);
+        cell.value = v.value as any;
+        if (v.numFmt) cell.numFmt = v.numFmt;
+        applyStyle(cell, v.font, v.align);
+      });
       cursorRow++;
     } else {
-      // Group with grades
       worksheet.getRow(cursorRow).height = 22;
-
-      const c1 = worksheet.getCell(`A${cursorRow}`);
-      c1.value = runningIdxB++;
-      c1.font = fontRegular;
-      c1.alignment = alignCenter;
-      c1.border = thinBorder;
-
-      const c2 = worksheet.getCell(`B${cursorRow}`);
-      c2.value = row.kich_thuoc_mm;
-      c2.font = fontRegular;
-      c2.alignment = alignCenter;
-      c2.border = thinBorder;
-
-      const c3 = worksheet.getCell(`C${cursorRow}`);
-      const valC3Group = Number(rowA.kl_nguyen_thuy);
-      c3.value = valC3Group;
-      c3.numFmt = '#,##0.###';
-      c3.font = fontRegular;
-      c3.alignment = alignRight;
-      c3.border = thinBorder;
-
-      const c4 = worksheet.getCell(`D${cursorRow}`);
-      c4.value = '';
-      c4.border = thinBorder;
-
-      const c5 = worksheet.getCell(`E${cursorRow}`);
-      c5.value = '';
-      c5.border = thinBorder;
-
-      const c6 = worksheet.getCell(`F${cursorRow}`);
-      c6.value = row.ghi_chu || '';
-      c6.font = fontRegular;
-      c6.alignment = alignLeft;
-      c6.border = thinBorder;
-
+      const cA = worksheet.getCell(`A${cursorRow}`);
+      cA.value = idxB++;
+      applyStyle(cA);
+      const cB = worksheet.getCell(`B${cursorRow}`);
+      cB.value = (row.kich_thuoc_mm || '').replace(/×/g, 'x');
+      applyStyle(cB);
+      const cC = worksheet.getCell(`C${cursorRow}`);
+      cC.value = Number(rowA.kl_nguyen_thuy || 0);
+      cC.numFmt = '#,##0.###';
+      applyStyle(cC, fontRegular, alignRight);
+      ['D','E','F'].forEach(c => applyStyle(worksheet.getCell(`${c}${cursorRow}`)));
       cursorRow++;
 
-      // Grade parts rows
       row.chi_tiet?.forEach(child => {
         worksheet.getRow(cursorRow).height = 22;
-
-        const sc1 = worksheet.getCell(`A${cursorRow}`);
-        sc1.value = '';
-        sc1.border = thinBorder;
-
-        const sc2 = worksheet.getCell(`B${cursorRow}`);
-        sc2.value = child.ten_loai;
-        sc2.font = fontRegular;
-        sc2.alignment = alignLeft;
-        sc2.border = thinBorder;
-
-        const sc3 = worksheet.getCell(`C${cursorRow}`);
-        sc3.value = '';
-        sc3.border = thinBorder;
-
-        const sc4 = worksheet.getCell(`D${cursorRow}`);
-        const valSc4 = Number(child.ti_le);
-        sc4.value = valSc4;
-        sc4.numFmt = valSc4 % 1 === 0 ? '0' : '0.0';
-        sc4.font = fontRegular;
-        sc4.alignment = alignCenter;
-        sc4.border = thinBorder;
-
-        const sc5 = worksheet.getCell(`E${cursorRow}`);
-        const valSc5 = Number(child.kl_nhap_kho);
-        sc5.value = valSc5;
-        sc5.numFmt = '#,##0.###';
-        sc5.font = fontRegular;
-        sc5.alignment = alignRight;
-        sc5.border = thinBorder;
-
-        const sc6 = worksheet.getCell(`F${cursorRow}`);
-        sc6.value = child.ghi_chu || '';
-        sc6.font = fontRegular;
-        sc6.alignment = alignLeft;
-        sc6.border = thinBorder;
-
+        ['A','C'].forEach(c => applyStyle(worksheet.getCell(`${c}${cursorRow}`)));
+        const cB2 = worksheet.getCell(`B${cursorRow}`);
+        cB2.value = child.ten_loai;
+        applyStyle(cB2, fontRegular, alignLeft);
+        const cD2 = worksheet.getCell(`D${cursorRow}`);
+        cD2.value = Number(child.ti_le || 0);
+        cD2.numFmt = Number(child.ti_le || 0) % 1 === 0 ? '0' : '0.0';
+        applyStyle(cD2);
+        const cE2 = worksheet.getCell(`E${cursorRow}`);
+        cE2.value = Number(child.kl_nhap_kho || 0);
+        cE2.numFmt = '#,##0.###';
+        applyStyle(cE2, fontBold, alignRight);
+        const cF2 = worksheet.getCell(`F${cursorRow}`);
+        cF2.value = child.ghi_chu || '';
+        applyStyle(cF2, fontRegular, alignLeft);
         cursorRow++;
       });
     }
   });
 
-  // Cộng Part B with RED styling matching target image exactly
-  const congRowB = cursorRow;
-  worksheet.getRow(congRowB).height = 24;
-
-  worksheet.mergeCells(`A${congRowB}:B${congRowB}`);
-  const cellCongLabelB = worksheet.getCell(`A${congRowB}`);
-  cellCongLabelB.value = 'Cộng';
-  cellCongLabelB.font = fontBold;
-  cellCongLabelB.alignment = alignCenter;
-  applyBorderToRange(worksheet, `A${congRowB}`, `B${congRowB}`, thinBorder);
-
-  // Red and bold total original volume column
-  const cellTotalVolB_orig = worksheet.getCell(`C${congRowB}`);
-  const valTotalVolB_orig = Number(totalVolA);
-  cellTotalVolB_orig.value = valTotalVolB_orig;
-  cellTotalVolB_orig.numFmt = '#,##0.###';
-  cellTotalVolB_orig.font = fontBold;
-  cellTotalVolB_orig.alignment = alignRight;
-  cellTotalVolB_orig.border = thinBorder;
-
-  const cellHyphenB = worksheet.getCell(`D${congRowB}`);
-  cellHyphenB.value = '';
-  cellHyphenB.border = thinBorder;
-
-  // Red and bold total received volume column
-  const cellTotalVolB_received = worksheet.getCell(`E${congRowB}`);
-  const totalVolB_rec = listB.reduce((sum, r) => {
+  const totalVolB = listB.reduce((sum, r) => {
     if (r.co_phan_loai && r.chi_tiet && r.chi_tiet.length > 0) {
-      return sum + r.chi_tiet.reduce((s, c) => s + c.kl_nhap_kho, 0);
+      return sum + r.chi_tiet.reduce((s, c) => s + Number(c.kl_nhap_kho || 0), 0);
     }
     const rowA = listA.find(a => a.id === r.id);
-    return sum + (rowA ? rowA.kl_nguyen_thuy : r.kl_tong);
+    return sum + Number(rowA ? rowA.kl_nguyen_thuy : r.kl_tong || 0);
   }, 0);
-  const valTotalVolB_rec = Number(totalVolB_rec);
-  cellTotalVolB_received.value = valTotalVolB_rec;
-  cellTotalVolB_received.numFmt = '#,##0.###';
-  cellTotalVolB_received.font = fontBold;
-  cellTotalVolB_received.alignment = alignRight;
-  cellTotalVolB_received.border = thinBorder;
 
-  const cellNoteB = worksheet.getCell(`F${congRowB}`);
-  cellNoteB.value = '';
-  cellNoteB.border = thinBorder;
-
+  worksheet.getRow(cursorRow).height = 22;
+  worksheet.mergeCells(`A${cursorRow}:B${cursorRow}`);
+  const congB = worksheet.getCell(`A${cursorRow}`);
+  congB.value = 'Cộng';
+  applyStyle(congB, fontBold);
+  const congBC = worksheet.getCell(`C${cursorRow}`);
+  congBC.value = Number(totalVolA);
+  congBC.numFmt = '#,##0.###';
+  applyStyle(congBC, fontBold, alignRight);
+  const congBD = worksheet.getCell(`D${cursorRow}`);
+  congBD.value = '';
+  applyStyle(congBD);
+  const congBE = worksheet.getCell(`E${cursorRow}`);
+  congBE.value = Number(totalVolB);
+  congBE.numFmt = '#,##0.###';
+  applyStyle(congBE, fontBold, alignRight);
+  const congBF = worksheet.getCell(`F${cursorRow}`);
+  congBF.value = '';
+  applyStyle(congBF);
+  applyBorderToRange(worksheet, `A${cursorRow}`, `F${cursorRow}`, thinBorder);
   cursorRow++;
 
-  // Spelling Row
-  const spellingRow = cursorRow;
-  worksheet.getRow(spellingRow).height = 26;
-  worksheet.mergeCells(`A${spellingRow}:F${spellingRow}`);
-  const cellSpelling = worksheet.getCell(`A${spellingRow}`);
-  cellSpelling.value = {
-    richText: [
-      { text: 'Bằng chữ: ', font: fontBold },
-      { text: `${numberToVietnameseWords(totalVolB_rec, false)} ./.`, font: fontBoldItalicVal }
-    ]
-  };
-  cellSpelling.alignment = alignCenter;
-  applyBorderToRange(worksheet, `A${spellingRow}`, `F${spellingRow}`, thinBorder);
-
+  // Spelling row
+  worksheet.getRow(cursorRow).height = 22;
+  worksheet.mergeCells(`A${cursorRow}:F${cursorRow}`);
+  const spelling = worksheet.getCell(`A${cursorRow}`);
+  spelling.value = `Bằng chữ: ${numberToVietnameseWords(totalVolB, false)} ./.`;
+  applyStyle(spelling, fontSmall);
+  applyBorderToRange(worksheet, `A${cursorRow}`, `F${cursorRow}`, thinBorder);
   cursorRow++;
 
-  // -------------------------------------------------------------
-  // 6. CONCLUSION C BLOCK
-  // -------------------------------------------------------------
-  const conclRow = cursorRow;
-  worksheet.getRow(conclRow).height = 28;
-  worksheet.mergeCells(`A${conclRow}:F${conclRow}`);
-  const cellConcl = worksheet.getCell(`A${conclRow}`);
-
-  const isDNTValue = bb.ket_luan === 'Đạt' ? 'v' : ' ';
-  const isKDNTValue = bb.ket_luan !== 'Đạt' ? 'v' : ' ';
-
-  cellConcl.value = {
-    richText: [
-      { text: 'C. Kết luận chung lô hàng:   ', font: fontBold },
-      { text: 'Đạt yêu cầu nhập kho  ', font: fontBold },
-      { text: `[ ${isDNTValue} ]      `, font: fontBold },
-      { text: 'Không đạt yêu cầu nhập kho  ', font: fontBold },
-      { text: `[ ${isKDNTValue} ]`, font: fontBold }
-    ]
-  };
-  cellConcl.alignment = alignCenter;
-  applyBorderToRange(worksheet, `A${conclRow}`, `F${conclRow}`, thinBorder);
-
-  cursorRow++;
+  // Conclusion row
+  worksheet.getRow(cursorRow).height = 22;
+  worksheet.mergeCells(`A${cursorRow}:F${cursorRow}`);
+  const conclusion = worksheet.getCell(`A${cursorRow}`);
+  const isOk = bb.ket_luan === 'Đạt' ? 'v' : ' ';
+  const isNotOk = bb.ket_luan !== 'Đạt' ? 'v' : ' ';
+  conclusion.value = `C. Kết luận chung lô hàng:   Đạt yêu cầu nhập kho  [ ${isOk} ]     Không đạt yêu cầu nhập kho  [ ${isNotOk} ]`;
+  applyStyle(conclusion, fontSmall);
+  applyBorderToRange(worksheet, `A${cursorRow}`, `F${cursorRow}`, thinBorder);
+  cursorRow += 2;
 
   // -------------------------------------------------------------
-  // 7. SIGNATURES SECTION
+  // 6. SIGNATURES - same as sample
   // -------------------------------------------------------------
-  const sigTitleRow = cursorRow + 1; // leave 1 row blank
+  const sigTitleRow = cursorRow;
   worksheet.getRow(sigTitleRow).height = 24;
-
-  const roles = [
-    { col: 'A', name: 'Phó TGĐ' },
-    { col: 'B', name: 'TP. PQLCL 1' },
-    { col: 'C', name: 'Thủ kho' },
-    { col: 'DF', name: 'Đại diện ĐV cung ứng' }, // merge D & E
-    { col: 'F', name: 'Người lập' }
+  const sigRoles = [
+    { col: 'A', title: 'Phó TGĐ' },
+    { col: 'B', title: 'TP. PQLCL 1' },
+    { col: 'C', title: 'Thủ kho' },
+    { col: 'D', title: 'Đại diện ĐV cung ứng' },
+    { col: 'F', title: 'Người lập' },
   ];
-
-  roles.forEach(r => {
-    if (r.col === 'DF') {
-      worksheet.mergeCells(`D${sigTitleRow}:E${sigTitleRow}`);
-      const cell = worksheet.getCell(`D${sigTitleRow}`);
-      cell.value = r.name;
-      cell.font = fontBold;
-      cell.alignment = alignCenter;
-    } else {
-      const cell = worksheet.getCell(`${r.col}${sigTitleRow}`);
-      cell.value = r.name;
-      cell.font = fontBold;
-      cell.alignment = alignCenter;
-    }
+  worksheet.mergeCells(`D${sigTitleRow}:E${sigTitleRow}`);
+  sigRoles.forEach(r => {
+    const cell = worksheet.getCell(`${r.col}${sigTitleRow}`);
+    cell.value = r.title;
+    applyStyle(cell, fontBold, alignCenter, {});
   });
 
-  // Space for physical signatures
   const sigNameRow = sigTitleRow + 5;
   worksheet.getRow(sigNameRow).height = 24;
 
-  // Render ONLY the creator name at the bottom of column F (matching image template exactly)
-  const cellCreatorName = worksheet.getCell(`F${sigNameRow}`);
-  cellCreatorName.value = bb.nguoi_ky_nguoi_lap || 'Ngô Văn Trường';
-  cellCreatorName.font = fontBoldItalicVal;
-  cellCreatorName.alignment = alignCenter;
+  const creatorName = worksheet.getCell(`F${sigNameRow}`);
+  creatorName.value = bb.nguoi_ky_nguoi_lap || 'Ngô Văn Trường';
+  creatorName.font = fontBoldItalicVal;
+  creatorName.alignment = alignCenter;
 
-  // Output as File Download
+  // Sheet cleanup / print view
+  worksheet.eachRow(row => {
+    row.eachCell(cell => {
+      if (!cell.font) cell.font = fontRegular;
+      if (!cell.alignment) cell.alignment = alignCenter;
+    });
+  });
+
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   const url = window.URL.createObjectURL(blob);
@@ -713,34 +500,17 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   truongBoPhanTitle?: string;
   truongBoPhanName?: string;
 }) {
-  // Template: Bảng chi tiết thanh toán - khớp mẫu Thanhtoan.GB01.xlsx
+  // Create workbook & worksheet
   const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Chi tiết thanh toán");
+  const worksheet = workbook.addWorksheet("Chi tiet thanh toan go");
 
   worksheet.views = [{ showGridLines: true }];
-  worksheet.pageSetup = {
-    paperSize: 9, // A4
-    orientation: 'landscape',
-    fitToPage: true,
-    fitToWidth: 1,
-    fitToHeight: 0,
-    margins: {
-      left: 0.25,
-      right: 0.25,
-      top: 0.35,
-      bottom: 0.35,
-      header: 0.15,
-      footer: 0.15,
-    },
-  };
 
-  const fontRegular = { name: 'Times New Roman', size: 14, bold: false };
-  const fontBold = { name: 'Times New Roman', size: 14, bold: true };
-  const fontItalic = { name: 'Times New Roman', size: 14, italic: true };
-  const fontHeader = { name: 'Times New Roman', size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
-  const fontTitle = { name: 'Times New Roman', size: 22, bold: true, color: { argb: 'FFFFFFFF' } };
-  const fontSign = { name: 'Times New Roman', size: 14, bold: true };
-  const fontSignName = { name: 'Times New Roman', size: 14, bold: true, italic: true };
+  // Common styles
+  const fontRegular = { name: 'Times New Roman', size: 11, bold: false };
+  const fontBold = { name: 'Times New Roman', size: 11, bold: true };
+  const fontItalicVal = { name: 'Times New Roman', size: 11, italic: true };
+  const fontRedBold = { name: 'Times New Roman', size: 11, bold: true, color: { argb: 'FFFF0000' } };
 
   const alignCenter: Partial<ExcelJS.Alignment> = { vertical: 'middle' as const, horizontal: 'center' as const };
   const alignLeft: Partial<ExcelJS.Alignment> = { vertical: 'middle' as const, horizontal: 'left' as const };
@@ -753,248 +523,426 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
     right: { style: 'thin' as const, color: { argb: 'FF000000' } }
   };
 
-  const greenFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FF145D32' } };
-  const lightGreenFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFD9FBE5' } };
-  const lightGrayFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFF8FAFC' } };
-  const lightPeachFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFFF7ED' } };
-
-  worksheet.columns = [
-    { key: 'A', width: 8 },   // STT
-    { key: 'B', width: 28 },  // Tên hàng
-    { key: 'C', width: 12 },
-    { key: 'D', width: 10 },  // Đvt
-    { key: 'E', width: 16 },  // KL
-    { key: 'F', width: 18 },  // Đơn giá
-    { key: 'G', width: 20 },  // Thành tiền
-  ];
-
-  // -------------------------------------------------------------
-  // 1. Header giống mẫu
-  // -------------------------------------------------------------
-  worksheet.getRow(1).height = 34;
-  worksheet.mergeCells('E1:E1');
-  worksheet.mergeCells('F1:G1');
-
-  const soLabel = worksheet.getCell('E1');
-  soLabel.value = 'SỐ:';
-  soLabel.font = { name: 'Times New Roman', size: 16, bold: true };
-  soLabel.alignment = alignCenter;
-  soLabel.fill = lightGrayFill;
-
-  const soValue = worksheet.getCell('F1');
-  soValue.value = bb.ma_bbnt || 'GB01';
-  soValue.font = { name: 'Times New Roman', size: 16, bold: true };
-  soValue.alignment = alignCenter;
-  soValue.fill = lightGrayFill;
-
-  applyBorderToRange(worksheet, 'E1', 'G1', thinBorder);
-
-  worksheet.getRow(2).height = 46;
-  worksheet.mergeCells('A2:G2');
-  const titleCell = worksheet.getCell('A2');
-  titleCell.value = meta?.bienBanTitle || 'BẢNG CHI TIẾT THANH TOÁN';
-  titleCell.font = fontTitle;
-  titleCell.alignment = alignCenter;
-  titleCell.fill = greenFill;
-  applyBorderToRange(worksheet, 'A2', 'G2', thinBorder);
-
-  worksheet.getRow(3).height = 28;
-  worksheet.mergeCells('A3:G3');
-  applyBorderToRange(worksheet, 'A3', 'G3', thinBorder);
-
-  // -------------------------------------------------------------
-  // 2. Ledger header
-  // -------------------------------------------------------------
-  worksheet.getRow(4).height = 40;
-  const headerCells = [
-    { cell: 'A4', value: 'STT' },
-    { cell: 'D4', value: 'Đvt' },
-    { cell: 'E4', value: 'KL' },
-    { cell: 'F4', value: 'Đơn giá' },
-    { cell: 'G4', value: 'Thành tiền' },
-  ];
-
-  worksheet.mergeCells('B4:C4');
-  const tenHangHeader = worksheet.getCell('B4');
-  tenHangHeader.value = 'Tên hàng';
-  tenHangHeader.font = fontHeader;
-  tenHangHeader.alignment = alignCenter;
-  tenHangHeader.fill = greenFill;
-
-  headerCells.forEach(h => {
-    const cell = worksheet.getCell(h.cell);
-    cell.value = h.value;
-    cell.font = fontHeader;
-    cell.alignment = alignCenter;
-    cell.fill = greenFill;
-  });
-  applyBorderToRange(worksheet, 'A4', 'G4', thinBorder);
-
-  // -------------------------------------------------------------
-  // 3. Description row
-  // -------------------------------------------------------------
-  worksheet.getRow(5).height = 38;
-  worksheet.mergeCells('B5:G5');
-  const loaiGo = (bb.loai_go || 'gỗ keo xẻ thô').trim();
-  const descCell = worksheet.getCell('B5');
-  descCell.value = `Gỗ sơ chế thông thường - ${loaiGo} theo HĐ số:`;
-  descCell.font = fontItalic;
-  descCell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-  descCell.fill = lightGreenFill;
-  worksheet.getCell('A5').fill = lightGreenFill;
-  applyBorderToRange(worksheet, 'A5', 'G5', thinBorder);
-
-  // -------------------------------------------------------------
-  // 4. Ledger rows
-  // -------------------------------------------------------------
   const paymentRows = bb.bang_thanh_toan || [];
-  let rowIdx = 6;
 
+  const hasThuong = paymentRows.some(p => p.thuong !== 0 && p.thuong !== undefined && p.thuong !== null);
+  const hasVanChuyen = paymentRows.some(p => p.van_chuyen !== 0 && p.van_chuyen !== undefined && p.van_chuyen !== null && p.van_chuyen !== '' && p.van_chuyen !== '0');
+  const hasFsc = paymentRows.some(p => p.hd_fsc !== 0 && p.hd_fsc !== undefined && p.hd_fsc !== null && p.hd_fsc !== '' && p.hd_fsc !== '0');
+  const hasThanhToan = paymentRows.some(p => p.thanh_toan !== 0 && p.thanh_toan !== undefined && p.thanh_toan !== null);
+
+  // We have dynamic columns: TT (1) | TÊN HÀNG (2) | ĐVT (3) | KHỐI LƯỢNG (4) | ĐƠN GIÁ GỐC (5)
+  // [THƯỞNG] | [VẬN CHUYỂN] | [HĐ.FSC] | [THANH TOÁN]
+  // ĐƠN GIÁ THANH TOÁN (colIndex1) | THÀNH TIỀN (colIndex2)
+  let activeColIdx = 6;
+  const colMap = {
+    thuong: hasThuong ? activeColIdx++ : 0,
+    van_chuyen: hasVanChuyen ? activeColIdx++ : 0,
+    hd_fsc: hasFsc ? activeColIdx++ : 0,
+    thanh_toan: hasThanhToan ? activeColIdx++ : 0
+  };
+
+  const colDonGiaTong = activeColIdx++;
+  const colThanhTien = activeColIdx++;
+  const numCols = colThanhTien;
+
+  // Set worksheet columns based on dynamic count for beautiful spacing
+  const colWidths: { width: number }[] = [];
+  for (let c = 1; c <= numCols; c++) {
+    if (c === 1) colWidths.push({ width: 6 }); // TT
+    else if (c === 2) colWidths.push({ width: 28 }); // TÊN HÀNG
+    else if (c === 3) colWidths.push({ width: 10 }); // ĐVT
+    else if (c === 4) colWidths.push({ width: 22 }); // KL
+    else if (c === 5) colWidths.push({ width: 16 }); // DG GỐC
+    else if (c === colDonGiaTong) colWidths.push({ width: 22 }); // DG THANH TOAN
+    else if (c === colThanhTien) colWidths.push({ width: 22 }); // THÀNH TIỀN
+    else colWidths.push({ width: 15 }); // Adjustment columns
+  }
+  worksheet.columns = colWidths.map((w, idx) => ({ key: colIndexToLabel(idx + 1), width: w.width }));
+
+  const dateFormatted = bb.ngay_nt ? new Date(bb.ngay_nt).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'}) : "10.06.2026";
+
+  // -------------------------------------------------------------
+  // 1. PAYMENT HEADER (Rows 1 & 2)
+  // -------------------------------------------------------------
+  const logoRangeStr = `A1:B2`;
+  const titleRangeStr = `C1:${colIndexToLabel(numCols - 1)}1`;
+  const titleSubRangeStr = `C2:${colIndexToLabel(numCols - 1)}2`;
+  const codeCellStr = `${colIndexToLabel(numCols)}1`;
+  const codeMetaCellStr = `${colIndexToLabel(numCols)}2`;
+
+  worksheet.mergeCells(logoRangeStr);
+  worksheet.mergeCells(titleRangeStr);
+  worksheet.mergeCells(titleSubRangeStr);
+
+  const cellLogo = worksheet.getCell('A1');
+  cellLogo.value = {
+    richText: [
+      { text: 'NFC\n', font: { name: 'Arial', size: 18, bold: true, color: { argb: 'FF0D733E' } } },
+      { text: 'FINANCE', font: { name: 'Arial', size: 8, bold: true, color: { argb: 'FF0D733E' } } }
+    ]
+  };
+  cellLogo.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+
+  const cellTitle = worksheet.getCell('C1');
+  cellTitle.value = meta?.quyTrinhTitle || 'QUY TRÌNH THANH TOÁN LÂM SẢN';
+  cellTitle.font = { name: 'Times New Roman', size: 12, bold: true };
+  cellTitle.alignment = alignCenter;
+
+  const cellSubTitle = worksheet.getCell('C2');
+  cellSubTitle.value = meta?.bienBanTitle || 'BẢNG CHI TIẾT THANH TOÁN GỖ';
+  cellSubTitle.font = { name: 'Times New Roman', size: 14, bold: true };
+  cellSubTitle.alignment = alignCenter;
+
+  const cellCode = worksheet.getCell(codeCellStr);
+  cellCode.value = `Ngày thanh toán: ${meta?.ngayThanhToan || dateFormatted}`;
+  cellCode.font = { name: 'Times New Roman', size: 10, bold: true };
+  cellCode.alignment = alignLeft;
+
+  const cellMeta = worksheet.getCell(codeMetaCellStr);
+  cellMeta.value = '';
+  cellMeta.font = { name: 'Times New Roman', size: 9, bold: false };
+  cellMeta.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+
+  applyBorderToRange(worksheet, 'A1', 'B2', thinBorder);
+  applyBorderToRange(worksheet, `C1`, `${colIndexToLabel(numCols - 1)}1`, thinBorder);
+  applyBorderToRange(worksheet, `C2`, `${colIndexToLabel(numCols - 1)}2`, thinBorder);
+  worksheet.getCell(codeCellStr).border = thinBorder;
+  worksheet.getCell(codeMetaCellStr).border = thinBorder;
+
+  worksheet.getRow(1).height = 36;
+  worksheet.getRow(2).height = 32;
+
+  // -------------------------------------------------------------
+  // 2. METADATA BRIEF (Rows 3 & 4)
+  // -------------------------------------------------------------
+  const metadataStart = 4;
+  worksheet.mergeCells(`A${metadataStart}:C${metadataStart}`);
+  const metaC1 = worksheet.getCell(`A${metadataStart}`);
+  metaC1.value = `Cơ sở nghiệm thu đối chiếu: BBGN số ${bb.ma_bbnt}`;
+  metaC1.font = fontBold;
+  metaC1.alignment = alignLeft;
+  applyBorderToRange(worksheet, `A${metadataStart}`, `C${metadataStart}`, thinBorder);
+
+  worksheet.mergeCells(`D${metadataStart}:${colIndexToLabel(numCols)}${metadataStart}`);
+  const metaC2 = worksheet.getCell(`D${metadataStart}`);
+  let supplierValueText = `Đơn vị cung ứng: ${bb.don_vi_cung_ung || 'CTY TNHH SXTM Gia Bảo'}`;
+  metaC2.value = supplierValueText;
+  metaC2.font = fontBold;
+  metaC2.alignment = alignLeft;
+  applyBorderToRange(worksheet, `D${metadataStart}`, `${colIndexToLabel(numCols)}${metadataStart}`, thinBorder);
+
+  const metadataNext = metadataStart + 1;
+  worksheet.mergeCells(`A${metadataNext}:C${metadataNext}`);
+  const metaD1 = worksheet.getCell(`A${metadataNext}`);
+  metaD1.value = `Trực thuộc vùng: ${bb.vung_quan_ly || 'Vùng Thanh Hóa'}`;
+  metaD1.font = fontRegular;
+  metaD1.alignment = alignLeft;
+  applyBorderToRange(worksheet, `A${metadataNext}`, `C${metadataNext}`, thinBorder);
+
+  worksheet.mergeCells(`D${metadataNext}:${colIndexToLabel(numCols)}${metadataNext}`);
+  const metaD2 = worksheet.getCell(`D${metadataNext}`);
+  metaD2.value = `Phương án logistics & vận tải: ${bb.phuong_thuc_van_chuyen || 'NCC tự vận chuyển'}`;
+  metaD2.font = fontRegular;
+  metaD2.alignment = alignLeft;
+  applyBorderToRange(worksheet, `D${metadataNext}`, `${colIndexToLabel(numCols)}${metadataNext}`, thinBorder);
+
+  worksheet.getRow(metadataStart).height = 24;
+  worksheet.getRow(metadataNext).height = 24;
+
+  // Space
+  let ledgerCurrentRow = metadataNext + 2;
+
+  // -------------------------------------------------------------
+  // 3. LEDGER HEADERS
+  // -------------------------------------------------------------
+  worksheet.getRow(ledgerCurrentRow).height = 28;
+  const headers = [
+    { idx: 1, v: 'TT' },
+    { idx: 2, v: 'TÊN HÀNG' },
+    { idx: 3, v: 'ĐVT' },
+    { idx: 4, v: 'KHỐI LƯỢNG NHẬP KHO (M³)' },
+    { idx: 5, v: 'ĐƠN GIÁ GỐC' }
+  ];
+
+  if (hasThuong) headers.push({ idx: colMap.thuong, v: 'THƯỞNG' });
+  if (hasVanChuyen) headers.push({ idx: colMap.van_chuyen, v: 'VẬN CHUYỂN' });
+  if (hasFsc) headers.push({ idx: colMap.hd_fsc, v: 'HĐ.FSC' });
+  if (hasThanhToan) headers.push({ idx: colMap.thanh_toan, v: 'THANH TOÁN' });
+  headers.push({ idx: colDonGiaTong, v: 'ĐƠN GIÁ THANH TOÁN' });
+  headers.push({ idx: colThanhTien, v: 'THÀNH TIỀN (VND)' });
+
+  headers.forEach(h => {
+    const cell = worksheet.getCell(ledgerCurrentRow, h.idx);
+    cell.value = h.v;
+    cell.font = fontBold;
+    cell.alignment = alignCenter;
+    cell.border = thinBorder;
+  });
+
+  ledgerCurrentRow++;
+
+  // -------------------------------------------------------------
+  // 4. LEDGER ROWS
+  // -------------------------------------------------------------
   paymentRows.forEach((p, idx) => {
-    worksheet.getRow(rowIdx).height = 42;
-    worksheet.mergeCells(rowIdx, 2, rowIdx, 3);
+    worksheet.getRow(ledgerCurrentRow).height = 24;
 
-    const cellTT = worksheet.getCell(rowIdx, 1);
+    const cellTT = worksheet.getCell(ledgerCurrentRow, 1);
     cellTT.value = p.stt || idx + 1;
     cellTT.font = fontRegular;
     cellTT.alignment = alignCenter;
+    cellTT.border = thinBorder;
 
-    const cellName = worksheet.getCell(rowIdx, 2);
-    cellName.value = p.ten_hang || '';
-    cellName.font = fontRegular;
-    cellName.alignment = alignCenter;
+    const cellName = worksheet.getCell(ledgerCurrentRow, 2);
+    cellName.value = p.ten_hang;
+    cellName.font = fontBold;
+    cellName.alignment = alignLeft;
+    cellName.border = thinBorder;
 
-    const cellDvt = worksheet.getCell(rowIdx, 4);
+    const cellDvt = worksheet.getCell(ledgerCurrentRow, 3);
     cellDvt.value = p.dvt || 'm3';
     cellDvt.font = fontRegular;
     cellDvt.alignment = alignCenter;
+    cellDvt.border = thinBorder;
 
-    const cellKl = worksheet.getCell(rowIdx, 5);
+    const cellKl = worksheet.getCell(ledgerCurrentRow, 4);
     cellKl.value = Number(p.kl || 0);
     cellKl.numFmt = '#,##0.###';
-    cellKl.font = fontRegular;
+    cellKl.font = fontBold;
     cellKl.alignment = alignRight;
+    cellKl.border = thinBorder;
 
-    const cellDonGia = worksheet.getCell(rowIdx, 6);
-    cellDonGia.value = Number(p.don_gia_tong || p.don_gia || 0);
-    cellDonGia.numFmt = '#,##0';
-    cellDonGia.font = fontRegular;
-    cellDonGia.alignment = alignRight;
+    const cellDgGoc = worksheet.getCell(ledgerCurrentRow, 5);
+    cellDgGoc.value = Number(p.don_gia || 0);
+    cellDgGoc.numFmt = '#,##0';
+    cellDgGoc.font = fontRegular;
+    cellDgGoc.alignment = alignRight;
+    cellDgGoc.border = thinBorder;
 
-    const cellThanhTien = worksheet.getCell(rowIdx, 7);
+    if (hasThuong) {
+      const cell = worksheet.getCell(ledgerCurrentRow, colMap.thuong);
+      cell.value = p.thuong ? Number(p.thuong) : 0;
+      cell.numFmt = '#,##0';
+      cell.font = fontRegular;
+      cell.alignment = alignRight;
+      cell.border = thinBorder;
+    }
+    if (hasVanChuyen) {
+      const cell = worksheet.getCell(ledgerCurrentRow, colMap.van_chuyen);
+      const val = typeof p.van_chuyen === 'number' ? p.van_chuyen : parseFloat(p.van_chuyen || '') || 0;
+      cell.value = val;
+      cell.numFmt = '#,##0';
+      cell.font = fontRegular;
+      cell.alignment = alignRight;
+      cell.border = thinBorder;
+    }
+    if (hasFsc) {
+      const cell = worksheet.getCell(ledgerCurrentRow, colMap.hd_fsc);
+      const val = typeof p.hd_fsc === 'number' ? p.hd_fsc : parseFloat(p.hd_fsc || '') || 0;
+      cell.value = val;
+      cell.numFmt = '#,##0';
+      cell.font = fontRegular;
+      cell.alignment = alignRight;
+      cell.border = thinBorder;
+    }
+    if (hasThanhToan) {
+      const cell = worksheet.getCell(ledgerCurrentRow, colMap.thanh_toan);
+      cell.value = p.thanh_toan ? Number(p.thanh_toan) : 0;
+      cell.numFmt = '#,##0';
+      cell.font = fontRegular;
+      cell.alignment = alignRight;
+      cell.border = thinBorder;
+    }
+
+    const cellDgTong = worksheet.getCell(ledgerCurrentRow, colDonGiaTong);
+    cellDgTong.value = Number(p.don_gia_tong || p.don_gia || 0);
+    cellDgTong.numFmt = '#,##0';
+    cellDgTong.font = fontBold;
+    cellDgTong.alignment = alignRight;
+    cellDgTong.border = thinBorder;
+
+    const cellThanhTien = worksheet.getCell(ledgerCurrentRow, colThanhTien);
     cellThanhTien.value = Number(p.thanh_tien || 0);
     cellThanhTien.numFmt = '#,##0';
-    cellThanhTien.font = fontRegular;
+    cellThanhTien.font = fontBold;
     cellThanhTien.alignment = alignRight;
+    cellThanhTien.border = thinBorder;
 
-    applyBorderToRange(worksheet, `A${rowIdx}`, `G${rowIdx}`, thinBorder);
-    rowIdx++;
+    ledgerCurrentRow++;
   });
 
+  const totalVolume = paymentRows.reduce((sum, r) => sum + (r.kl || 0), 0);
+  const baseTotal = paymentRows.reduce((sum, r) => sum + (r.thanh_tien || 0), 0);
+
   // -------------------------------------------------------------
-  // 5. Total row
+  // 5. INCURRED ADJUSTMENTS BLOCK
   // -------------------------------------------------------------
-  const totalVolume = paymentRows.reduce((sum, r) => sum + Number(r.kl || 0), 0);
-  const finalGrandTotal = paymentRows.reduce((sum, r) => sum + Number(r.thanh_tien || 0), 0);
+  let calculatedTotal = baseTotal;
+  const incurredList = bb.phat_sinh_chi_phi || [];
+  if (incurredList.length > 0) {
+    // Spacer row
+    worksheet.getRow(ledgerCurrentRow).height = 22;
+    worksheet.mergeCells(ledgerCurrentRow, 2, ledgerCurrentRow, numCols);
+    const labelIncurredH = worksheet.getCell(ledgerCurrentRow, 2);
+    labelIncurredH.value = 'CHI PHÍ PHÁT SINH VÀ PHẠT GIẢM TRỪ ĐIỀU CHỈNH TÀI CHÍNH';
+    labelIncurredH.font = fontBold;
+    labelIncurredH.alignment = alignLeft;
+    applyBorderToRange(worksheet, `${colIndexToLabel(1)}${ledgerCurrentRow}`, `${colIndexToLabel(numCols)}${ledgerCurrentRow}`, thinBorder);
+    worksheet.getCell(ledgerCurrentRow, 1).value = '—';
+    worksheet.getCell(ledgerCurrentRow, 1).alignment = alignCenter;
 
-  worksheet.getRow(rowIdx).height = 40;
-  worksheet.mergeCells(rowIdx, 2, rowIdx, 4);
+    ledgerCurrentRow++;
 
-  worksheet.getCell(rowIdx, 1).value = '';
-  worksheet.getCell(rowIdx, 2).value = 'Cộng';
-  worksheet.getCell(rowIdx, 2).font = { name: 'Times New Roman', size: 15, bold: true };
-  worksheet.getCell(rowIdx, 2).alignment = alignCenter;
+    incurredList.forEach(cost => {
+      worksheet.getRow(ledgerCurrentRow).height = 22;
+      const amtSign = cost.type === 'plus' ? cost.amount : -cost.amount;
+      calculatedTotal += amtSign;
 
-  worksheet.getCell(rowIdx, 5).value = Number(totalVolume);
-  worksheet.getCell(rowIdx, 5).numFmt = '#,##0.###';
-  worksheet.getCell(rowIdx, 5).font = { name: 'Times New Roman', size: 15, bold: true };
-  worksheet.getCell(rowIdx, 5).alignment = alignRight;
-
-  worksheet.getCell(rowIdx, 7).value = Number(finalGrandTotal);
-  worksheet.getCell(rowIdx, 7).numFmt = '#,##0';
-  worksheet.getCell(rowIdx, 7).font = { name: 'Times New Roman', size: 15, bold: true };
-  worksheet.getCell(rowIdx, 7).alignment = alignRight;
-
-  for (let c = 1; c <= 7; c++) {
-    worksheet.getCell(rowIdx, c).fill = lightGrayFill;
+      // Fill in cells
+      for (let c = 1; c <= numCols; c++) {
+        const cell = worksheet.getCell(ledgerCurrentRow, c);
+        cell.border = thinBorder;
+        if (c === 1) {
+          cell.value = '—';
+          cell.alignment = alignCenter;
+        } else if (c === 2) {
+          cell.value = cost.name;
+          cell.font = fontItalicVal;
+          cell.alignment = alignLeft;
+        } else if (c === colDonGiaTong) {
+          cell.value = amtSign;
+          cell.numFmt = '#,##0';
+          cell.font = fontBold;
+          cell.alignment = alignRight;
+        } else if (c === colThanhTien) {
+          cell.value = amtSign;
+          cell.numFmt = '#,##0';
+          cell.font = fontBold;
+          cell.alignment = alignRight;
+        } else {
+          cell.value = '—';
+          cell.alignment = alignCenter;
+        }
+      }
+      ledgerCurrentRow++;
+    });
   }
-  applyBorderToRange(worksheet, `A${rowIdx}`, `G${rowIdx}`, thinBorder);
-  rowIdx++;
+
+  const finalGrandTotal = Math.max(0, calculatedTotal);
 
   // -------------------------------------------------------------
-  // 6. Amount in words
+  // 6. TOTAL ROW (CỘNG)
   // -------------------------------------------------------------
-  worksheet.getRow(rowIdx).height = 38;
-  worksheet.mergeCells(rowIdx, 2, rowIdx, 7);
-  const bangChuLabel = worksheet.getCell(rowIdx, 1);
-  bangChuLabel.value = 'Bằng chữ:';
-  bangChuLabel.font = { name: 'Times New Roman', size: 15, bold: true };
-  bangChuLabel.alignment = alignLeft;
+  worksheet.getRow(ledgerCurrentRow).height = 26;
+  worksheet.mergeCells(ledgerCurrentRow, 1, ledgerCurrentRow, 2);
+  const cellCongLabel = worksheet.getCell(ledgerCurrentRow, 1);
+  cellCongLabel.value = 'CỘNG';
+  cellCongLabel.font = fontBold;
+  cellCongLabel.alignment = alignCenter;
+  applyBorderToRange(worksheet, `${colIndexToLabel(1)}${ledgerCurrentRow}`, `${colIndexToLabel(2)}${ledgerCurrentRow}`, thinBorder);
 
-  const bangChuValue = worksheet.getCell(rowIdx, 2);
-  bangChuValue.value = finalGrandTotal > 0 ? `${translateMoneyToWords(finalGrandTotal)} ./.` : '';
-  bangChuValue.font = { name: 'Times New Roman', size: 14, bold: true, italic: true };
-  bangChuValue.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+  const cellCongDvtHyphen = worksheet.getCell(ledgerCurrentRow, 3);
+  cellCongDvtHyphen.value = '—';
+  cellCongDvtHyphen.alignment = alignCenter;
+  cellCongDvtHyphen.border = thinBorder;
 
-  for (let c = 1; c <= 7; c++) {
-    worksheet.getCell(rowIdx, c).fill = lightPeachFill;
+  // Red and bold total volume
+  const cellCongVol = worksheet.getCell(ledgerCurrentRow, 4);
+  cellCongVol.value = Number(totalVolume);
+  cellCongVol.numFmt = '#,##0.###';
+  cellCongVol.font = fontRedBold;
+  cellCongVol.alignment = alignRight;
+  cellCongVol.border = thinBorder;
+
+  // Hyphen out other cells
+  for (let c = 5; c < colThanhTien; c++) {
+    const cell = worksheet.getCell(ledgerCurrentRow, c);
+    cell.value = '—';
+    cell.alignment = alignCenter;
+    cell.border = thinBorder;
   }
-  applyBorderToRange(worksheet, `A${rowIdx}`, `G${rowIdx}`, thinBorder);
-  rowIdx++;
+
+  // Red and bold final grand total
+  const cellCongMoneyVal = worksheet.getCell(ledgerCurrentRow, colThanhTien);
+  cellCongMoneyVal.value = Number(finalGrandTotal);
+  cellCongMoneyVal.numFmt = '#,##0';
+  cellCongMoneyVal.font = fontRedBold;
+  cellCongMoneyVal.alignment = alignRight;
+  cellCongMoneyVal.border = thinBorder;
+
+  ledgerCurrentRow++;
+
+  // Spelling Row
+  worksheet.getRow(ledgerCurrentRow).height = 26;
+  worksheet.mergeCells(ledgerCurrentRow, 1, ledgerCurrentRow, numCols);
+  const cellSpellingText = worksheet.getCell(ledgerCurrentRow, 1);
+  cellSpellingText.value = {
+    richText: [
+      { text: 'BẰNG CHỮ: ', font: fontBold },
+      { text: `${translateMoneyToWords(finalGrandTotal)} ./.`, font: { name: 'Times New Roman', size: 11, italic: true, bold: true } }
+    ]
+  };
+  cellSpellingText.alignment = alignCenter;
+  applyBorderToRange(worksheet, `${colIndexToLabel(1)}${ledgerCurrentRow}`, `${colIndexToLabel(numCols)}${ledgerCurrentRow}`, thinBorder);
+
+  ledgerCurrentRow++;
 
   // -------------------------------------------------------------
-  // 7. Signature area - đúng mẫu 2 chân ký
+  // 7. SIGNATURES ROW
   // -------------------------------------------------------------
-  worksheet.getRow(rowIdx).height = 28;
-  rowIdx++;
+  const sigTitleRow = ledgerCurrentRow + 2; // leaves double blank rows space
+  worksheet.getRow(sigTitleRow).height = 24;
 
-  const sigTitleRow = rowIdx;
-  worksheet.getRow(sigTitleRow).height = 34;
-  worksheet.mergeCells(sigTitleRow, 2, sigTitleRow, 3);
-  worksheet.mergeCells(sigTitleRow, 6, sigTitleRow, 7);
+  // Chỉ giữ 2 chân ký: Người lập biểu và Trưởng bộ phận
+  worksheet.mergeCells(sigTitleRow, 1, sigTitleRow, 2);
+  const leftTitle = worksheet.getCell(sigTitleRow, 1);
+  leftTitle.value = meta?.nguoiLapTitle || 'Người lập biểu';
+  leftTitle.font = fontBold;
+  leftTitle.alignment = alignCenter;
 
-  const leftSigTitle = worksheet.getCell(sigTitleRow, 2);
-  leftSigTitle.value = meta?.truongBoPhanTitle || 'PT.Bộ Phận';
-  leftSigTitle.font = fontSign;
-  leftSigTitle.alignment = alignCenter;
+  worksheet.mergeCells(sigTitleRow, 4, sigTitleRow, numCols);
+  const rightTitle = worksheet.getCell(sigTitleRow, 4);
+  rightTitle.value = meta?.truongBoPhanTitle || 'Trưởng bộ phận (Duyệt)';
+  rightTitle.font = fontBold;
+  rightTitle.alignment = alignCenter;
 
-  const rightSigTitle = worksheet.getCell(sigTitleRow, 6);
-  rightSigTitle.value = meta?.nguoiLapTitle || 'Người Lập';
-  rightSigTitle.font = fontSign;
-  rightSigTitle.alignment = alignCenter;
+  const sigSignRow = sigTitleRow + 1;
+  worksheet.getRow(sigSignRow).height = 20;
 
-  rowIdx++;
+  worksheet.mergeCells(sigSignRow, 1, sigSignRow, 2);
+  const leftSign = worksheet.getCell(sigSignRow, 1);
+  leftSign.value = '(Ký & ghi rõ họ tên)';
+  leftSign.font = fontItalicVal;
+  leftSign.alignment = alignCenter;
 
-  // spacing for signatures
-  worksheet.getRow(rowIdx).height = 34;
-  rowIdx++;
-  worksheet.getRow(rowIdx).height = 34;
-  rowIdx++;
+  worksheet.mergeCells(sigSignRow, 4, sigSignRow, numCols);
+  const rightSign = worksheet.getCell(sigSignRow, 4);
+  rightSign.value = '(Ký, đóng dấu & phê duyệt)';
+  rightSign.font = fontItalicVal;
+  rightSign.alignment = alignCenter;
 
-  const sigNameRow = rowIdx;
-  worksheet.getRow(sigNameRow).height = 34;
-  worksheet.mergeCells(sigNameRow, 2, sigNameRow, 3);
-  worksheet.mergeCells(sigNameRow, 6, sigNameRow, 7);
+  const sigNameRow = sigSignRow + 4;
+  worksheet.getRow(sigNameRow).height = 24;
 
-  const leftSigName = worksheet.getCell(sigNameRow, 2);
-  leftSigName.value = meta?.truongBoPhanName || 'Bùi Văn Thắm';
-  leftSigName.font = fontSignName;
-  leftSigName.alignment = alignCenter;
+  worksheet.mergeCells(sigNameRow, 1, sigNameRow, 2);
+  const leftName = worksheet.getCell(sigNameRow, 1);
+  leftName.value = meta?.nguoiLapName || bb.nguoi_ky_nguoi_lap || 'Ngô Văn Trường';
+  leftName.font = fontBold;
+  leftName.alignment = alignCenter;
 
-  const rightSigName = worksheet.getCell(sigNameRow, 6);
-  rightSigName.value = meta?.nguoiLapName || bb.nguoi_ky_nguoi_lap || 'Nguyễn T.Mai Hiền';
-  rightSigName.font = fontSignName;
-  rightSigName.alignment = alignCenter;
+  worksheet.mergeCells(sigNameRow, 4, sigNameRow, numCols);
+  const rightName = worksheet.getCell(sigNameRow, 4);
+  rightName.value = meta?.truongBoPhanName || 'Trần Anh Tuấn';
+  rightName.font = fontBold;
+  rightName.alignment = alignCenter;
 
-  worksheet.pageSetup.printArea = `A1:G${sigNameRow}`;
   // Output File Download
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   const url = window.URL.createObjectURL(blob);
   const aElement = document.createElement('a');
   aElement.href = url;
-  const cleanCode = bb.ma_bbnt ? bb.ma_bbnt.trim().replace(/[^a-zA-Z0-9.-]/g, "_") : "GB01";
-  aElement.download = `Thanhtoan.${cleanCode}.xlsx`;
+  aElement.download = `Thanhtoan.${bb.ma_bbnt.replace(/[^a-zA-Z0-9.-]/g, "_")}.xlsx`;
   aElement.click();
   window.URL.revokeObjectURL(url);
 }
