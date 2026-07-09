@@ -557,11 +557,15 @@ export default function InspectionForm({
     } catch (e) {
       console.error("Lỗi parse custom_wood_species:", e);
     }
-    return defaults;
+    return [];
   });
 
   const [customSalesEmployeesList, setCustomSalesEmployeesList] = useState<string[]>(() => {
-    const defaults: string[] = [];
+    const defaults = [
+      'Trần Văn B',
+      'Lê Văn C',
+      'Phạm Hồng Hải'
+    ];
     try {
       const saved = localStorage.getItem('custom_sales_employees_list');
       if (saved !== null) {
@@ -573,7 +577,7 @@ export default function InspectionForm({
     } catch (e) {
       console.error("Lỗi parse custom_sales_employees_list:", e);
     }
-    return defaults;
+    return [];
   });
 
   const [salarySettings, setSalarySettings] = useState<Record<string, { baseSalary: number; commissionRate: number; allowance: number }>>(() => {
@@ -600,7 +604,13 @@ export default function InspectionForm({
   };
 
   const [customSuppliersList, setCustomSuppliersList] = useState<string[]>(() => {
-    const defaults: string[] = [];
+    const defaults = [
+      'Lâm trường Bắc Kạn',
+      'Doanh nghiệp Tư nhân Hồng Hà',
+      'Hợp tác xã Quyết Thắng',
+      'Công ty Cổ phần Lâm sản Hà Nội',
+      'Lâm trường Yên Bái'
+    ];
     try {
       const saved = localStorage.getItem('custom_suppliers_list');
       if (saved !== null) {
@@ -722,7 +732,7 @@ export default function InspectionForm({
     } catch (e) {
       console.error(e);
     }
-    return defaults;
+    return [];
   });
 
   const saveBusinessPurchases = (list: {
@@ -819,7 +829,7 @@ export default function InspectionForm({
     } catch (e) {
       console.error("Lỗi parse custom_locations_list:", e);
     }
-    return defaults;
+    return [];
   });
 
   const [customEnvStatsList, setCustomEnvStatsList] = useState<string[]>(() => {
@@ -841,7 +851,7 @@ export default function InspectionForm({
     } catch (e) {
       console.error("Lỗi parse custom_env_stats_list:", e);
     }
-    return defaults;
+    return [];
   });
 
   const handleDeleteSpecies = (itemToDelete: string) => {
@@ -1581,38 +1591,7 @@ export default function InspectionForm({
   const [reminderNotes, setReminderNotes] = useState<ReminderNote[]>(() => {
     try {
       const saved = localStorage.getItem('nfc_reminder_notes_v1');
-      return saved ? JSON.parse(saved) : [
-        {
-          id: 'note-1',
-          title: 'Kiểm tra công nợ đối tác Yên Thế',
-          content: 'Chốt sản lượng gỗ xẻ thực tế KCS tuần này và so khớp hóa đơn đỏ trước ngày 20/06 để chuẩn bị hồ sơ thanh toán.',
-          category: 'debt',
-          priority: 'high',
-          dueDate: '2026-06-20',
-          isCompleted: false,
-          createdAt: '2026-06-16T18:00:00Z'
-        },
-        {
-          id: 'note-2',
-          title: 'Liên hệ Lâm sản Sông Chu ký phụ lục đơn giá',
-          content: 'Gửi mẫu hợp đồng cập nhật đơn giá mua dăm gỗ keo và các quy cách dăm mới theo quyết định của ban giám đốc.',
-          category: 'work',
-          priority: 'normal',
-          dueDate: '2026-06-22',
-          isCompleted: false,
-          createdAt: '2026-06-15T09:30:00Z'
-        },
-        {
-          id: 'note-3',
-          title: 'Nghiệm thu khối lượng bãi bốc xếp Kỳ Anh',
-          content: 'Chỉ đạo đội ngũ QC đo đạc chính xác đường kính đầu nhỏ gỗ tròn keo rừng trồng của hộ dân Liên kết lâm nghiệp.',
-          category: 'wood',
-          priority: 'low',
-          dueDate: '2026-06-18',
-          isCompleted: true,
-          createdAt: '2026-06-14T14:45:00Z'
-        }
-      ];
+      return saved ? JSON.parse(saved) : [];
     } catch (e) {
       return [];
     }
@@ -1760,12 +1739,7 @@ export default function InspectionForm({
   const [calendarNotes, setCalendarNotes] = useState<{[date: string]: string[]}>(() => {
     try {
       const saved = localStorage.getItem('erp_calendar_notes_v1');
-      return saved ? JSON.parse(saved) : {
-        '2026-06-10': ['Giao nhận lô keo FSC từ CÔNG TY GIA BẢO', 'Duyệt giá thanh toán BBNT GB01'],
-        '2026-06-13': ['Nghiệm thu thực tế gỗ keo đạt chuẩn FSC', 'Họp giao ban phòng Nguyên liệu'],
-        '2026-06-18': ['Kiểm xẻ gỗ thí nghiệm lâm nghiệp mẫu mới'],
-        '2026-06-25': ['Chốt công nợ tháng 6 với các nhà cung cấp']
-      };
+      return saved ? JSON.parse(saved) : {};
     } catch (e) {
       return {};
     }
@@ -1943,11 +1917,7 @@ export default function InspectionForm({
         console.error("Error loading payments:", err);
       }
     } else {
-      loaded = [
-        { id: 'pay-1', supplierName: 'HTX Lâm Nghiệp Yên Thế', amount: 150000000, paymentDate: '2026-05-10', paymentMethod: 'Chuyển khoản', receiptNo: 'UNC-HTX-001', note: 'Thanh toán đợt 1 tiền gỗ keo xẻ' },
-        { id: 'pay-2', supplierName: 'Công ty TNHH MTV Đồng Tâm', amount: 80000000, paymentDate: '2026-05-15', paymentMethod: 'Chuyển khoản', receiptNo: 'UNC-DT-042', note: 'Thanh toán tiền cước vận chuyển lô hàng ngày 14/05' },
-        { id: 'pay-3', supplierName: 'Doanh nghiệp tư nhân Hùng Phát', amount: 210000000, paymentDate: '2026-05-20', paymentMethod: 'Tiền mặt', receiptNo: 'PC-HP-009', note: 'Chi ứng trước đợt thu mua lô gỗ tròn rừng keo' }
-      ];
+      loaded = [];
     }
     return loaded.filter(p => !shouldExcludeSupplier(p.supplierName));
   });
@@ -2188,7 +2158,7 @@ Bạn có thể hỏi tôi những câu như:
         console.error("Error loading payment proposals:", err);
       }
     }
-    return initialProposals;
+    return [];
   });
 
   useEffect(() => {
@@ -3526,114 +3496,8 @@ Bạn có thể hỏi tôi những câu như:
         console.error("Lỗi parse custom_pricing_profiles:", e);
       }
     }
-    return [
-      {
-        id: "prof-backan-1",
-        name: "Hợp đồng Keo Tròn (Hiệu lực từ 01/05/2026)",
-        supplierName: "Lâm trường Bắc Kạn",
-        region: "Vùng Bắc Kạn",
-        effectiveDate: "2026-05-01",
-        phuongThucVanChuyen: 'LS_VC',
-        tenDonViVanChuyen: "Công ty Vận tải Bắc Kạn",
-        prices: {
-          "470×50×14": {
-            don_gia_l1: 3400000, don_gia_l2: 2900000, don_gia_l3: 2400000, don_gia_tandung: 1400000, don_gia_l21: 2700000,
-            don_gia_tam20: 3800000, don_gia_tam23: 3900000, don_gia_tam27: 4100000, don_gia_tam29: 4200000, don_gia_tam30: 4300000, don_gia_tam35: 4500000,
-            vc_don_gia_l1: 210000, vc_don_gia_l2: 200000, vc_don_gia_l3: 190000, vc_don_gia_tandung: 140000, vc_don_gia_l21: 190000,
-            vc_don_gia_tam20: 230000, vc_don_gia_tam23: 240000, vc_don_gia_tam27: 250000, vc_don_gia_tam29: 260000, vc_don_gia_tam30: 270000, vc_don_gia_tam35: 290000
-          },
-          "650×50×14": {
-            don_gia_l1: 3650000, don_gia_l2: 3150000, don_gia_l3: 2650000, don_gia_tandung: 1500500, don_gia_l21: 2850000,
-            don_gia_tam20: 4000000, don_gia_tam23: 4100000, don_gia_tam27: 4300000, don_gia_tam29: 4400000, don_gia_tam30: 4500000, don_gia_tam35: 4700000,
-            vc_don_gia_l1: 220000, vc_don_gia_l2: 210000, vc_don_gia_l3: 200000, vc_don_gia_tandung: 140000, vc_don_gia_l21: 200000,
-            vc_don_gia_tam20: 240000, vc_don_gia_tam23: 250000, vc_don_gia_tam27: 260000, vc_don_gia_tam29: 270000, vc_don_gia_tam30: 280000, vc_don_gia_tam35: 300000
-          }
-        }
-      },
-      {
-        id: "prof-backan-2",
-        name: "Hợp đồng Keo Tròn - Đợt tăng giá Jun-2026 (Hiệu lực từ 01/06/2026)",
-        supplierName: "Lâm trường Bắc Kạn",
-        region: "Vùng Bắc Kạn",
-        effectiveDate: "2026-06-01",
-        phuongThucVanChuyen: 'LS_VC',
-        tenDonViVanChuyen: "Công ty Vận tải Bắc Kạn",
-        prices: {
-          "470×50×14": {
-            don_gia_l1: 3500000, don_gia_l2: 3000000, don_gia_l3: 2500000, don_gia_tandung: 1500000, don_gia_l21: 2800000,
-            don_gia_tam20: 3900000, don_gia_tam23: 4000000, don_gia_tam27: 4200000, don_gia_tam29: 4300000, don_gia_tam30: 4400000, don_gia_tam35: 4600005,
-            vc_don_gia_l1: 220000, vc_don_gia_l2: 210000, vc_don_gia_l3: 200000, vc_don_gia_tandung: 150000, vc_don_gia_l21: 200000,
-            vc_don_gia_tam20: 240000, vc_don_gia_tam23: 250000, vc_don_gia_tam27: 260000, vc_don_gia_tam29: 270000, vc_don_gia_tam30: 280000, vc_don_gia_tam35: 300000
-          },
-          "650×50×14": {
-            don_gia_l1: 3750000, don_gia_l2: 3250000, don_gia_l3: 2750000, don_gia_tandung: 1600000, don_gia_l21: 2950000,
-            don_gia_tam20: 4100000, don_gia_tam23: 4200000, don_gia_tam27: 4400000, don_gia_tam29: 4500000, don_gia_tam30: 4600000, don_gia_tam35: 4800000,
-            vc_don_gia_l1: 230000, vc_don_gia_l2: 220000, vc_don_gia_l3: 210000, vc_don_gia_tandung: 150000, vc_don_gia_l21: 210000,
-            vc_don_gia_tam20: 250000, vc_don_gia_tam23: 260000, vc_don_gia_tam27: 270000, vc_don_gia_tam29: 280000, vc_don_gia_tam30: 290000, vc_don_gia_tam35: 310000
-          }
-        }
-      },
-      {
-        id: "prof-hongha-1",
-        name: "Hợp đồng CIF Giao tại xưởng Q2 (Hiệu lực từ 01/04/2026)",
-        supplierName: "Doanh nghiệp Tư nhân Hồng Hà",
-        region: "Vùng Yên Bái",
-        effectiveDate: "2026-04-01",
-        phuongThucVanChuyen: 'NCC',
-        tenDonViVanChuyen: "Bên bán tự giao hàng",
-        prices: {
-          "470×50×14": {
-            don_gia_l1: 4000000, don_gia_l2: 3500000, don_gia_l3: 3000000, don_gia_tandung: 1700000, don_gia_l21: 3200000,
-            don_gia_tam20: 4300000, don_gia_tam23: 4400000, don_gia_tam27: 4600000, don_gia_tam29: 4700000, don_gia_tam30: 4800000, don_gia_tam35: 5000000,
-            vc_don_gia_l1: 0, vc_don_gia_l2: 0, vc_don_gia_l3: 0, vc_don_gia_tandung: 0, vc_don_gia_l21: 0
-          }
-        }
-      },
-      {
-        id: "prof-hongha-2",
-        name: "Hợp đồng CIF Giao tại xưởng Q2 Tăng cường (Hiệu lực từ 15/05/2026)",
-        supplierName: "Doanh nghiệp Tư nhân Hồng Hà",
-        region: "Vùng Yên Bái",
-        effectiveDate: "2026-05-15",
-        phuongThucVanChuyen: 'NCC',
-        tenDonViVanChuyen: "Bên bán tự giao hàng",
-        prices: {
-          "470×50×14": {
-            don_gia_l1: 4100000, don_gia_l2: 3600000, don_gia_l3: 3100000, don_gia_tandung: 1800000, don_gia_l21: 3300000,
-            don_gia_tam20: 4400000, don_gia_tam23: 4500000, don_gia_tam27: 4700000, don_gia_tam29: 4800000, don_gia_tam30: 4900000, don_gia_tam35: 5120000,
-            vc_don_gia_l1: 0, vc_don_gia_l2: 0, vc_don_gia_l3: 0, vc_don_gia_tandung: 0, vc_don_gia_l21: 0
-          }
-        }
-      },
-      {
-        id: "prof-bathuoc-1",
-        name: "Bản báo giá tiêu chuẩn - Thanh Hóa (Hiệu lực từ 01/01/2026)",
-        supplierName: "Hợp tác xã Lâm nghiệp Bá Thước",
-        region: "Vùng Thanh Hóa",
-        effectiveDate: "2026-01-01",
-        phuongThucVanChuyen: 'NCC',
-        tenDonViVanChuyen: 'Bên bán tự vận chuyển',
-        prices: {
-          "470×50×14": {
-            don_gia_l1: 3200000, don_gia_l2: 2700000, don_gia_l3: 2100000, don_gia_tandung: 1200000, don_gia_l21: 2400000,
-            don_gia_tam20: 3600000, don_gia_tam23: 3700000, don_gia_tam27: 3900005, don_gia_tam29: 4000000, don_gia_tam30: 4100000, don_gia_tam35: 4300000,
-            vc_don_gia_l1: 0, vc_don_gia_l2: 0, vc_don_gia_l3: 0, vc_don_gia_tandung: 0, vc_don_gia_l21: 0
-          },
-          "650×50×14": {
-            don_gia_l1: 3400000, don_gia_l2: 2900000, don_gia_l3: 2300000, don_gia_tandung: 1300000, don_gia_l21: 2600000,
-            don_gia_tam20: 3800000, don_gia_tam23: 3900000, don_gia_tam27: 4100000, don_gia_tam29: 4200000, don_gia_tam30: 4300000, don_gia_tam35: 4500000,
-            vc_don_gia_l1: 0, vc_don_gia_l2: 0, vc_don_gia_l3: 0, vc_don_gia_tandung: 0, vc_don_gia_l21: 0
-          },
-          "990×50×14": {
-            don_gia_l1: 3700000, don_gia_l2: 3200000, don_gia_l3: 2500000, don_gia_tandung: 1500000, don_gia_l21: 2900000,
-            don_gia_tam20: 4100000, don_gia_tam23: 4200000, don_gia_tam27: 4400000, don_gia_tam29: 4500000, don_gia_tam30: 4600000, don_gia_tam35: 4800000,
-            vc_don_gia_l1: 0, vc_don_gia_l2: 0, vc_don_gia_l3: 0, vc_don_gia_tandung: 0, vc_don_gia_l21: 0
-          }
-        }
-      }
-    ];
+    return [];
   });
-
   const handleApplyPricingProfile = (profileName: string) => {
     const prof = pricingProfiles.find(p => p.name === profileName);
     if (!prof) return;
