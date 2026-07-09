@@ -993,17 +993,13 @@ export default function InspectionForm({
 
   // Trích xuất gợi ý họ tên và chức vụ cán bộ nghiệm thu tham gia từ lịch sử để hỗ trợ autocomplete
   const participantNameSuggestions = React.useMemo<string[]>(() => {
-    const defaults = [
-      'Ngô Văn Trường', 'Đặng Văn Tùng', 'Nguyễn Văn Tiến', 'Trần Quốc Bảo'
-    ];
+    const defaults: string[] = [];
     const historical = historyInspections.flatMap(r => r.thanh_phan || []).map(tp => tp.ho_ten).filter(Boolean);
     return Array.from(new Set([...defaults, ...historical]));
   }, [historyInspections]);
 
   const participantRoleSuggestions = React.useMemo<string[]>(() => {
-    const defaults = [
-      'Người lập biên bản (QC)', 'QC bộ phận QLCL1', 'Trưởng phòng QLCL', 'Thủ kho lâm sản', 'Đại diện nhà cung cấp', 'Giám sát viên QC', 'Đại diện Ban Kiểm Soát'
-    ];
+    const defaults: string[] = [];
     const historical = historyInspections.flatMap(r => r.thanh_phan || []).map(tp => tp.chuc_vu).filter(Boolean);
     return Array.from(new Set([...defaults, ...historical]));
   }, [historyInspections]);
@@ -1026,10 +1022,7 @@ export default function InspectionForm({
 
   // Participants array state
   const [thanhPhan, setThanhPhan] = useState<ThanhPhan[]>(
-    initialBienBan?.thanh_phan || [
-      { id: '1', stt: 1, ho_ten: 'Ngô Văn Trường', chuc_vu: 'Người lập biên bản (QC)' },
-      { id: '2', stt: 2, ho_ten: 'Đặng Văn Tùng', chuc_vu: 'QC bộ phận QLCL1' }
-    ]
+    initialBienBan?.thanh_phan || []
   );
 
   // Master list of available officials / personnel (defined in Step 1)
@@ -1046,12 +1039,7 @@ export default function InspectionForm({
     } catch (e) {
       console.error("Lỗi đọc danh sách cán bộ master:", e);
     }
-    return [
-      { id: 'm-1', stt: 1, ho_ten: 'Ngô Văn Trường', chuc_vu: 'Người lập biên bản (QC)' },
-      { id: 'm-2', stt: 2, ho_ten: 'Đặng Văn Tùng', chuc_vu: 'QC bộ phận QLCL1' },
-      { id: 'm-5', stt: 3, ho_ten: 'Nguyễn Văn Tiến', chuc_vu: 'Đại diện Nhà cung cấp' },
-      { id: 'm-6', stt: 4, ho_ten: 'Trần Quốc Bảo', chuc_vu: 'Giám sát viên QC' }
-    ];
+    return [];
   });
 
   // Keep masterParticipants under localStorage sync
@@ -1591,38 +1579,7 @@ export default function InspectionForm({
   const [reminderNotes, setReminderNotes] = useState<ReminderNote[]>(() => {
     try {
       const saved = localStorage.getItem('nfc_reminder_notes_v1');
-      return saved ? JSON.parse(saved) : [
-        {
-          id: 'note-1',
-          title: 'Kiểm tra công nợ đối tác Yên Thế',
-          content: 'Chốt sản lượng gỗ xẻ thực tế KCS tuần này và so khớp hóa đơn đỏ trước ngày 20/06 để chuẩn bị hồ sơ thanh toán.',
-          category: 'debt',
-          priority: 'high',
-          dueDate: '2026-06-20',
-          isCompleted: false,
-          createdAt: '2026-06-16T18:00:00Z'
-        },
-        {
-          id: 'note-2',
-          title: 'Liên hệ Lâm sản Sông Chu ký phụ lục đơn giá',
-          content: 'Gửi mẫu hợp đồng cập nhật đơn giá mua dăm gỗ keo và các quy cách dăm mới theo quyết định của ban giám đốc.',
-          category: 'work',
-          priority: 'normal',
-          dueDate: '2026-06-22',
-          isCompleted: false,
-          createdAt: '2026-06-15T09:30:00Z'
-        },
-        {
-          id: 'note-3',
-          title: 'Nghiệm thu khối lượng bãi bốc xếp Kỳ Anh',
-          content: 'Chỉ đạo đội ngũ QC đo đạc chính xác đường kính đầu nhỏ gỗ tròn keo rừng trồng của hộ dân Liên kết lâm nghiệp.',
-          category: 'wood',
-          priority: 'low',
-          dueDate: '2026-06-18',
-          isCompleted: true,
-          createdAt: '2026-06-14T14:45:00Z'
-        }
-      ];
+      return saved ? JSON.parse(saved) : [];
     } catch (e) {
       return [];
     }
@@ -1770,12 +1727,7 @@ export default function InspectionForm({
   const [calendarNotes, setCalendarNotes] = useState<{[date: string]: string[]}>(() => {
     try {
       const saved = localStorage.getItem('erp_calendar_notes_v1');
-      return saved ? JSON.parse(saved) : {
-        '2026-06-10': ['Giao nhận lô keo FSC từ CÔNG TY GIA BẢO', 'Duyệt giá thanh toán BBNT GB01'],
-        '2026-06-13': ['Nghiệm thu thực tế gỗ keo đạt chuẩn FSC', 'Họp giao ban phòng Nguyên liệu'],
-        '2026-06-18': ['Kiểm xẻ gỗ thí nghiệm lâm nghiệp mẫu mới'],
-        '2026-06-25': ['Chốt công nợ tháng 6 với các nhà cung cấp']
-      };
+      return saved ? JSON.parse(saved) : {};
     } catch (e) {
       return {};
     }
@@ -1953,11 +1905,7 @@ export default function InspectionForm({
         console.error("Error loading payments:", err);
       }
     } else {
-      loaded = [
-        { id: 'pay-1', supplierName: 'HTX Lâm Nghiệp Yên Thế', amount: 150000000, paymentDate: '2026-05-10', paymentMethod: 'Chuyển khoản', receiptNo: 'UNC-HTX-001', note: 'Thanh toán đợt 1 tiền gỗ keo xẻ' },
-        { id: 'pay-2', supplierName: 'Công ty TNHH MTV Đồng Tâm', amount: 80000000, paymentDate: '2026-05-15', paymentMethod: 'Chuyển khoản', receiptNo: 'UNC-DT-042', note: 'Thanh toán tiền cước vận chuyển lô hàng ngày 14/05' },
-        { id: 'pay-3', supplierName: 'Doanh nghiệp tư nhân Hùng Phát', amount: 210000000, paymentDate: '2026-05-20', paymentMethod: 'Tiền mặt', receiptNo: 'PC-HP-009', note: 'Chi ứng trước đợt thu mua lô gỗ tròn rừng keo' }
-      ];
+      loaded = [];
     }
     return loaded.filter(p => !shouldExcludeSupplier(p.supplierName));
   });
@@ -2086,9 +2034,7 @@ Bạn có thể hỏi tôi những câu như:
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed;
-        }
+        if (Array.isArray(parsed)) return parsed;
       } catch (err) {
         console.error("Error loading payment proposals:", err);
       }
@@ -6396,7 +6342,7 @@ Bạn có thể hỏi tôi những câu như:
 
             // --- BÁO CÁO NHANH QC ---
             const renderQcDashboardSection = () => {
-              const isDemo = rList.length === 0 && useDemoInDashboard;
+              const isDemo = false;
 
               const fscList = rList.filter(bb => bb.chung_chi_fsc && bb.chung_chi_fsc.toUpperCase().includes('FSC'));
               const klsList = rList.filter(bb => !bb.chung_chi_fsc || !bb.chung_chi_fsc.toUpperCase().includes('FSC'));
@@ -7170,7 +7116,7 @@ Bạn có thể hỏi tôi những câu như:
             });
 
             // Determine active data structure based on the mode selected (default to live if database is populated, otherwise demo)
-            const isDemo = rList.length === 0 && useDemoInDashboard;
+            const isDemo = false;
 
             return (
               <div className="space-y-6 py-2 animate-fade-in font-sans pb-10">
