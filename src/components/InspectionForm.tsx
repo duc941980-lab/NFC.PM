@@ -1591,7 +1591,38 @@ export default function InspectionForm({
   const [reminderNotes, setReminderNotes] = useState<ReminderNote[]>(() => {
     try {
       const saved = localStorage.getItem('nfc_reminder_notes_v1');
-      return saved ? JSON.parse(saved) : [];
+      return saved ? JSON.parse(saved) : [
+        {
+          id: 'note-1',
+          title: 'Kiểm tra công nợ đối tác Yên Thế',
+          content: 'Chốt sản lượng gỗ xẻ thực tế KCS tuần này và so khớp hóa đơn đỏ trước ngày 20/06 để chuẩn bị hồ sơ thanh toán.',
+          category: 'debt',
+          priority: 'high',
+          dueDate: '2026-06-20',
+          isCompleted: false,
+          createdAt: '2026-06-16T18:00:00Z'
+        },
+        {
+          id: 'note-2',
+          title: 'Liên hệ Lâm sản Sông Chu ký phụ lục đơn giá',
+          content: 'Gửi mẫu hợp đồng cập nhật đơn giá mua dăm gỗ keo và các quy cách dăm mới theo quyết định của ban giám đốc.',
+          category: 'work',
+          priority: 'normal',
+          dueDate: '2026-06-22',
+          isCompleted: false,
+          createdAt: '2026-06-15T09:30:00Z'
+        },
+        {
+          id: 'note-3',
+          title: 'Nghiệm thu khối lượng bãi bốc xếp Kỳ Anh',
+          content: 'Chỉ đạo đội ngũ QC đo đạc chính xác đường kính đầu nhỏ gỗ tròn keo rừng trồng của hộ dân Liên kết lâm nghiệp.',
+          category: 'wood',
+          priority: 'low',
+          dueDate: '2026-06-18',
+          isCompleted: true,
+          createdAt: '2026-06-14T14:45:00Z'
+        }
+      ];
     } catch (e) {
       return [];
     }
@@ -1739,7 +1770,12 @@ export default function InspectionForm({
   const [calendarNotes, setCalendarNotes] = useState<{[date: string]: string[]}>(() => {
     try {
       const saved = localStorage.getItem('erp_calendar_notes_v1');
-      return saved ? JSON.parse(saved) : {};
+      return saved ? JSON.parse(saved) : {
+        '2026-06-10': ['Giao nhận lô keo FSC từ CÔNG TY GIA BẢO', 'Duyệt giá thanh toán BBNT GB01'],
+        '2026-06-13': ['Nghiệm thu thực tế gỗ keo đạt chuẩn FSC', 'Họp giao ban phòng Nguyên liệu'],
+        '2026-06-18': ['Kiểm xẻ gỗ thí nghiệm lâm nghiệp mẫu mới'],
+        '2026-06-25': ['Chốt công nợ tháng 6 với các nhà cung cấp']
+      };
     } catch (e) {
       return {};
     }
@@ -1917,7 +1953,11 @@ export default function InspectionForm({
         console.error("Error loading payments:", err);
       }
     } else {
-      loaded = [];
+      loaded = [
+        { id: 'pay-1', supplierName: 'HTX Lâm Nghiệp Yên Thế', amount: 150000000, paymentDate: '2026-05-10', paymentMethod: 'Chuyển khoản', receiptNo: 'UNC-HTX-001', note: 'Thanh toán đợt 1 tiền gỗ keo xẻ' },
+        { id: 'pay-2', supplierName: 'Công ty TNHH MTV Đồng Tâm', amount: 80000000, paymentDate: '2026-05-15', paymentMethod: 'Chuyển khoản', receiptNo: 'UNC-DT-042', note: 'Thanh toán tiền cước vận chuyển lô hàng ngày 14/05' },
+        { id: 'pay-3', supplierName: 'Doanh nghiệp tư nhân Hùng Phát', amount: 210000000, paymentDate: '2026-05-20', paymentMethod: 'Tiền mặt', receiptNo: 'PC-HP-009', note: 'Chi ứng trước đợt thu mua lô gỗ tròn rừng keo' }
+      ];
     }
     return loaded.filter(p => !shouldExcludeSupplier(p.supplierName));
   });
@@ -2040,113 +2080,8 @@ Bạn có thể hỏi tôi những câu như:
     }
   };
 
-  // --- STATE FOR MANAGING PAYMENT PROPOSALS (GIẤY ĐỂ THANH TOÁN) ---
+  // --- STATE FOR MANAGING PAYMENT PROPOSALS (GIẤY ĐỀ NGHỊ THANH TOÁN) ---
   const [paymentProposals, setPaymentProposals] = useState<PaymentProposal[]>(() => {
-    const initialProposals = [
-      {
-        id: 'prop-003',
-        proposalNo: '176', // Match invoice 176 precisely or ĐNTT-176
-        proposalDate: '2026-06-10',
-        supplierName: 'Công ty TNHH Sản Xuất TM Gia Bảo',
-        bbntId: 'GB 12.05',
-        invoiceId: 'inv-176',
-        amount: 166993370,
-        paymentMethod: 'Chuyển khoản',
-        bankName: 'Vietcombank - CN Nam Định',
-        bankAccountNo: '0681001234567',
-        bankAccountName: 'CONG TY TNHH SX TM GIA BAO',
-        reason: 'Thanh toán tiền mua gỗ keo xẻ',
-        status: 'Đã thanh toán',
-        requesterName: 'Nguyễn T.Mai Hiên',
-        notes: 'BP cung ứng gỗ'
-      },
-      {
-        id: 'prop-001',
-        proposalNo: 'ĐNTT-KT-0501',
-        proposalDate: '2026-05-22',
-        supplierName: 'Hợp tác xã Quyết Thắng',
-        bbntId: 'GB 12.05',
-        invoiceId: 'inv-001',
-        amount: 170856000,
-        paymentMethod: 'Chuyển khoản',
-        bankName: 'Vietcombank - CN Bắc Giang',
-        bankAccountNo: '1023456789',
-        bankAccountName: 'HTX QUYET THANG',
-        reason: 'Đề nghị thanh toán tiền gỗ keo xẻ xưởng lốc tháng 5/2026 theo BBNT GB 12.05 và HĐ xuất ngày 20/05',
-        status: 'Đã thanh toán',
-        requesterName: 'Trần Văn Hải (Phòng Nguyên liệu)',
-        notes: 'Hồ sơ đã đầy đủ hóa đơn chứng từ và bảng kê lâm sản'
-      },
-      {
-        id: 'prop-002',
-        proposalNo: 'ĐNTT-KT-0502',
-        proposalDate: '2026-05-29',
-        supplierName: 'Lâm trường Bắc Kạn',
-        bbntId: 'GB 12.08',
-        invoiceId: 'inv-002',
-        amount: 199584000,
-        paymentMethod: 'Chuyển khoản',
-        bankName: 'Agribank - CN Bắc Kạn',
-        bankAccountNo: '3100201019283',
-        bankAccountName: 'LAM TRUONG BAC KAN',
-        reason: 'Thanh toán tiền gỗ tròn rừng trồng keo lốc đợt 2 theo BBNT GB 12.08',
-        status: 'Chưa thanh toán',
-        requesterName: 'Nguyễn Thị Hương (Kế toán mua hàng)',
-        notes: 'Chờ sếp duyệt chữ ký số'
-      },
-      {
-        id: 'prop-pay-1',
-        proposalNo: 'UNC-HTX-001',
-        proposalDate: '2026-05-10',
-        supplierName: 'HTX Lâm Nghiệp Yên Thế',
-        bbntId: '',
-        invoiceId: '',
-        amount: 150000000,
-        paymentMethod: 'Chuyển khoản',
-        bankName: 'Vietcombank - CN Bắc Giang',
-        bankAccountNo: '1023456789',
-        bankAccountName: 'HTX LAM NGHIEP YEN THE',
-        reason: 'Thanh toán đợt 1 tiền gỗ keo xẻ',
-        status: 'Đã thanh toán',
-        requesterName: 'Phòng Kế toán',
-        notes: 'Thanh toán đợt 1 tiền gỗ keo xẻ'
-      },
-      {
-        id: 'prop-pay-2',
-        proposalNo: 'UNC-DT-042',
-        proposalDate: '2026-05-15',
-        supplierName: 'Công ty TNHH MTV Đồng Tâm',
-        bbntId: '',
-        invoiceId: '',
-        amount: 80000000,
-        paymentMethod: 'Chuyển khoản',
-        bankName: 'Vietcombank - CN Bắc Giang',
-        bankAccountNo: '1023456789',
-        bankAccountName: 'DONG TAM WOOD',
-        reason: 'Thanh toán tiền cước vận chuyển lô hàng ngày 14/05',
-        status: 'Đã thanh toán',
-        requesterName: 'Phòng Kế toán',
-        notes: 'Thanh toán tiền cước vận chuyển lô hàng ngày 14/05'
-      },
-      {
-        id: 'prop-pay-3',
-        proposalNo: 'PC-HP-009',
-        proposalDate: '2026-05-20',
-        supplierName: 'Doanh nghiệp tư nhân Hùng Phát',
-        bbntId: '',
-        invoiceId: '',
-        amount: 210000000,
-        paymentMethod: 'Tiền mặt',
-        bankName: '',
-        bankAccountNo: '',
-        bankAccountName: 'DNTN HUNG PHAT',
-        reason: 'Chi ứng trước đợt thu mua lô gỗ tròn rừng keo',
-        status: 'Đã thanh toán',
-        requesterName: 'Phòng Kế toán',
-        notes: 'Chi ứng trước đợt thu mua lô gỗ tròn rừng keo'
-      }
-    ];
-
     const saved = localStorage.getItem('wood_payment_proposals_v1');
     if (saved) {
       try {
@@ -3496,8 +3431,114 @@ Bạn có thể hỏi tôi những câu như:
         console.error("Lỗi parse custom_pricing_profiles:", e);
       }
     }
-    return [];
+    return [
+      {
+        id: "prof-backan-1",
+        name: "Hợp đồng Keo Tròn (Hiệu lực từ 01/05/2026)",
+        supplierName: "Lâm trường Bắc Kạn",
+        region: "Vùng Bắc Kạn",
+        effectiveDate: "2026-05-01",
+        phuongThucVanChuyen: 'LS_VC',
+        tenDonViVanChuyen: "Công ty Vận tải Bắc Kạn",
+        prices: {
+          "470×50×14": {
+            don_gia_l1: 3400000, don_gia_l2: 2900000, don_gia_l3: 2400000, don_gia_tandung: 1400000, don_gia_l21: 2700000,
+            don_gia_tam20: 3800000, don_gia_tam23: 3900000, don_gia_tam27: 4100000, don_gia_tam29: 4200000, don_gia_tam30: 4300000, don_gia_tam35: 4500000,
+            vc_don_gia_l1: 210000, vc_don_gia_l2: 200000, vc_don_gia_l3: 190000, vc_don_gia_tandung: 140000, vc_don_gia_l21: 190000,
+            vc_don_gia_tam20: 230000, vc_don_gia_tam23: 240000, vc_don_gia_tam27: 250000, vc_don_gia_tam29: 260000, vc_don_gia_tam30: 270000, vc_don_gia_tam35: 290000
+          },
+          "650×50×14": {
+            don_gia_l1: 3650000, don_gia_l2: 3150000, don_gia_l3: 2650000, don_gia_tandung: 1500500, don_gia_l21: 2850000,
+            don_gia_tam20: 4000000, don_gia_tam23: 4100000, don_gia_tam27: 4300000, don_gia_tam29: 4400000, don_gia_tam30: 4500000, don_gia_tam35: 4700000,
+            vc_don_gia_l1: 220000, vc_don_gia_l2: 210000, vc_don_gia_l3: 200000, vc_don_gia_tandung: 140000, vc_don_gia_l21: 200000,
+            vc_don_gia_tam20: 240000, vc_don_gia_tam23: 250000, vc_don_gia_tam27: 260000, vc_don_gia_tam29: 270000, vc_don_gia_tam30: 280000, vc_don_gia_tam35: 300000
+          }
+        }
+      },
+      {
+        id: "prof-backan-2",
+        name: "Hợp đồng Keo Tròn - Đợt tăng giá Jun-2026 (Hiệu lực từ 01/06/2026)",
+        supplierName: "Lâm trường Bắc Kạn",
+        region: "Vùng Bắc Kạn",
+        effectiveDate: "2026-06-01",
+        phuongThucVanChuyen: 'LS_VC',
+        tenDonViVanChuyen: "Công ty Vận tải Bắc Kạn",
+        prices: {
+          "470×50×14": {
+            don_gia_l1: 3500000, don_gia_l2: 3000000, don_gia_l3: 2500000, don_gia_tandung: 1500000, don_gia_l21: 2800000,
+            don_gia_tam20: 3900000, don_gia_tam23: 4000000, don_gia_tam27: 4200000, don_gia_tam29: 4300000, don_gia_tam30: 4400000, don_gia_tam35: 4600005,
+            vc_don_gia_l1: 220000, vc_don_gia_l2: 210000, vc_don_gia_l3: 200000, vc_don_gia_tandung: 150000, vc_don_gia_l21: 200000,
+            vc_don_gia_tam20: 240000, vc_don_gia_tam23: 250000, vc_don_gia_tam27: 260000, vc_don_gia_tam29: 270000, vc_don_gia_tam30: 280000, vc_don_gia_tam35: 300000
+          },
+          "650×50×14": {
+            don_gia_l1: 3750000, don_gia_l2: 3250000, don_gia_l3: 2750000, don_gia_tandung: 1600000, don_gia_l21: 2950000,
+            don_gia_tam20: 4100000, don_gia_tam23: 4200000, don_gia_tam27: 4400000, don_gia_tam29: 4500000, don_gia_tam30: 4600000, don_gia_tam35: 4800000,
+            vc_don_gia_l1: 230000, vc_don_gia_l2: 220000, vc_don_gia_l3: 210000, vc_don_gia_tandung: 150000, vc_don_gia_l21: 210000,
+            vc_don_gia_tam20: 250000, vc_don_gia_tam23: 260000, vc_don_gia_tam27: 270000, vc_don_gia_tam29: 280000, vc_don_gia_tam30: 290000, vc_don_gia_tam35: 310000
+          }
+        }
+      },
+      {
+        id: "prof-hongha-1",
+        name: "Hợp đồng CIF Giao tại xưởng Q2 (Hiệu lực từ 01/04/2026)",
+        supplierName: "Doanh nghiệp Tư nhân Hồng Hà",
+        region: "Vùng Yên Bái",
+        effectiveDate: "2026-04-01",
+        phuongThucVanChuyen: 'NCC',
+        tenDonViVanChuyen: "Bên bán tự giao hàng",
+        prices: {
+          "470×50×14": {
+            don_gia_l1: 4000000, don_gia_l2: 3500000, don_gia_l3: 3000000, don_gia_tandung: 1700000, don_gia_l21: 3200000,
+            don_gia_tam20: 4300000, don_gia_tam23: 4400000, don_gia_tam27: 4600000, don_gia_tam29: 4700000, don_gia_tam30: 4800000, don_gia_tam35: 5000000,
+            vc_don_gia_l1: 0, vc_don_gia_l2: 0, vc_don_gia_l3: 0, vc_don_gia_tandung: 0, vc_don_gia_l21: 0
+          }
+        }
+      },
+      {
+        id: "prof-hongha-2",
+        name: "Hợp đồng CIF Giao tại xưởng Q2 Tăng cường (Hiệu lực từ 15/05/2026)",
+        supplierName: "Doanh nghiệp Tư nhân Hồng Hà",
+        region: "Vùng Yên Bái",
+        effectiveDate: "2026-05-15",
+        phuongThucVanChuyen: 'NCC',
+        tenDonViVanChuyen: "Bên bán tự giao hàng",
+        prices: {
+          "470×50×14": {
+            don_gia_l1: 4100000, don_gia_l2: 3600000, don_gia_l3: 3100000, don_gia_tandung: 1800000, don_gia_l21: 3300000,
+            don_gia_tam20: 4400000, don_gia_tam23: 4500000, don_gia_tam27: 4700000, don_gia_tam29: 4800000, don_gia_tam30: 4900000, don_gia_tam35: 5120000,
+            vc_don_gia_l1: 0, vc_don_gia_l2: 0, vc_don_gia_l3: 0, vc_don_gia_tandung: 0, vc_don_gia_l21: 0
+          }
+        }
+      },
+      {
+        id: "prof-bathuoc-1",
+        name: "Bản báo giá tiêu chuẩn - Thanh Hóa (Hiệu lực từ 01/01/2026)",
+        supplierName: "Hợp tác xã Lâm nghiệp Bá Thước",
+        region: "Vùng Thanh Hóa",
+        effectiveDate: "2026-01-01",
+        phuongThucVanChuyen: 'NCC',
+        tenDonViVanChuyen: 'Bên bán tự vận chuyển',
+        prices: {
+          "470×50×14": {
+            don_gia_l1: 3200000, don_gia_l2: 2700000, don_gia_l3: 2100000, don_gia_tandung: 1200000, don_gia_l21: 2400000,
+            don_gia_tam20: 3600000, don_gia_tam23: 3700000, don_gia_tam27: 3900005, don_gia_tam29: 4000000, don_gia_tam30: 4100000, don_gia_tam35: 4300000,
+            vc_don_gia_l1: 0, vc_don_gia_l2: 0, vc_don_gia_l3: 0, vc_don_gia_tandung: 0, vc_don_gia_l21: 0
+          },
+          "650×50×14": {
+            don_gia_l1: 3400000, don_gia_l2: 2900000, don_gia_l3: 2300000, don_gia_tandung: 1300000, don_gia_l21: 2600000,
+            don_gia_tam20: 3800000, don_gia_tam23: 3900000, don_gia_tam27: 4100000, don_gia_tam29: 4200000, don_gia_tam30: 4300000, don_gia_tam35: 4500000,
+            vc_don_gia_l1: 0, vc_don_gia_l2: 0, vc_don_gia_l3: 0, vc_don_gia_tandung: 0, vc_don_gia_l21: 0
+          },
+          "990×50×14": {
+            don_gia_l1: 3700000, don_gia_l2: 3200000, don_gia_l3: 2500000, don_gia_tandung: 1500000, don_gia_l21: 2900000,
+            don_gia_tam20: 4100000, don_gia_tam23: 4200000, don_gia_tam27: 4400000, don_gia_tam29: 4500000, don_gia_tam30: 4600000, don_gia_tam35: 4800000,
+            vc_don_gia_l1: 0, vc_don_gia_l2: 0, vc_don_gia_l3: 0, vc_don_gia_tandung: 0, vc_don_gia_l21: 0
+          }
+        }
+      }
+    ];
   });
+
   const handleApplyPricingProfile = (profileName: string) => {
     const prof = pricingProfiles.find(p => p.name === profileName);
     if (!prof) return;
@@ -19097,11 +19138,31 @@ Bạn có thể hỏi tôi những câu như:
                         if (step1) {
                           const step2 = window.prompt("Vui lòng nhập chữ 'XOA' viết hoa không dấu để xác nhận:");
                           if (step2 === "XOA") {
-                            backupKeys.forEach(bk => {
-                              localStorage.removeItem(bk.key);
-                            });
-                            alert("Cơ sở dữ liệu đã được đặt lại thành công! Ứng dụng sẽ tải lại trang.");
-                            window.location.reload();
+                            // Xóa sạch toàn bộ dữ liệu cục bộ của ứng dụng trên trình duyệt
+                            // Cách này xử lý cả các key chưa khai báo trong backupKeys như giấy đề nghị thanh toán,
+                            // lịch, ghi chú, sản lượng, nhân sự, đơn giá, cache...
+                            localStorage.clear();
+                            sessionStorage.clear();
+
+                            try {
+                              if ('indexedDB' in window && typeof indexedDB.databases === 'function') {
+                                indexedDB.databases().then((dbs) => {
+                                  dbs.forEach((db) => {
+                                    if (db.name) indexedDB.deleteDatabase(db.name);
+                                  });
+                                }).finally(() => {
+                                  alert("Cơ sở dữ liệu đã được đặt lại thành công! Ứng dụng sẽ tải lại trang.");
+                                  window.location.reload();
+                                });
+                              } else {
+                                alert("Cơ sở dữ liệu đã được đặt lại thành công! Ứng dụng sẽ tải lại trang.");
+                                window.location.reload();
+                              }
+                            } catch (err) {
+                              console.warn("Không thể xóa IndexedDB, tiếp tục tải lại trang:", err);
+                              alert("Cơ sở dữ liệu đã được đặt lại thành công! Ứng dụng sẽ tải lại trang.");
+                              window.location.reload();
+                            }
                           } else {
                             alert("Mã xác thực không đúng. Đã hủy lệnh xóa.");
                           }
