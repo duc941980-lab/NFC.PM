@@ -880,15 +880,29 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   // -------------------------------------------------------------
   // 4. Ledger rows
   // -------------------------------------------------------------
-  const paymentRows = bb.bang_thanh_toan || [];
+  const isTransportPaymentRow = (row: any) => {
+    const tenHang = (row?.ten_hang || '').trim().toLowerCase();
+    const phanHang = (row?.phan_hang || '').trim().toLowerCase();
+    return tenHang.startsWith('cước vc') || phanHang.startsWith('vc ');
+  };
+
+  const isSubPaymentRow = (tenHang?: string) => {
+    const norm = (tenHang || '').trim().toLowerCase();
+    return norm.startsWith('loại 2') || norm.startsWith('loại 3') || norm === 'loại tận dụng' || norm.startsWith('tấm') || norm.startsWith('l2') || norm.startsWith('l3');
+  };
+
+  const paymentRows = (bb.bang_thanh_toan || []).filter(row => !isTransportPaymentRow(row));
   let rowIdx = 7;
+  let runningStt = 1;
 
   paymentRows.forEach((p, idx) => {
     worksheet.getRow(rowIdx).height = 30;
     worksheet.mergeCells(rowIdx, 2, rowIdx, 3);
 
+    const isSub = isSubPaymentRow(p.ten_hang);
+
     const cellTT = worksheet.getCell(rowIdx, 1);
-    cellTT.value = p.stt || idx + 1;
+    cellTT.value = isSub ? '' : runningStt++;
     cellTT.font = fontRegular;
     cellTT.alignment = alignCenter;
 
@@ -898,7 +912,7 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
     cellName.alignment = alignCenter;
 
     const cellDvt = worksheet.getCell(rowIdx, 4);
-    cellDvt.value = p.dvt || 'm3';
+    cellDvt.value = isSub ? '"' : (p.dvt || 'm3');
     cellDvt.font = fontRegular;
     cellDvt.alignment = alignCenter;
 

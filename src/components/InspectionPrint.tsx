@@ -169,8 +169,16 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
       chi_tiet: row.chi_tiet ? row.chi_tiet.map(ct => ({ ...ct })) : []
     }))
   );
+  const isTransportPaymentRow = (row: any) => {
+    const tenHang = (row?.ten_hang || '').trim().toLowerCase();
+    const phanHang = (row?.phan_hang || '').trim().toLowerCase();
+    return tenHang.startsWith('cước vc') || phanHang.startsWith('vc ');
+  };
+
   const [paymentRows, setPaymentRows] = useState(() => 
-    (bienBan.bang_thanh_toan || []).map(row => ({ ...row }))
+    (bienBan.bang_thanh_toan || [])
+      .filter(row => !isTransportPaymentRow(row))
+      .map(row => ({ ...row }))
   );
   const [phatSinhChiPhi, setPhatSinhChiPhi] = useState(() => 
     (bienBan.phat_sinh_chi_phi || []).map(item => ({ ...item }))

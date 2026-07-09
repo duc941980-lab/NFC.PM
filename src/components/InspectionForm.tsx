@@ -4032,51 +4032,9 @@ Bạn có thể hỏi tôi những câu như:
               phan_hang: cat.name
             });
 
-            // B. Wood transport row (only auto-generate if transportation mode is 'LS_VC' and price > 0)
-            const vcPrice = (phuongThucVanChuyen === 'LS_VC') ? (priceRec ? (priceRec[cat.vcPriceKey] as number || 0) : 0) : 0;
-            if (vcPrice > 0) {
-              const vcCompoundId = `${spec.id}-${cat.name}-vc`;
-              const existingVcRow = prev.find(p => p.id === vcCompoundId) || 
-                                    initialBienBan?.bang_thanh_toan?.find(p => p.id === vcCompoundId) ||
-                                    loadedBienBan?.bang_thanh_toan?.find(p => p.id === vcCompoundId);
-              
-              const vcBonus = existingVcRow ? (existingVcRow.thuong || 0) : 0;
-              const vcVcAmount = existingVcRow ? (typeof existingVcRow.van_chuyen === 'number' ? existingVcRow.van_chuyen : (parseFloat(existingVcRow.van_chuyen as any) || 0)) : 0;
-              const vcFscAmount = existingVcRow ? (typeof existingVcRow.hd_fsc === 'number' ? existingVcRow.hd_fsc : (parseFloat(existingVcRow.hd_fsc as any) || 0)) : 0;
-              const vcTtAmount = existingVcRow ? (typeof existingVcRow.thanh_toan === 'number' ? existingVcRow.thanh_toan : (parseFloat(existingVcRow.thanh_toan as any) || 0)) : 0;
-              const vcFinalPrice = vcPrice + vcBonus + vcVcAmount + vcFscAmount + vcTtAmount;
-
-              const labelVanChuyen = tenDonViVanChuyen ? ` — Đvị: ${tenDonViVanChuyen}` : '';
-
-              let rowVcTenHang = '';
-              if (bRow.co_phan_loai) {
-                if (isFirstVcCategoryOfSpec) {
-                  rowVcTenHang = `Cước VC ${sizeFormatted} ${cat.name}${labelVanChuyen}`;
-                  isFirstVcCategoryOfSpec = false;
-                } else {
-                  rowVcTenHang = `Cước VC ${cat.name}${labelVanChuyen}`;
-                }
-              } else {
-                rowVcTenHang = `Cước VC ${sizeFormatted}${labelVanChuyen}`;
-              }
-
-              newRows.push({
-                id: vcCompoundId,
-                stt: currentStt++,
-                ten_hang: rowVcTenHang,
-                dvt: 'm³',
-                kl: matchedDetail.kl_nhap_kho,
-                don_gia: vcPrice,
-                thuong: vcBonus,
-                don_gia_tong: vcFinalPrice,
-                thanh_tien: matchedDetail.kl_nhap_kho * vcFinalPrice,
-                van_chuyen: vcVcAmount,
-                hd_fsc: vcFscAmount,
-                thanh_toan: vcTtAmount,
-                kich_thuoc_mm: spec.kich_thuoc_mm,
-                phan_hang: `VC ${cat.name}`
-              });
-            }
+            // B. Không tự sinh dòng “Cước VC ...” trong bảng chi tiết thanh toán.
+            // Chi phí vận chuyển đã được cộng vào dòng hàng chính qua các cột/đơn giá liên quan.
+            // Giữ bảng in đúng mẫu: 470*50*14 Loại 1 / Loại 2 / Loại 3, không thêm dòng Cước VC.
           }
         });
       });
