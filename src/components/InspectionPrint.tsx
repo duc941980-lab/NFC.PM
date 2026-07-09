@@ -328,7 +328,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                 updated[idx].kich_thuoc_mm = e.target.value;
                 setQuyCachB(updated);
               }}
-              className="bg-transparent text-center font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+              className="bg-transparent text-center font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
             />
           </td>
           <td className="border-r border-black px-2 py-0.5 text-center font-serif font-semibold">
@@ -367,7 +367,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                 updated[idx].kich_thuoc_mm = e.target.value;
                 setQuyCachB(updated);
               }}
-              className="bg-transparent text-center font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+              className="bg-transparent text-center font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
             />
           </td>
           <td className="border-r border-black px-2 py-0.5 text-center font-serif font-bold text-slate-900">
@@ -449,7 +449,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                     setQuyCachB(updated);
                   }
                 }}
-                className="bg-transparent text-center font-serif font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                className="bg-transparent text-center font-serif font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
               />
             </td>
             <td className="px-2 py-0.5 text-left font-sans text-[10px] text-slate-400">
@@ -515,10 +515,13 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
   const grandTotal = Math.max(0, baseTotal + incurredTotal);
 
   const cleanPaymentWoodName = (value?: string) => {
-    const raw = (value || '').trim();
+    const raw = (value || '').replace(/\s+/g, ' ').trim();
     if (!raw) return 'gỗ keo xẻ thô';
+
+    // Chuẩn hoá đúng 1 phần tên gỗ, không để lặp dòng sai trong mẫu thanh toán.
     return raw
       .replace(/^Gỗ\s+sơ\s+chế\s+thông\s+thường\s*-\s*/i, '')
+      .replace(/\s+theo\s+HĐ\s+số:.*$/i, '')
       .trim();
   };
 
@@ -894,14 +897,14 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                 <th className="px-3 py-1 text-left w-[20%] font-bold text-black">
                   <div className="flex items-center gap-1 whitespace-nowrap">
                     <span className="shrink-0">BBNT số:</span>
-                    <span className="hidden print:inline font-serif font-bold text-black">
+                    <span className="hidden print:inline font-serif font-normal text-black">
                       {maBbnt}
                     </span>
                     <input
                       type="text"
                       value={maBbnt}
                       onChange={(e) => setMaBbnt(e.target.value)}
-                      className="bg-transparent text-left font-serif font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:hidden"
+                      className="bg-transparent text-left font-serif font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:hidden"
                       autoComplete="off"
                     />
                   </div>
@@ -930,7 +933,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                           updated[index].ho_ten = e.target.value;
                           setMembers(updated);
                         }}
-                        className="bg-transparent text-center font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                        className="bg-transparent text-center font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                       />
                     </td>
                     <td className="border-r border-black px-2 py-1.5 w-[22%]">
@@ -969,7 +972,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                             type="text"
                             value={ngayNt}
                             onChange={(e) => setNgayNt(e.target.value)}
-                            className="bg-transparent text-left font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:hidden"
+                            className="bg-transparent text-center font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:hidden"
                           />
                         </div>
                       </td>
@@ -989,7 +992,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                     <span className="font-bold text-black">Tên - chủng loại gỗ:</span>
                     <span className="font-bold text-black uppercase">Gỗ keo rừng trồng</span>
                   </div>
-                  <div className="text-center font-bold text-black mt-1 py-1 text-[12.5px] flex items-center justify-center gap-1">
+                  <div className="text-center font-normal text-black mt-1 py-1 text-[12.5px] flex items-center justify-center gap-1">
                     <span>Gỗ sơ chế thông thường -</span>
                     <span className="hidden print:inline-block font-bold text-black uppercase">
                       {loaiGo}
@@ -999,7 +1002,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                       value={loaiGo}
                       onChange={(e) => setLoaiGo(e.target.value)}
                       style={{ width: `${Math.max((loaiGo || '').length * 8.5, 60)}px` }}
-                      className="bg-transparent text-left font-bold text-black border-b border-dashed border-black/20 hover:border-black/40 focus:border-indigo-500 focus:outline-none print:hidden uppercase px-1"
+                      className="bg-transparent text-center font-normal text-black border-b border-dashed border-black/20 hover:border-black/40 focus:border-indigo-500 focus:outline-none print:hidden uppercase px-1"
                     />
                   </div>
                 </td>
@@ -1010,7 +1013,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                       rows={2}
                       value={diaDiemNhap}
                       onChange={(e) => setDiaDiemNhap(e.target.value)}
-                      className="bg-transparent text-left font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent resize-none overflow-hidden"
+                      className="bg-transparent text-center font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent resize-none overflow-hidden"
                     />
                   </div>
                 </td>
@@ -1078,7 +1081,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                             updated[index].kich_thuoc_mm = e.target.value;
                             setQuyCachA(updated);
                           }}
-                          className="bg-transparent text-center font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                          className="bg-transparent text-center font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                         />
                       </td>
                       <td className="border-r border-black p-1 text-center w-[15%]">m3</td>
@@ -1093,7 +1096,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                             updated[index].kl_nguyen_thuy = val;
                             setQuyCachA(updated);
                           }}
-                          className="bg-transparent text-center font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                          className="bg-transparent text-center font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                         />
                       </td>
                     </tr>
@@ -1288,22 +1291,22 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
           
           {/* HEADER BAR SHEET 2 - MATCH PAYMENT EXCEL TEMPLATE */}
           <div className="flex flex-col items-center justify-center mb-4">
-            <div className="text-center font-bold text-[18px] uppercase tracking-wide text-black font-sans flex items-center justify-center gap-1.5">
+            <div className="text-center font-bold text-[16px] uppercase tracking-wide text-black font-serif flex items-center justify-center gap-1.5">
               <span>SỐ:</span>
               <input 
                 type="text" 
                 value={maBbnt} 
                 onChange={(e) => setMaBbnt(e.target.value)} 
-                className="bg-transparent text-center font-bold text-[18px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-32 print:border-none print:bg-transparent"
+                className="bg-transparent text-center font-bold text-[16px] text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-32 print:border-none print:bg-transparent"
                 placeholder="SỐ"
               />
             </div>
 
-            <div className="text-center font-bold text-[12.5px] text-black font-serif mt-1">
+            <div className="text-center font-bold text-[11px] text-black font-serif mt-1">
               Ngày {parseDateParts(ngayThanhToanPay).day} tháng {parseDateParts(ngayThanhToanPay).month} năm {parseDateParts(ngayThanhToanPay).year}
             </div>
 
-            <div className="mt-3 w-full grid grid-cols-3 gap-6 text-[12px] font-serif font-bold text-black">
+            <div className="mt-3 w-full grid grid-cols-3 gap-6 text-[11px] font-serif font-normal text-black">
               <div className="flex items-center justify-center gap-8">
                 <span className="whitespace-nowrap">Ngày thanh toán:</span>
                 <span className="whitespace-nowrap">{ngayThanhToanPay}</span>
@@ -1321,13 +1324,13 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
 
           {/* DETAILED LEDGER PAYMENTS TABLE */}
           <div className="mt-2">
-            <div className="bg-[#0f5d32] text-white text-center font-bold text-[22px] uppercase tracking-wide py-1 border border-black border-b-0 font-serif">
+            <div className="bg-white text-black text-center font-bold text-[18px] uppercase tracking-wide py-1 border border-black border-b-0 font-serif">
               BẢNG CHI TIẾT THANH TOÁN
             </div>
             <div className="h-9 border-l border-r border-black bg-white"></div>
-            <table className="w-full border-collapse border border-black text-center text-[11.5px] font-serif text-black">
+            <table className="w-full border-collapse border border-black text-center text-[11px] font-serif text-black">
               <thead>
-                <tr className="bg-[#0f5d32] text-white text-center font-bold text-[11px] border-b border-black h-8">
+                <tr className="bg-white text-black text-center font-bold text-[12px] border-b border-black h-8">
                   <th className="border-r border-b border-black p-1.5 w-10 text-center font-bold">STT</th>
                   <th className="border-r border-b border-black p-1.5 text-center font-bold min-w-[200px]">Tên hàng</th>
                   <th className="border-r border-b border-black p-1.5 w-12 text-center font-bold">Đvt</th>
@@ -1356,7 +1359,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
               <tbody>
                 {/* Spanning Row: Wood Category & Contract */}
                 <tr>
-                  <td colSpan={colSpanTotal} className="border-r border-b border-black p-2 pl-3 text-left font-bold italic text-black bg-[#d8f5df] font-serif text-[12px] leading-tight">
+                  <td colSpan={colSpanTotal} className="border-r border-b border-black p-2 pl-3 text-left italic text-black bg-white font-serif text-[11px] leading-tight">
                     {paymentContractLine}
                   </td>
                 </tr>
@@ -1373,27 +1376,27 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         <td className="border-r border-black p-1.5 text-center font-serif text-black font-medium">
                           {sttText}
                         </td>
-                        <td className="border-r border-black p-1.5 text-left pl-3 text-black font-bold">
+                        <td className="border-r border-black p-1.5 text-center text-black font-normal">
                           <input
                             type="text"
                             value={p.ten_hang}
                             onChange={(e) => handleUpdatePaymentField(idx, 'ten_hang', e.target.value)}
-                            className="bg-transparent text-left font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                            className="bg-transparent text-center font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                           />
                         </td>
                         <td className="border-r border-black p-1.5 text-center text-black">
                           {isSub ? '"' : 'm3'}
                         </td>
-                        <td className="border-r border-black p-1.5 text-center font-serif text-black font-bold">
+                        <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
                           <input
                             type="number"
                             step="0.001"
                             value={p.kl}
                             onChange={(e) => handleUpdatePaymentField(idx, 'kl', parseFloat(e.target.value) || 0)}
-                            className="bg-transparent text-center font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                            className="bg-transparent text-center font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                           />
                         </td>
-                        <td className="border-r border-black p-1.5 text-center font-serif text-black font-bold">
+                        <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
                           <input
                             type="text"
                             inputMode="numeric"
@@ -1408,7 +1411,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         </td>
                         
                         {hasThuongColumn && (
-                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-bold">
+                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
                             <input
                               type="text"
                               inputMode="numeric"
@@ -1425,7 +1428,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         )}
                         
                         {hasVanChuyenColumn && (
-                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-bold">
+                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
                             <input
                               type="text"
                               inputMode="numeric"
@@ -1442,7 +1445,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         )}
                         
                         {hasFscColumn && (
-                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-bold">
+                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
                             <input
                               type="text"
                               inputMode="numeric"
@@ -1459,7 +1462,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         )}
                         
                         {hasThanhToanColumn && (
-                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-bold">
+                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
                             <input
                               type="text"
                               inputMode="numeric"
@@ -1476,12 +1479,12 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         )}
                         
                         {hasAnyAdjustment && (
-                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-bold">
+                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
                             {p.don_gia_tong ? p.don_gia_tong.toLocaleString('vi-VN') : '0'}
                           </td>
                         )}
                         
-                        <td className="p-1.5 text-center font-serif font-bold text-black">
+                        <td className="p-1.5 text-center font-serif font-normal text-black">
                           {p.thanh_tien ? p.thanh_tien.toLocaleString('vi-VN') : '0'}
                         </td>
                       </tr>
@@ -1601,7 +1604,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                   return (
                     <tr className="bg-white font-bold border-b border-black text-[12px] h-10">
                       <td colSpan={3} className="border-r border-black p-2 text-center tracking-wider font-extrabold text-black">Cộng</td>
-                      <td className="border-r border-black p-2 text-center font-serif font-bold text-black">
+                      <td className="border-r border-black p-2 text-center font-serif font-normal text-black">
                         {totalPaymentVol.toLocaleString('vi-VN', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
                       </td>
                       
@@ -1609,7 +1612,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         <td key={i} className="border-r border-black p-2 text-center text-black font-bold"></td>
                       ))}
                       
-                      <td className="p-2 text-center font-serif font-bold text-black bg-white">
+                      <td className="p-2 text-center font-serif font-normal text-black bg-white">
                         {grandTotal.toLocaleString('vi-VN')}
                       </td>
                     </tr>

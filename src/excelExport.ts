@@ -737,8 +737,8 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   const fontRegular = { name: 'Times New Roman', size: 11, bold: false };
   const fontBold = { name: 'Times New Roman', size: 11, bold: true };
   const fontItalic = { name: 'Times New Roman', size: 11, italic: true };
-  const fontHeader = { name: 'Times New Roman', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
-  const fontTitle = { name: 'Times New Roman', size: 18, bold: true, color: { argb: 'FFFFFFFF' } };
+  const fontHeader = { name: 'Times New Roman', size: 12, bold: true, color: { argb: 'FF000000' } };
+  const fontTitle = { name: 'Times New Roman', size: 18, bold: true, color: { argb: 'FF000000' } };
   const fontSign = { name: 'Times New Roman', size: 11, bold: true };
   const fontSignName = { name: 'Times New Roman', size: 11, bold: true, italic: true };
 
@@ -753,8 +753,8 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
     right: { style: 'thin' as const, color: { argb: 'FF000000' } }
   };
 
-  const greenFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FF145D32' } };
-  const lightGreenFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFD9FBE5' } };
+  const greenFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFFFFFF' } };
+  const lightGreenFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFFFFFF' } };
   const lightGrayFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFF8FAFC' } };
   const lightPeachFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFFF7ED' } };
 
@@ -826,10 +826,11 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   applyBorderToRange(worksheet, 'A3', 'G3', thinBorder);
 
   const cleanPaymentWoodName = (value?: string) => {
-    const raw = (value || '').trim();
+    const raw = (value || '').replace(/\s+/g, ' ').trim();
     if (!raw) return 'gỗ keo xẻ thô';
     return raw
       .replace(/^Gỗ\s+sơ\s+chế\s+thông\s+thường\s*-\s*/i, '')
+      .replace(/\s+theo\s+HĐ\s+số:.*$/i, '')
       .trim();
   };
   const loaiGo = cleanPaymentWoodName(bb.loai_go || 'gỗ keo xẻ thô');
@@ -874,7 +875,7 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   // -------------------------------------------------------------
   // 3. Description row
   // -------------------------------------------------------------
-  worksheet.getRow(6).height = 30;
+  worksheet.getRow(6).height = 22;
   worksheet.mergeCells('B6:G6');
   const descCell = worksheet.getCell('B6');
   descCell.value = paymentDescription;
@@ -919,7 +920,7 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
     cellName.alignment = alignCenter;
 
     const cellDvt = worksheet.getCell(rowIdx, 4);
-    cellDvt.value = isSub ? '"' : (p.dvt || 'm3');
+    cellDvt.value = isSub ? '"' : (p.dvt || 'm³');
     cellDvt.font = fontRegular;
     cellDvt.alignment = alignCenter;
 
