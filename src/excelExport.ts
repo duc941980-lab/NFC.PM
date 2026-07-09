@@ -825,7 +825,14 @@ export async function exportPaymentToExcel(bb: BienBan, meta?: {
   titleCell.fill = greenFill;
   applyBorderToRange(worksheet, 'A3', 'G3', thinBorder);
 
-  const loaiGo = (bb.loai_go || 'gỗ keo xẻ thô').trim();
+  const cleanPaymentWoodName = (value?: string) => {
+    const raw = (value || '').trim();
+    if (!raw) return 'gỗ keo xẻ thô';
+    return raw
+      .replace(/^Gỗ\s+sơ\s+chế\s+thông\s+thường\s*-\s*/i, '')
+      .trim();
+  };
+  const loaiGo = cleanPaymentWoodName(bb.loai_go || 'gỗ keo xẻ thô');
   const hopDongText = bb.so_hop_dong
     ? ` theo HĐ số: ${bb.so_hop_dong}${bb.ngay_hop_dong ? ` ngày ${bb.ngay_hop_dong}` : ''}`
     : '';
