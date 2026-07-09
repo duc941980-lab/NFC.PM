@@ -561,11 +561,7 @@ export default function InspectionForm({
   });
 
   const [customSalesEmployeesList, setCustomSalesEmployeesList] = useState<string[]>(() => {
-    const defaults = [
-      'Trần Văn B',
-      'Lê Văn C',
-      'Phạm Hồng Hải'
-    ];
+    const defaults: string[] = [];
     try {
       const saved = localStorage.getItem('custom_sales_employees_list');
       if (saved !== null) {
@@ -604,13 +600,7 @@ export default function InspectionForm({
   };
 
   const [customSuppliersList, setCustomSuppliersList] = useState<string[]>(() => {
-    const defaults = [
-      'Lâm trường Bắc Kạn',
-      'Doanh nghiệp Tư nhân Hồng Hà',
-      'Hợp tác xã Quyết Thắng',
-      'Công ty Cổ phần Lâm sản Hà Nội',
-      'Lâm trường Yên Bái'
-    ];
+    const defaults: string[] = [];
     try {
       const saved = localStorage.getItem('custom_suppliers_list');
       if (saved !== null) {
@@ -622,7 +612,7 @@ export default function InspectionForm({
     } catch (e) {
       console.error("Lỗi parse custom_suppliers_list:", e);
     }
-    return defaults.filter(s => !shouldExcludeSupplier(s));
+    return [];
   });
   useEffect(() => {
   async function loadSuppliers() {
@@ -694,7 +684,7 @@ export default function InspectionForm({
     } catch (e) {
       console.error("Lỗi parse regions_suppliers_list:", e);
     }
-    return cleanList(defaults);
+    return [];
   });
 
   const [activeRegionTab, setActiveRegionTab] = useState<string>(() => {
