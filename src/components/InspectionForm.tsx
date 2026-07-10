@@ -19688,7 +19688,14 @@ Bạn có thể hỏi tôi những câu như:
         const matchedBBNTs = historyInspections.filter(bb => inv.bbntIds?.includes(bb.ma_bbnt));
         
         // Accumulate all the wood lines from their payment logs
-        const invoiceDetailRows = matchedBBNTs.flatMap(bb => bb.bang_thanh_toan || []);
+        const invoiceDetailRows = matchedBBNTs.flatMap(bb =>
+          (bb.bang_thanh_toan || []).map(row => ({
+            ...row,
+            sourceBbnt: bb.ma_bbnt,
+            sourceContractNo: bb.so_hop_dong || '',
+            sourceContractDate: bb.ngay_hop_dong || '',
+          }))
+        );
         
         // Fallback row dynamically synthesized if empty
         const displayRows = invoiceDetailRows.length > 0 ? invoiceDetailRows : [
@@ -19702,11 +19709,32 @@ Bạn có thể hỏi tôi những câu như:
             thuong: 0,
             don_gia_tong: Math.round(inv.amountBeforeTax / (inv.totalVolume || 1)),
             thanh_tien: inv.amountBeforeTax || 0,
+            van_chuyen: 0,
+            hd_fsc: 0,
+            thanh_toan: 0,
+            sourceBbnt: inv.invoiceNo || '',
+            sourceContractNo: '',
+            sourceContractDate: '',
           }
         ];
 
+        const toMoneyNumber = (value: string | number | undefined) => {
+          if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+          if (!value) return 0;
+          const normalized = String(value).replace(/[^0-9-]/g, '');
+          return Number(normalized) || 0;
+        };
         const totalVolSum = displayRows.reduce((sum, r) => sum + (r.kl || 0), 0);
         const totalAmountBeforeTaxSum = displayRows.reduce((sum, r) => sum + (r.thanh_tien || 0), 0);
+        const totalBaseWood = displayRows.reduce((sum, r) => sum + ((r.kl || 0) * (r.don_gia || 0)), 0);
+        const totalBonus = displayRows.reduce((sum, r) => sum + ((r.kl || 0) * toMoneyNumber(r.thuong)), 0);
+        const totalTransport = displayRows.reduce((sum, r) => sum + ((r.kl || 0) * toMoneyNumber(r.van_chuyen)), 0);
+        const totalFsc = displayRows.reduce((sum, r) => sum + ((r.kl || 0) * toMoneyNumber(r.hd_fsc)), 0);
+        const invoiceVariance = (inv.amountBeforeTax || 0) - totalAmountBeforeTaxSum;
+        const contractReferences = matchedBBNTs
+          .filter(bb => bb.so_hop_dong)
+          .map(bb => `${bb.so_hop_dong}${bb.ngay_hop_dong ? ` ngày ${bb.ngay_hop_dong.split('-').reverse().join('/')}` : ''}`)
+          .filter((value, index, arr) => arr.indexOf(value) === index);
 
         const getSupplierMockAddress = (name: string) => {
           if (name.includes('Ngọc Minh')) return 'Xóm Cây Hồng, Xã Phú Xuyên, Tỉnh Thái Nguyên';
@@ -19819,92 +19847,80 @@ Bạn có thể hỏi tôi những câu như:
 
                 {/* Subtitle / Document name */}
                 <div className="text-center my-6 space-y-1 font-serif">
-                  <h2 className="text-base font-black uppercase tracking-wide text-black">
+                  <h2 className="mx-auto max-w-full whitespace-normal break-words text-[15px] leading-snug font-black uppercase tracking-normal text-black print:text-[14px]">
                     BẢNG KÊ CHI TIẾT LÂM SẢN HẠCH TOÁN ĐỐI CHIẾU HÓA ĐƠN VAT
                   </h2>
-                  <p className="text-[10px] text-zinc-500 italic font-medium print:text-black">
+                  <p className="text-[10px] leading-relaxed text-zinc-500 italic font-medium print:text-black">
                     (Căn cứ theo số liệu thanh toán đã duyệt thuộc Biên bản số: {inv.bbntIds?.join(', ') || 'N/A'})
+                  </p>
+                  <p className="text-[10px] leading-relaxed font-bold text-black">
+                    Thanh toán theo hợp đồng: {contractReferences.length > 0 ? contractReferences.join('; ') : 'Chưa cập nhật số hợp đồng'}
                   </p>
                 </div>
 
-                {/* Data Table with custom borders exact match to spreadsheet layout */}
-                <table className="w-full border-collapse border border-black text-xs font-medium text-black mb-6 font-sans">
+                {/* Data Table: theo dõi đầy đủ giá gốc, thưởng, vận chuyển và HĐ FSC */}
+                <table className="w-full table-fixed border-collapse border border-black text-[10px] font-medium text-black mb-6 font-serif print:text-[9px]">
                   <thead>
-                    <tr className="bg-slate-50/50 text-[11px] font-extrabold text-black h-10 select-none border-b border-black">
-                      <th className="border border-black px-2 py-1 text-center font-bold w-12">TT</th>
-                      <th className="border border-black px-3 py-1 text-left font-bold">Tên, quy cách, kích thước</th>
-                      <th className="border border-black px-2 py-1 text-center font-bold w-16">Đvt</th>
-                      <th className="border border-black px-3 py-1 text-right font-bold w-28">KL</th>
-                      <th className="border border-black px-3 py-1 text-right font-bold w-32">Đơn giá gốc</th>
-                      <th className="border border-black px-3 py-1 text-right font-bold w-24">Thưởng</th>
-                      <th className="border border-black px-3 py-1 text-right font-bold w-32">Đơn Giá</th>
-                      <th className="border border-black px-3 py-1 text-right font-bold w-36">Thành tiền</th>
+                    <tr className="bg-slate-50/50 font-extrabold text-black h-10 select-none border-b border-black">
+                      <th className="border border-black px-1 py-1 text-center w-[4%]">TT</th>
+                      <th className="border border-black px-2 py-1 text-left w-[23%]">Tên, quy cách, kích thước</th>
+                      <th className="border border-black px-1 py-1 text-center w-[5%]">Đvt</th>
+                      <th className="border border-black px-2 py-1 text-right w-[8%]">KL</th>
+                      <th className="border border-black px-2 py-1 text-right w-[11%]">Đơn giá gốc</th>
+                      <th className="border border-black px-2 py-1 text-right w-[9%]">Thưởng</th>
+                      <th className="border border-black px-2 py-1 text-right w-[10%]">Vận chuyển</th>
+                      <th className="border border-black px-2 py-1 text-right w-[9%]">HĐ FSC</th>
+                      <th className="border border-black px-2 py-1 text-right w-[11%]">Đơn giá TT</th>
+                      <th className="border border-black px-2 py-1 text-right w-[12%]">Thành tiền</th>
                     </tr>
                   </thead>
                   <tbody>
                     {displayRows.map((row, index) => {
-                      const formattedKL = row.kl.toLocaleString('vi-VN', { minimumFractionDigits: 3, maximumFractionDigits: 4 });
-                      const formattedGoc = row.don_gia > 0 ? row.don_gia.toLocaleString('vi-VN') : '';
-                      const formattedThuong = (row.thuong && row.thuong > 0) ? row.thuong.toLocaleString('vi-VN') : '';
-                      const formattedDonGiaTong = row.don_gia_tong > 0 ? row.don_gia_tong.toLocaleString('vi-VN') : '';
-                      const formattedThanhTien = row.thanh_tien.toLocaleString('vi-VN');
-
+                      const bonus = toMoneyNumber(row.thuong);
+                      const transport = toMoneyNumber(row.van_chuyen);
+                      const fsc = toMoneyNumber(row.hd_fsc);
+                      const formattedKL = Number(row.kl || 0).toLocaleString('vi-VN', { minimumFractionDigits: 3, maximumFractionDigits: 4 });
+                      const money = (value: number) => value !== 0 ? value.toLocaleString('vi-VN') : '—';
                       return (
                         <tr key={row.id || index} className="h-9 hover:bg-slate-50/50">
-                          <td className="border border-black px-2 py-1 text-center font-mono font-bold">
-                            {row.stt || (index + 1)}
-                          </td>
-                          <td className="border border-black px-3 py-1 text-left font-semibold">
-                            {row.ten_hang}
-                          </td>
-                          <td className="border border-black px-2 py-1 text-center font-semibold">
-                            {row.dvt || 'm³'}
-                          </td>
-                          <td className="border border-black px-3 py-1 text-right font-mono font-black text-slate-900">
-                            {formattedKL}
-                          </td>
-                          <td className="border border-black px-3 py-1 text-right font-mono font-semibold">
-                            {formattedGoc}
-                          </td>
-                          <td className="border border-black px-3 py-1 text-right font-mono text-emerald-700 font-bold">
-                            {formattedThuong || '—'}
-                          </td>
-                          <td className="border border-black px-3 py-1 text-right font-mono font-black text-slate-800">
-                            {formattedDonGiaTong}
-                          </td>
-                          <td className="border border-black px-3 py-1 text-right font-mono font-black text-black">
-                            {formattedThanhTien} đ
-                          </td>
+                          <td className="border border-black px-1 py-1 text-center font-bold">{row.stt || (index + 1)}</td>
+                          <td className="border border-black px-2 py-1 text-left font-semibold break-words">{row.ten_hang}</td>
+                          <td className="border border-black px-1 py-1 text-center font-semibold">{row.dvt || 'm³'}</td>
+                          <td className="border border-black px-2 py-1 text-right font-bold">{formattedKL}</td>
+                          <td className="border border-black px-2 py-1 text-right">{money(Number(row.don_gia || 0))}</td>
+                          <td className="border border-black px-2 py-1 text-right">{money(bonus)}</td>
+                          <td className="border border-black px-2 py-1 text-right">{money(transport)}</td>
+                          <td className="border border-black px-2 py-1 text-right">{money(fsc)}</td>
+                          <td className="border border-black px-2 py-1 text-right font-bold">{money(Number(row.don_gia_tong || 0))}</td>
+                          <td className="border border-black px-2 py-1 text-right font-black">{Number(row.thanh_tien || 0).toLocaleString('vi-VN')} đ</td>
                         </tr>
                       );
                     })}
-
-                    {/* Cong Footer EXACTLY matching screenshot */}
-                    <tr className="h-10 bg-slate-50/30 text-[11px] font-black border-t-2 border-black">
-                      <td colSpan={2} className="border border-black px-4 py-2 text-center uppercase tracking-wider font-extrabold">
-                        Cộng
-                      </td>
-                      <td className="border border-black px-2 py-1 text-center">
-                        {/* Unit placeholder */}
-                      </td>
-                      <td className="border border-black px-3 py-1 text-right font-mono text-[11.5px] font-black text-black">
-                        {totalVolSum.toFixed(3)}
-                      </td>
-                      <td className="border border-black px-3 py-1 text-center font-mono text-slate-400">
-                        -
-                      </td>
-                      <td className="border border-black px-3 py-1 text-right text-slate-400">
-                        {/* empty bonus Column */}
-                      </td>
-                      <td className="border border-black px-3 py-1 text-right text-slate-400">
-                        {/* empty unit price summary column */}
-                      </td>
-                      <td className="border border-black px-3 py-1 text-right font-mono text-[12px] font-black text-black underline decoration-double">
-                        {totalAmountBeforeTaxSum.toLocaleString('vi-VN')} đ
-                      </td>
+                    <tr className="h-10 bg-slate-50/30 font-black border-t-2 border-black">
+                      <td colSpan={3} className="border border-black px-3 py-2 text-center uppercase">Cộng</td>
+                      <td className="border border-black px-2 py-1 text-right">{totalVolSum.toLocaleString('vi-VN', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</td>
+                      <td className="border border-black px-2 py-1 text-right">{Math.round(totalBaseWood).toLocaleString('vi-VN')} đ</td>
+                      <td className="border border-black px-2 py-1 text-right">{Math.round(totalBonus).toLocaleString('vi-VN')} đ</td>
+                      <td className="border border-black px-2 py-1 text-right">{Math.round(totalTransport).toLocaleString('vi-VN')} đ</td>
+                      <td className="border border-black px-2 py-1 text-right">{Math.round(totalFsc).toLocaleString('vi-VN')} đ</td>
+                      <td className="border border-black px-2 py-1 text-center">—</td>
+                      <td className="border border-black px-2 py-1 text-right font-black underline decoration-double">{Math.round(totalAmountBeforeTaxSum).toLocaleString('vi-VN')} đ</td>
                     </tr>
                   </tbody>
                 </table>
+
+                <div className="mb-5 grid grid-cols-2 gap-0 border border-black text-[10.5px] font-serif print:text-[10px]">
+                  <div className="border-r border-black px-3 py-2"><strong>Tiền gỗ theo đơn giá gốc:</strong> {Math.round(totalBaseWood).toLocaleString('vi-VN')} đ</div>
+                  <div className="px-3 py-2"><strong>Tổng thưởng:</strong> {Math.round(totalBonus).toLocaleString('vi-VN')} đ</div>
+                  <div className="border-r border-t border-black px-3 py-2"><strong>Tổng vận chuyển:</strong> {Math.round(totalTransport).toLocaleString('vi-VN')} đ</div>
+                  <div className="border-t border-black px-3 py-2"><strong>Tổng HĐ FSC:</strong> {Math.round(totalFsc).toLocaleString('vi-VN')} đ</div>
+                  <div className="border-r border-t border-black px-3 py-2"><strong>Chi tiết thanh toán trước VAT:</strong> {Math.round(totalAmountBeforeTaxSum).toLocaleString('vi-VN')} đ</div>
+                  <div className="border-t border-black px-3 py-2"><strong>Giá trị hóa đơn trước VAT:</strong> {Math.round(inv.amountBeforeTax || 0).toLocaleString('vi-VN')} đ</div>
+                  <div className="col-span-2 border-t border-black px-3 py-2 font-black">
+                    Chênh lệch hóa đơn so với bảng chi tiết: <span className={invoiceVariance === 0 ? 'text-emerald-700 print:text-black' : 'text-rose-700 print:text-black'}>{Math.round(invoiceVariance).toLocaleString('vi-VN')} đ</span>
+                    {invoiceVariance === 0 ? ' — Đã khớp' : invoiceVariance > 0 ? ' — Hóa đơn lớn hơn bảng chi tiết' : ' — Hóa đơn nhỏ hơn bảng chi tiết'}
+                  </div>
+                </div>
 
                 {/* Tax summary projection segment */}
                 <div className="mt-4 border border-dashed border-slate-350 p-4.5 rounded-2xl bg-zinc-50/50 text-[11px] font-bold text-slate-700 select-all space-y-1.5 max-w-xl ml-auto print:border-black print:bg-white print:text-black font-sans">
