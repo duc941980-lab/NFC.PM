@@ -14961,7 +14961,15 @@ Bạn có thể hỏi tôi những câu như:
                                     <div className="flex items-center justify-center gap-2">
                                       <button
                                         type="button"
-                                        onClick={() => setSelectedInvoiceForSheet(inv)}
+                                        onClick={() => {
+                                          setSelectedInvoiceForSheet(inv);
+                                          window.setTimeout(() => {
+                                            const modal = document.getElementById('invoice-vat-detail-modal');
+                                            if (modal) modal.scrollTop = 0;
+                                            const doc = document.getElementById('invoice-vat-print-document');
+                                            doc?.scrollIntoView({ block: 'start' });
+                                          }, 80);
+                                        }}
                                         className="p-2 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl transition cursor-pointer shadow-xs"
                                         title="Xem chi tiết & In bảng kê"
                                       >
@@ -19770,7 +19778,7 @@ Bạn có thể hỏi tôi những câu như:
         };
 
         return (
-          <div className="fixed inset-0 bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-4 z-[9999] overflow-y-auto text-left font-sans print:absolute print:inset-x-0 print:top-0 print:bottom-auto print:bg-white print:p-0 print:z-auto">
+          <div id="invoice-vat-detail-modal" className="fixed inset-0 bg-slate-900/65 backdrop-blur-xs flex items-start justify-center p-4 z-[9999] overflow-y-auto text-left font-sans print:absolute print:inset-x-0 print:top-0 print:bottom-auto print:bg-white print:p-0 print:z-auto">
             <div className="bg-white text-slate-900 w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150 print:border-0 print:rounded-none print:shadow-none print:max-w-none">
               
               {/* Toolbar header inside modal (Hidden when printing/physically outputting) */}
@@ -19796,42 +19804,41 @@ Bạn có thể hỏi tôi những câu như:
                   <button
                     type="button"
                     onClick={() => {
-                      const printable = document.getElementById('invoice-vat-print-document');
-                      if (!printable) {
-                        alert('Không tìm thấy nội dung bảng kê để in. Vui lòng đóng cửa sổ và mở lại chi tiết hóa đơn.');
-                        return;
-                      }
+                      const escapeHtml = (value: unknown) => String(value ?? '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;');
 
-                      const printableClone = printable.cloneNode(true) as HTMLElement;
                       const contractText = contractReferences.length > 0
                         ? contractReferences.join('; ')
                         : 'Chưa cập nhật số hợp đồng';
                       const bbText = inv.bbntIds?.join(', ') || inv.invoiceNo || 'N/A';
+                      const invoiceDateText = formatInvoiceDateSafe(inv.invoiceDate) || '—';
 
-                      // Dùng iframe ẩn thay cho popup để tránh trình duyệt chặn cửa sổ in.
-                      const oldFrame = document.getElementById('invoice-vat-print-frame');
-                      oldFrame?.remove();
-                      const frame = document.createElement('iframe');
-                      frame.id = 'invoice-vat-print-frame';
-                      frame.setAttribute('aria-hidden', 'true');
-                      frame.style.position = 'fixed';
-                      frame.style.right = '0';
-                      frame.style.bottom = '0';
-                      frame.style.width = '1px';
-                      frame.style.height = '1px';
-                      frame.style.border = '0';
-                      frame.style.opacity = '0';
-                      document.body.appendChild(frame);
+                      const rowsHtml = displayRows.map((row, index) => {
+                        const quantity = Number(row.kl || 0);
+                        const unitPrice = Number(row.don_gia || 0);
+                        const lineAmount = Math.round(quantity * unitPrice);
+                        return `<tr>
+                          <td class="center">${escapeHtml(row.stt || index + 1)}</td>
+                          <td>${escapeHtml(row.ten_hang || '')}</td>
+                          <td class="center">${escapeHtml(row.dvt || 'm³')}</td>
+                          <td class="right">${quantity.toLocaleString('vi-VN', { minimumFractionDigits: 3, maximumFractionDigits: 4 })}</td>
+                          <td class="right">${unitPrice.toLocaleString('vi-VN')}</td>
+                          <td class="right strong">${lineAmount.toLocaleString('vi-VN')} đ</td>
+                        </tr>`;
+                      }).join('');
 
-                      const frameDoc = frame.contentDocument || frame.contentWindow?.document;
-                      if (!frameDoc) {
-                        frame.remove();
-                        alert('Không thể khởi tạo trang in. Vui lòng tải lại trang và thử lại.');
+                      const printWindow = window.open('', '_blank', 'width=1100,height=850,noopener,noreferrer');
+                      if (!printWindow) {
+                        alert('Trình duyệt đang chặn cửa sổ in. Vui lòng cho phép cửa sổ bật lên (pop-up) cho trang này rồi thử lại.');
                         return;
                       }
 
-                      frameDoc.open();
-                      frameDoc.write(`<!doctype html>
+                      printWindow.document.open();
+                      printWindow.document.write(`<!doctype html>
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
@@ -19841,45 +19848,80 @@ Bạn có thể hỏi tôi những câu như:
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; background: #fff; color: #000; }
     body { font-family: "Times New Roman", Times, serif; font-size: 11pt; }
-    main { width: 100%; max-width: 190mm; margin: 0 auto; }
-    .print-title { width: 100%; text-align: center; margin: 0 0 6mm; page-break-inside: avoid; }
-    .print-title h2 { margin: 0 0 2mm; font-size: 15pt; line-height: 1.25; font-weight: 700; text-transform: uppercase; }
-    .print-title p { margin: 1mm 0; font-size: 10.5pt; line-height: 1.3; }
-    .print-title .subtitle { font-style: italic; }
-    .print-title .contract { font-weight: 700; }
-    #invoice-vat-title-block { display: none !important; }
+    .page { width: 100%; max-width: 190mm; margin: 0 auto; padding: 2mm 0; }
+    .title { text-align: center; margin: 0 0 5mm; page-break-inside: avoid; }
+    .title h1 { margin: 0 0 2mm; font-size: 15pt; line-height: 1.25; font-weight: 700; }
+    .title p { margin: 1mm 0; font-size: 10.5pt; line-height: 1.3; }
+    .title .subtitle { font-style: italic; }
+    .title .contract { font-weight: 700; }
+    .info { border: 1px solid #000; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5mm 8mm; padding: 3mm 4mm; margin-bottom: 4mm; font-size: 10.5pt; }
+    .info .wide { grid-column: 1 / -1; }
     table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    th, td { border: 1px solid #000 !important; padding: 5px 6px; color: #000 !important; }
-    .overflow-x-auto { overflow: visible !important; }
-    .min-w-\[700px\] { min-width: 0 !important; }
-    .rounded-2xl, .rounded-xl { border-radius: 0 !important; }
-    .bg-slate-50, .bg-slate-50\/50, .bg-zinc-50\/50 { background: #fff !important; }
-    .text-zinc-500, .text-slate-500, .text-slate-700, .text-slate-800 { color: #000 !important; }
+    th, td { border: 1px solid #000; padding: 2.2mm 2mm; vertical-align: middle; }
+    th { text-align: center; font-weight: 700; }
+    .center { text-align: center; }
+    .right { text-align: right; }
+    .strong { font-weight: 700; }
+    .total td { border-top: 2px solid #000; font-weight: 700; }
+    .reconcile { margin-top: 5mm; border: 1px solid #000; }
+    .reconcile h2 { margin: 0; padding: 2.5mm; text-align: center; font-size: 11pt; border-bottom: 1px solid #000; }
+    .reconcile-grid { display: grid; grid-template-columns: 1fr 1fr; }
+    .reconcile-grid div { padding: 2.2mm 3mm; border-bottom: 1px solid #000; }
+    .reconcile-grid div:nth-child(odd) { border-right: 1px solid #000; }
+    .reconcile-grid div:nth-last-child(-n+2) { border-bottom: 0; }
+    @media print { .page { max-width: none; } }
   </style>
 </head>
 <body>
-  <main>
-    <section class="print-title">
-      <h2>BẢNG KÊ CHI TIẾT LÂM SẢN HẠCH TOÁN ĐỐI CHIẾU HÓA ĐƠN VAT</h2>
-      <p class="subtitle">(Căn cứ theo số liệu thanh toán đã duyệt thuộc Biên bản số: ${bbText})</p>
-      <p class="contract">Thanh toán theo hợp đồng: ${contractText}</p>
+  <main class="page">
+    <section class="title">
+      <h1>BẢNG KÊ CHI TIẾT LÂM SẢN HẠCH TOÁN ĐỐI CHIẾU HÓA ĐƠN VAT</h1>
+      <p class="subtitle">(Căn cứ theo số liệu thanh toán đã duyệt thuộc Biên bản số: ${escapeHtml(bbText)})</p>
+      <p class="contract">Thanh toán theo hợp đồng: ${escapeHtml(contractText)}</p>
     </section>
-    ${printableClone.outerHTML}
+
+    <section class="info">
+      <div><strong>Biên bản QC:</strong> ${escapeHtml(inv.invoiceNo || bbText)}</div>
+      <div><strong>Hợp đồng:</strong> ${escapeHtml(contractText)}</div>
+      <div><strong>Hóa đơn VAT:</strong> ${escapeHtml(inv.symbol || '—')}</div>
+      <div><strong>Ngày HĐ:</strong> ${escapeHtml(invoiceDateText)}</div>
+      <div class="wide"><strong>Nhà cung cấp:</strong> ${escapeHtml(inv.supplierName || '—')}</div>
+    </section>
+
+    <table>
+      <colgroup>
+        <col style="width:6%"><col style="width:38%"><col style="width:8%"><col style="width:12%"><col style="width:17%"><col style="width:19%">
+      </colgroup>
+      <thead><tr><th>TT</th><th>Tên, quy cách, kích thước</th><th>Đvt</th><th>KL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+      <tbody>
+        ${rowsHtml}
+        <tr class="total"><td colspan="3" class="center">CỘNG</td><td class="right">${totalVolSum.toLocaleString('vi-VN', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</td><td class="center">—</td><td class="right">${Math.round(totalBaseWood).toLocaleString('vi-VN')} đ</td></tr>
+      </tbody>
+    </table>
+
+    <section class="reconcile">
+      <h2>ĐỐI CHIẾU THANH TOÁN NỘI BỘ</h2>
+      <div class="reconcile-grid">
+        <div><strong>Giá trị gỗ theo bảng kê:</strong></div><div class="right strong">${Math.round(totalBaseWood).toLocaleString('vi-VN')} đ</div>
+        <div>Thưởng:</div><div class="right">${Math.round(totalBonus).toLocaleString('vi-VN')} đ</div>
+        <div>Vận chuyển:</div><div class="right">${Math.round(totalTransport).toLocaleString('vi-VN')} đ</div>
+        <div>Hóa đơn FSC:</div><div class="right">${Math.round(totalFsc).toLocaleString('vi-VN')} đ</div>
+        <div><strong>Tổng thanh toán theo bảng chi tiết:</strong></div><div class="right strong">${Math.round(totalDetailedPayment).toLocaleString('vi-VN')} đ</div>
+        <div><strong>Giá trị hóa đơn trước VAT:</strong></div><div class="right strong">${Math.round(inv.amountBeforeTax || 0).toLocaleString('vi-VN')} đ</div>
+        <div><strong>Chênh lệch cần theo dõi:</strong></div><div class="right strong">${Math.round(outsidePaymentVariance).toLocaleString('vi-VN')} đ</div>
+      </div>
+    </section>
   </main>
+  <script>
+    window.addEventListener('load', function () {
+      setTimeout(function () { window.focus(); window.print(); }, 250);
+    });
+  <\/script>
 </body>
 </html>`);
-                      frameDoc.close();
-
-                      window.setTimeout(() => {
-                        try {
-                          frame.contentWindow?.focus();
-                          frame.contentWindow?.print();
-                        } finally {
-                          window.setTimeout(() => frame.remove(), 1500);
-                        }
-                      }, 500);
+                      printWindow.document.close();
                     }}
-                    className="px-4.5 py-2 hover:bg-slate-250 bg-slate-100 text-xs font-black text-slate-650 hover:text-slate-900 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                                        className="px-4.5 py-2 hover:bg-slate-250 bg-slate-100 text-xs font-black text-slate-650 hover:text-slate-900 rounded-xl transition cursor-pointer flex items-center gap-1.5"
                   >
                     <Printer className="w-4 h-4" />
                     In bảng kê
