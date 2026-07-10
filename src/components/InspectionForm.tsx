@@ -19801,7 +19801,7 @@ Bạn có thể hỏi tôi những câu như:
               </div>
 
               {/* Printable invoice detail table segment */}
-              <div className="p-8 md:p-12 select-text overflow-x-auto min-w-[700px] bg-white text-black print:p-4 print:min-w-0 font-serif">
+              <div id="invoice-vat-print-document" className="p-8 md:p-12 select-text overflow-x-auto min-w-[700px] bg-white text-black print:p-4 print:min-w-0 font-serif">
 
                 {/* NOVA V8: Bỏ khối thông tin đầu phiếu để bản xem/in gọn đúng mẫu. */}
 
@@ -19815,7 +19815,7 @@ Bạn có thể hỏi tôi những câu như:
                 </div>
 
                 {/* Tiêu đề bảng kê: luôn giữ nguyên khi xem và khi in */}
-                <div className="invoice-reconciliation-title text-center my-6 space-y-1 font-serif break-inside-avoid print:my-4">
+                <div id="invoice-vat-title-block" className="invoice-reconciliation-title text-center my-6 space-y-1 font-serif break-inside-avoid print:my-4">
                   <h2 className="w-full whitespace-normal text-[15px] leading-snug font-black uppercase tracking-normal text-black print:text-[15px] print:leading-tight">
                     BẢNG KÊ CHI TIẾT LÂM SẢN HẠCH TOÁN ĐỐI CHIẾU HÓA ĐƠN VAT
                   </h2>

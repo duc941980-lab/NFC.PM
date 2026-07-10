@@ -1683,6 +1683,18 @@ export async function exportInvoiceToExcel(inv: any, historyInspections: any[]) 
     return tenHang;
   };
 
+  // Resolve contract references before creating the title block.
+  const matchedBBNTs = historyInspections.filter(bb => inv.bbntIds?.includes(bb.ma_bbnt));
+  const contractReferences = matchedBBNTs
+    .filter(bb => bb.so_hop_dong)
+    .map(bb => {
+      const contractDate = bb.ngay_hop_dong
+        ? String(bb.ngay_hop_dong).split('-').reverse().join('/')
+        : '';
+      return `${bb.so_hop_dong}${contractDate ? ` ngày ${contractDate}` : ''}`;
+    })
+    .filter((value, index, arr) => arr.indexOf(value) === index);
+
   // Title block
   worksheet.getRow(2).height = 25;
   worksheet.mergeCells('A2:G2');
@@ -1692,17 +1704,23 @@ export async function exportInvoiceToExcel(inv: any, historyInspections: any[]) 
 
   worksheet.getRow(3).height = 20;
   worksheet.mergeCells('A3:G3');
-  worksheet.getCell('A3').value = `(Căn cứ theo số liệu thanh toán, Biên bản số: ${inv.bbntIds?.join(', ') || 'N/A'})`;
+  worksheet.getCell('A3').value = `(Căn cứ theo số liệu thanh toán đã duyệt thuộc Biên bản số: ${inv.bbntIds?.join(', ') || 'N/A'})`;
   worksheet.getCell('A3').font = fontItalic;
   worksheet.getCell('A3').alignment = alignCenter;
 
-  // Table Headers (Row 5)
-  worksheet.getRow(5).height = 25;
+  worksheet.getRow(4).height = 20;
+  worksheet.mergeCells('A4:G4');
+  worksheet.getCell('A4').value = `Thanh toán theo hợp đồng: ${contractReferences.length > 0 ? contractReferences.join('; ') : 'Chưa cập nhật số hợp đồng'}`;
+  worksheet.getCell('A4').font = fontBold;
+  worksheet.getCell('A4').alignment = alignCenter;
+
+  // Table Headers (Row 6)
+  worksheet.getRow(6).height = 25;
   const headers = [
     'TT', 'Tên, quy cách, kích thước', 'Đvt', 'KL', 'Đơn giá gốc', 'Đơn Giá', 'Thành tiền'
   ];
   for (let colIdx = 1; colIdx <= 7; colIdx++) {
-    const cell = worksheet.getCell(5, colIdx);
+    const cell = worksheet.getCell(6, colIdx);
     cell.value = headers[colIdx - 1];
     cell.font = fontBold;
     cell.alignment = alignCenter;
@@ -1710,7 +1728,6 @@ export async function exportInvoiceToExcel(inv: any, historyInspections: any[]) 
   }
 
   // Retrieve displaying rows
-  const matchedBBNTs = historyInspections.filter(bb => inv.bbntIds?.includes(bb.ma_bbnt));
   const invoiceDetailRows = matchedBBNTs.flatMap(bb => bb.bang_thanh_toan || []);
   const displayRows = invoiceDetailRows.length > 0 ? invoiceDetailRows : [
     {
@@ -1726,8 +1743,8 @@ export async function exportInvoiceToExcel(inv: any, historyInspections: any[]) 
     }
   ];
 
-  // Populate data rows starting at row 6
-  let currentRow = 6;
+  // Populate data rows starting at row 7
+  let currentRow = 7;
   displayRows.forEach((row: any, index: number) => {
     worksheet.getRow(currentRow).height = 22;
 
