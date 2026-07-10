@@ -19814,9 +19814,9 @@ Bạn có thể hỏi tôi những câu như:
                   <p className="col-span-2"><strong>Nhà cung cấp:</strong> {inv.supplierName || '—'}</p>
                 </div>
 
-                {/* Subtitle / Document name */}
-                <div className="text-center my-6 space-y-1 font-serif">
-                  <h2 className="mx-auto max-w-full whitespace-normal break-words text-[15px] leading-snug font-black uppercase tracking-normal text-black print:text-[14px]">
+                {/* Tiêu đề bảng kê: luôn giữ nguyên khi xem và khi in */}
+                <div className="invoice-reconciliation-title text-center my-6 space-y-1 font-serif break-inside-avoid print:my-4">
+                  <h2 className="w-full whitespace-normal text-[15px] leading-snug font-black uppercase tracking-normal text-black print:text-[15px] print:leading-tight">
                     BẢNG KÊ CHI TIẾT LÂM SẢN HẠCH TOÁN ĐỐI CHIẾU HÓA ĐƠN VAT
                   </h2>
                   <p className="text-[10px] leading-relaxed text-zinc-500 italic font-medium print:text-black">
@@ -19827,8 +19827,7 @@ Bạn có thể hỏi tôi những câu như:
                   </p>
                 </div>
 
-                {/* NOVA V8: Bảng hóa đơn chỉ thể hiện phần giá trị kê khai trên hóa đơn VAT.
-                    Thưởng, vận chuyển và HĐ FSC là khoản theo dõi thanh toán ngoài, không in trên hóa đơn. */}
+                {/* Bảng hóa đơn chỉ thể hiện phần giá trị kê khai trên hóa đơn VAT. */}
                 <table className="w-full table-fixed border-collapse border border-black text-[11px] font-medium text-black mb-6 font-serif print:text-[10px]">
                   <thead>
                     <tr className="bg-slate-50/50 font-extrabold text-black h-10 select-none border-b border-black">
@@ -19874,22 +19873,22 @@ Bạn có thể hỏi tôi những câu như:
                   <div className="grid grid-cols-2">
                     <div className="border-r border-b border-black px-3 py-2"><strong>Giá trị gỗ theo bảng kê:</strong></div>
                     <div className="border-b border-black px-3 py-2 text-right font-bold">{Math.round(totalBaseWood).toLocaleString('vi-VN')} đ</div>
-                    <div className="border-r border-b border-black px-3 py-2">Thưởng (thanh toán ngoài):</div>
+                    <div className="border-r border-b border-black px-3 py-2">Thưởng:</div>
                     <div className="border-b border-black px-3 py-2 text-right">{Math.round(totalBonus).toLocaleString('vi-VN')} đ</div>
-                    <div className="border-r border-b border-black px-3 py-2">Vận chuyển (thanh toán ngoài):</div>
+                    <div className="border-r border-b border-black px-3 py-2">Vận chuyển:</div>
                     <div className="border-b border-black px-3 py-2 text-right">{Math.round(totalTransport).toLocaleString('vi-VN')} đ</div>
-                    <div className="border-r border-b border-black px-3 py-2">Hóa đơn FSC (thanh toán ngoài):</div>
+                    <div className="border-r border-b border-black px-3 py-2">Hóa đơn FSC:</div>
                     <div className="border-b border-black px-3 py-2 text-right">{Math.round(totalFsc).toLocaleString('vi-VN')} đ</div>
                     <div className="border-r border-b border-black px-3 py-2 font-black">Tổng thanh toán theo bảng chi tiết:</div>
                     <div className="border-b border-black px-3 py-2 text-right font-black">{Math.round(totalDetailedPayment).toLocaleString('vi-VN')} đ</div>
                     <div className="border-r border-b border-black px-3 py-2 font-bold">Giá trị hóa đơn trước VAT:</div>
                     <div className="border-b border-black px-3 py-2 text-right font-bold">{Math.round(inv.amountBeforeTax || 0).toLocaleString('vi-VN')} đ</div>
-                    <div className="border-r border-black px-3 py-2 font-black">Chênh lệch cần theo dõi thanh toán ngoài:</div>
+                    <div className="border-r border-black px-3 py-2 font-black">Chênh lệch cần theo dõi:</div>
                     <div className="px-3 py-2 text-right font-black">
                       <span className={Math.round(outsidePaymentVariance) === 0 ? 'text-emerald-700 print:text-black' : 'text-amber-700 print:text-black'}>
                         {Math.round(outsidePaymentVariance).toLocaleString('vi-VN')} đ
                       </span>
-                      {Math.round(outsidePaymentVariance) === 0 ? ' — Đã khớp' : Math.round(outsidePaymentVariance) > 0 ? ' — Còn phải thanh toán ngoài' : ' — Hóa đơn lớn hơn tổng chi tiết'}
+                      {Math.round(outsidePaymentVariance) === 0 ? ' — Đã khớp' : Math.round(outsidePaymentVariance) > 0 ? ' — Còn chênh lệch' : ' — Hóa đơn lớn hơn tổng chi tiết'}
                     </div>
                   </div>
                 </div>

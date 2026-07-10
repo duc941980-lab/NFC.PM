@@ -347,3 +347,24 @@
 }
 
 
+
+@media print {
+  .invoice-reconciliation-title {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    overflow: visible !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    page-break-before: avoid !important;
+  }
+
+  .invoice-reconciliation-title h2,
+  .invoice-reconciliation-title p {
+    display: block !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    color: #000 !important;
+  }
+}
