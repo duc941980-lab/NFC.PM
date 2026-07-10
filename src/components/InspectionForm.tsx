@@ -6989,7 +6989,7 @@ Bạn có thể hỏi tôi những câu như:
                                     )}
                                   </td>
                                   <td className="px-3 py-3 text-center">
-                                    <div className="flex items-center justify-center gap-1.5">
+                                    <div className="flex items-center justify-center gap-2">
                                       <ExportDropdown 
                                         bienBan={bb} 
                                         onPrint={onPrint} 
@@ -14885,14 +14885,14 @@ Bạn có thể hỏi tôi những câu như:
                   </form>
 
                   {/* DANH SÁCH HÓA ĐƠN ĐÃ LƯU */}
-                  <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-3xs text-left mt-6">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-150 mb-4">
+                  <div className="bg-white border border-slate-200 rounded-[22px] p-6 shadow-sm text-left mt-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 mb-5">
                       <div>
-                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                        <h3 className="text-base font-black text-slate-900 uppercase tracking-wide flex items-center gap-2.5">
                           <FileSpreadsheet className="w-4.5 h-4.5 text-emerald-600" />
                           SỔ LƯU TRỮ HÓA ĐƠN VAT ĐÃ HẠCH TOÁN
                         </h3>
-                        <p className="text-[10px] text-slate-450 font-bold mt-0.5">
+                        <p className="text-xs text-slate-500 font-semibold mt-1">
                           Danh sách các hóa đơn VAT gỗ tròn/gỗ xẻ đã đối chiếu khớp với bảng thanh toán chi tiết.
                         </p>
                       </div>
@@ -14905,12 +14905,12 @@ Bạn có thể hỏi tôi những câu như:
                         <p className="text-[10px] text-slate-400 mt-0.5">Hãy chọn bảng chi tiết thanh toán ở trên để lập và lưu hóa đơn.</p>
                       </div>
                     ) : (
-                      <div className="overflow-x-auto rounded-xl border border-slate-200">
-                        <table className="w-full border-collapse text-left text-xs font-medium text-slate-850">
+                      <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-xs">
+                        <table className="w-full border-collapse text-left text-sm font-medium text-slate-800">
                           <thead>
-                            <tr className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 h-10">
+                            <tr className="bg-slate-50/90 text-slate-600 font-extrabold border-b border-slate-200 h-14">
                               <th className="px-3 text-center w-10">TT</th>
-                              <th className="px-3">Số BB QC / Số HĐ</th>
+                              <th className="px-4">BB QC / Hóa đơn</th>
                               <th className="px-3">Ngày lập</th>
                               <th className="px-3">Bên giao (NCC)</th>
                               <th className="px-3 text-right">Tổng KL (m³)</th>
@@ -14924,7 +14924,7 @@ Bạn có thể hỏi tôi những câu như:
                             {invoices.map((inv, idx) => {
                               const taxPercent = inv.taxRate ?? 8;
                               return (
-                                <tr key={inv.id || idx} className="h-14 hover:bg-slate-50/60 transition odd:bg-slate-50/10">
+                                <tr key={inv.id || idx} className="h-[76px] hover:bg-emerald-50/30 transition border-b border-slate-100 last:border-b-0">
                                   <td className="px-3 text-center font-mono font-bold text-slate-400">{idx + 1}</td>
                                   <td className="px-3">
                                     <div className="flex flex-col gap-1 justify-center py-1">
@@ -14936,7 +14936,7 @@ Bạn có thể hỏi tôi những câu như:
                                       </span>
                                     </div>
                                   </td>
-                                  <td className="px-3 font-bold text-slate-650">{inv.invoiceDate}</td>
+                                  <td className="px-3 font-bold text-slate-700 whitespace-nowrap">{inv.invoiceDate ? inv.invoiceDate.split('-').reverse().join('/') : '—'}</td>
                                   <td className="px-3 font-bold text-slate-900 truncate max-w-[160px]" title={inv.supplierName}>
                                     {inv.supplierName}
                                   </td>
@@ -14947,11 +14947,11 @@ Bạn có thể hỏi tôi những câu như:
                                   </td>
                                   <td className="px-3 text-right font-mono font-black text-emerald-800">{(inv.totalAmount || 0).toLocaleString('vi-VN')} đ</td>
                                   <td className="px-3 text-center">
-                                    <div className="flex items-center justify-center gap-1.5">
+                                    <div className="flex items-center justify-center gap-2">
                                       <button
                                         type="button"
                                         onClick={() => setSelectedInvoiceForSheet(inv)}
-                                        className="p-1.5 bg-sky-50 text-sky-650 hover:bg-sky-100 rounded-lg transition cursor-pointer"
+                                        className="p-2 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl transition cursor-pointer shadow-xs"
                                         title="Xem chi tiết & In bảng kê"
                                       >
                                         <Eye className="w-3.5 h-3.5" />
@@ -14959,7 +14959,7 @@ Bạn có thể hỏi tôi những câu như:
                                       <button
                                         type="button"
                                         onClick={() => exportInvoiceToExcel(inv, historyInspections)}
-                                        className="p-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg transition cursor-pointer"
+                                        className="p-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl transition cursor-pointer shadow-xs"
                                         title="Xuất Excel bảng kê chi tiết gửi NCC"
                                       >
                                         <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -14967,7 +14967,7 @@ Bạn có thể hỏi tôi những câu như:
                                       <button
                                         type="button"
                                         onClick={() => setEditingInvoice(inv)}
-                                        className="p-1.5 bg-amber-50 text-amber-650 hover:bg-amber-100 rounded-lg transition cursor-pointer"
+                                        className="p-2 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl transition cursor-pointer shadow-xs"
                                         title="Chỉnh sửa thông tin hóa đơn"
                                       >
                                         <Edit className="w-3.5 h-3.5" />
@@ -14994,7 +14994,7 @@ Bạn có thể hỏi tôi những câu như:
                                             setNewPropBankAccName('');
                                           }
                                         }}
-                                        className="p-1.5 bg-indigo-50 text-indigo-650 hover:bg-indigo-100 rounded-lg transition cursor-pointer"
+                                        className="p-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl transition cursor-pointer shadow-xs"
                                         title="Lập giấy Đề nghị thanh toán cho hóa đơn này"
                                       >
                                         <CreditCard className="w-3.5 h-3.5" />
@@ -15024,7 +15024,7 @@ Bạn có thể hỏi tôi những câu như:
                                         <button
                                           type="button"
                                           onClick={() => setConfirmDeleteInvoiceId(inv.id || inv.invoiceNo)}
-                                          className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition cursor-pointer"
+                                          className="p-2 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl transition cursor-pointer shadow-xs"
                                           title="Xóa hóa đơn"
                                         >
                                           <X className="w-3.5 h-3.5" />
@@ -19789,61 +19789,7 @@ Bạn có thể hỏi tôi những câu như:
               {/* Printable invoice detail table segment */}
               <div className="p-8 md:p-12 select-text overflow-x-auto min-w-[700px] bg-white text-black print:p-4 print:min-w-0 font-serif">
 
-                {/* Invoice information: visible both in detail preview and printed sheet */}
-                <div className="mb-5 border border-black text-[11px] font-serif print:mb-4">
-                  <div className="grid grid-cols-2 border-b border-black">
-                    <div className="px-3 py-2 border-r border-black">
-                      <span className="font-bold">Số biên bản QC:</span>{' '}
-                      <span className="font-bold">{inv.invoiceNo || '—'}</span>
-                    </div>
-                    <div className="px-3 py-2">
-                      <span className="font-bold">Số hóa đơn:</span>{' '}
-                      <span className="font-bold">{inv.symbol || '—'}</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 border-b border-black">
-                    <div className="px-3 py-2 border-r border-black">
-                      <span className="font-bold">Ngày lập hóa đơn:</span>{' '}
-                      <span>{inv.invoiceDate ? inv.invoiceDate.split('-').reverse().join('/') : '—'}</span>
-                    </div>
-                    <div className="px-3 py-2">
-                      <span className="font-bold">Trạng thái hạch toán:</span>{' '}
-                      <span>{inv.status === 'Đã ký số' ? 'Đã ký số (Hoàn tất)' : inv.status}</span>
-                    </div>
-                  </div>
-                  <div className="px-3 py-2 border-b border-black">
-                    <span className="font-bold">Nhà cung cấp:</span>{' '}
-                    <span>{inv.supplierName || '—'}</span>
-                  </div>
-                  <div className="grid grid-cols-3 border-b border-black">
-                    <div className="px-3 py-2 border-r border-black">
-                      <span className="font-bold">Khối lượng (m³):</span>{' '}
-                      <span>{Number(inv.totalVolume || 0).toLocaleString('vi-VN', { maximumFractionDigits: 3 })}</span>
-                    </div>
-                    <div className="px-3 py-2 border-r border-black">
-                      <span className="font-bold">Cộng tiền trước thuế:</span>{' '}
-                      <span>{Number(inv.amountBeforeTax || 0).toLocaleString('vi-VN')} đ</span>
-                    </div>
-                    <div className="px-3 py-2">
-                      <span className="font-bold">Thuế suất VAT:</span>{' '}
-                      <span>{inv.taxRate ?? 0}%</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 border-b border-black">
-                    <div className="px-3 py-2 border-r border-black">
-                      <span className="font-bold">Tiền thuế VAT:</span>{' '}
-                      <span>{Number(inv.taxAmount || 0).toLocaleString('vi-VN')} đ</span>
-                    </div>
-                    <div className="px-3 py-2">
-                      <span className="font-bold">Tổng cộng tiền thanh toán:</span>{' '}
-                      <span className="font-black">{Number(inv.totalAmount || 0).toLocaleString('vi-VN')} đ</span>
-                    </div>
-                  </div>
-                  <div className="px-3 py-2 min-h-[42px]">
-                    <span className="font-bold">Ghi chú hóa đơn:</span>{' '}
-                    <span>{inv.note || '—'}</span>
-                  </div>
-                </div>
+                {/* NOVA V8: Bỏ khối thông tin đầu phiếu để bản xem/in gọn đúng mẫu. */}
 
                 {/* Subtitle / Document name */}
                 <div className="text-center my-6 space-y-1 font-serif">
@@ -19858,67 +19804,52 @@ Bạn có thể hỏi tôi những câu như:
                   </p>
                 </div>
 
-                {/* Data Table: theo dõi đầy đủ giá gốc, thưởng, vận chuyển và HĐ FSC */}
-                <table className="w-full table-fixed border-collapse border border-black text-[10px] font-medium text-black mb-6 font-serif print:text-[9px]">
+                {/* NOVA V8: Bảng hóa đơn chỉ thể hiện phần giá trị kê khai trên hóa đơn VAT.
+                    Thưởng, vận chuyển và HĐ FSC là khoản theo dõi thanh toán ngoài, không in trên hóa đơn. */}
+                <table className="w-full table-fixed border-collapse border border-black text-[11px] font-medium text-black mb-6 font-serif print:text-[10px]">
                   <thead>
                     <tr className="bg-slate-50/50 font-extrabold text-black h-10 select-none border-b border-black">
-                      <th className="border border-black px-1 py-1 text-center w-[4%]">TT</th>
-                      <th className="border border-black px-2 py-1 text-left w-[23%]">Tên, quy cách, kích thước</th>
-                      <th className="border border-black px-1 py-1 text-center w-[5%]">Đvt</th>
-                      <th className="border border-black px-2 py-1 text-right w-[8%]">KL</th>
-                      <th className="border border-black px-2 py-1 text-right w-[11%]">Đơn giá gốc</th>
-                      <th className="border border-black px-2 py-1 text-right w-[9%]">Thưởng</th>
-                      <th className="border border-black px-2 py-1 text-right w-[10%]">Vận chuyển</th>
-                      <th className="border border-black px-2 py-1 text-right w-[9%]">HĐ FSC</th>
-                      <th className="border border-black px-2 py-1 text-right w-[11%]">Đơn giá TT</th>
-                      <th className="border border-black px-2 py-1 text-right w-[12%]">Thành tiền</th>
+                      <th className="border border-black px-1 py-1 text-center w-[6%]">TT</th>
+                      <th className="border border-black px-2 py-1 text-left w-[38%]">Tên, quy cách, kích thước</th>
+                      <th className="border border-black px-1 py-1 text-center w-[8%]">Đvt</th>
+                      <th className="border border-black px-2 py-1 text-right w-[12%]">KL</th>
+                      <th className="border border-black px-2 py-1 text-right w-[17%]">Đơn giá</th>
+                      <th className="border border-black px-2 py-1 text-right w-[19%]">Thành tiền</th>
                     </tr>
                   </thead>
                   <tbody>
                     {displayRows.map((row, index) => {
-                      const bonus = toMoneyNumber(row.thuong);
-                      const transport = toMoneyNumber(row.van_chuyen);
-                      const fsc = toMoneyNumber(row.hd_fsc);
-                      const formattedKL = Number(row.kl || 0).toLocaleString('vi-VN', { minimumFractionDigits: 3, maximumFractionDigits: 4 });
-                      const money = (value: number) => value !== 0 ? value.toLocaleString('vi-VN') : '—';
+                      const quantity = Number(row.kl || 0);
+                      const unitPrice = Number(row.don_gia || 0);
+                      const invoiceLineAmount = Math.round(quantity * unitPrice);
+                      const formattedKL = quantity.toLocaleString('vi-VN', { minimumFractionDigits: 3, maximumFractionDigits: 4 });
                       return (
                         <tr key={row.id || index} className="h-9 hover:bg-slate-50/50">
                           <td className="border border-black px-1 py-1 text-center font-bold">{row.stt || (index + 1)}</td>
                           <td className="border border-black px-2 py-1 text-left font-semibold break-words">{row.ten_hang}</td>
                           <td className="border border-black px-1 py-1 text-center font-semibold">{row.dvt || 'm³'}</td>
                           <td className="border border-black px-2 py-1 text-right font-bold">{formattedKL}</td>
-                          <td className="border border-black px-2 py-1 text-right">{money(Number(row.don_gia || 0))}</td>
-                          <td className="border border-black px-2 py-1 text-right">{money(bonus)}</td>
-                          <td className="border border-black px-2 py-1 text-right">{money(transport)}</td>
-                          <td className="border border-black px-2 py-1 text-right">{money(fsc)}</td>
-                          <td className="border border-black px-2 py-1 text-right font-bold">{money(Number(row.don_gia_tong || 0))}</td>
-                          <td className="border border-black px-2 py-1 text-right font-black">{Number(row.thanh_tien || 0).toLocaleString('vi-VN')} đ</td>
+                          <td className="border border-black px-2 py-1 text-right font-bold">{unitPrice.toLocaleString('vi-VN')}</td>
+                          <td className="border border-black px-2 py-1 text-right font-black">{invoiceLineAmount.toLocaleString('vi-VN')} đ</td>
                         </tr>
                       );
                     })}
                     <tr className="h-10 bg-slate-50/30 font-black border-t-2 border-black">
                       <td colSpan={3} className="border border-black px-3 py-2 text-center uppercase">Cộng</td>
                       <td className="border border-black px-2 py-1 text-right">{totalVolSum.toLocaleString('vi-VN', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</td>
-                      <td className="border border-black px-2 py-1 text-right">{Math.round(totalBaseWood).toLocaleString('vi-VN')} đ</td>
-                      <td className="border border-black px-2 py-1 text-right">{Math.round(totalBonus).toLocaleString('vi-VN')} đ</td>
-                      <td className="border border-black px-2 py-1 text-right">{Math.round(totalTransport).toLocaleString('vi-VN')} đ</td>
-                      <td className="border border-black px-2 py-1 text-right">{Math.round(totalFsc).toLocaleString('vi-VN')} đ</td>
                       <td className="border border-black px-2 py-1 text-center">—</td>
-                      <td className="border border-black px-2 py-1 text-right font-black underline decoration-double">{Math.round(totalAmountBeforeTaxSum).toLocaleString('vi-VN')} đ</td>
+                      <td className="border border-black px-2 py-1 text-right font-black underline decoration-double">{Math.round(totalBaseWood).toLocaleString('vi-VN')} đ</td>
                     </tr>
                   </tbody>
                 </table>
 
+                {/* Đối chiếu chỉ theo giá trị kê khai hóa đơn, không cộng các khoản thanh toán ngoài. */}
                 <div className="mb-5 grid grid-cols-2 gap-0 border border-black text-[10.5px] font-serif print:text-[10px]">
-                  <div className="border-r border-black px-3 py-2"><strong>Tiền gỗ theo đơn giá gốc:</strong> {Math.round(totalBaseWood).toLocaleString('vi-VN')} đ</div>
-                  <div className="px-3 py-2"><strong>Tổng thưởng:</strong> {Math.round(totalBonus).toLocaleString('vi-VN')} đ</div>
-                  <div className="border-r border-t border-black px-3 py-2"><strong>Tổng vận chuyển:</strong> {Math.round(totalTransport).toLocaleString('vi-VN')} đ</div>
-                  <div className="border-t border-black px-3 py-2"><strong>Tổng HĐ FSC:</strong> {Math.round(totalFsc).toLocaleString('vi-VN')} đ</div>
-                  <div className="border-r border-t border-black px-3 py-2"><strong>Chi tiết thanh toán trước VAT:</strong> {Math.round(totalAmountBeforeTaxSum).toLocaleString('vi-VN')} đ</div>
-                  <div className="border-t border-black px-3 py-2"><strong>Giá trị hóa đơn trước VAT:</strong> {Math.round(inv.amountBeforeTax || 0).toLocaleString('vi-VN')} đ</div>
+                  <div className="border-r border-black px-3 py-2"><strong>Tổng bảng kê trước VAT:</strong> {Math.round(totalBaseWood).toLocaleString('vi-VN')} đ</div>
+                  <div className="px-3 py-2"><strong>Giá trị hóa đơn trước VAT:</strong> {Math.round(inv.amountBeforeTax || 0).toLocaleString('vi-VN')} đ</div>
                   <div className="col-span-2 border-t border-black px-3 py-2 font-black">
-                    Chênh lệch hóa đơn so với bảng chi tiết: <span className={invoiceVariance === 0 ? 'text-emerald-700 print:text-black' : 'text-rose-700 print:text-black'}>{Math.round(invoiceVariance).toLocaleString('vi-VN')} đ</span>
-                    {invoiceVariance === 0 ? ' — Đã khớp' : invoiceVariance > 0 ? ' — Hóa đơn lớn hơn bảng chi tiết' : ' — Hóa đơn nhỏ hơn bảng chi tiết'}
+                    Chênh lệch hóa đơn: <span className={(Math.round((inv.amountBeforeTax || 0) - totalBaseWood) === 0) ? 'text-emerald-700 print:text-black' : 'text-rose-700 print:text-black'}>{Math.round((inv.amountBeforeTax || 0) - totalBaseWood).toLocaleString('vi-VN')} đ</span>
+                    {Math.round((inv.amountBeforeTax || 0) - totalBaseWood) === 0 ? ' — Đã khớp' : ((inv.amountBeforeTax || 0) - totalBaseWood) > 0 ? ' — Hóa đơn lớn hơn bảng kê' : ' — Hóa đơn nhỏ hơn bảng kê'}
                   </div>
                 </div>
 
@@ -19926,7 +19857,7 @@ Bạn có thể hỏi tôi những câu như:
                 <div className="mt-4 border border-dashed border-slate-350 p-4.5 rounded-2xl bg-zinc-50/50 text-[11px] font-bold text-slate-700 select-all space-y-1.5 max-w-xl ml-auto print:border-black print:bg-white print:text-black font-sans">
                   <p className="flex justify-between items-center border-b border-dashed border-slate-200 pb-1 print:border-black">
                     <span>Tổng tiền gỗ chưa VAT (Trước thuế):</span>
-                    <span className="font-mono font-black text-slate-900">{totalAmountBeforeTaxSum.toLocaleString('vi-VN')} đ</span>
+                    <span className="font-mono font-black text-slate-900">{totalBaseWood.toLocaleString('vi-VN')} đ</span>
                   </p>
                   <p className="flex justify-between items-center border-b border-dashed border-slate-200 pb-1 print:border-black">
                     <span>Thuế suất thuế GTGT (VAT):</span>
@@ -19934,7 +19865,7 @@ Bạn có thể hỏi tôi những câu như:
                   </p>
                   <p className="flex justify-between items-center border-b border-dashed border-slate-200 pb-1 print:border-black">
                     <span>Tiền thuế GTGT phát sinh:</span>
-                    <span className="font-mono font-black text-slate-900">{((totalAmountBeforeTaxSum) * (inv.taxRate / 100)).toLocaleString('vi-VN')} đ</span>
+                    <span className="font-mono font-black text-slate-900">{((totalBaseWood) * (inv.taxRate / 100)).toLocaleString('vi-VN')} đ</span>
                   </p>
                   <p className="flex justify-between items-center text-[11.5px] font-black pt-1">
                     <span className="text-rose-905 print:text-black uppercase">Thành tiền sau thuế (Tổng cộng thanh toán):</span>
