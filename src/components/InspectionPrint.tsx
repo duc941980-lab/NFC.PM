@@ -525,8 +525,22 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
       .trim();
   };
 
-  const paymentWoodName = cleanPaymentWoodName(danhMucLamSan || loaiGo || 'gỗ keo xẻ thô');
-  const paymentContractLine = `Gỗ sơ chế thông thường - ${paymentWoodName}${soHopDongPay ? ` theo HĐ số: ${soHopDongPay}${ngayHopDongPay ? ` ngày ${ngayHopDongPay}` : ''}` : ''}`;
+  const formatShortDateNoLeadingZero = (value?: string) => {
+    const raw = (value || '').trim();
+    if (!raw) return '';
+    if (/^\d{4}-\d{1,2}-\d{1,2}/.test(raw)) {
+      const [y, m, d] = raw.split('T')[0].split('-').map(Number);
+      return `${d}/${m}/${y}`;
+    }
+    if (/^\d{1,2}[\/.-]\d{1,2}[\/.-]\d{4}$/.test(raw)) {
+      const [d, m, y] = raw.split(/[\/.-]/).map(Number);
+      return `${d}/${m}/${y}`;
+    }
+    return raw;
+  };
+
+  const paymentWoodName = 'gỗ keo xẻ thô';
+  const paymentContractLine = `Gỗ sơ chế thông thường - ${paymentWoodName}${soHopDongPay ? ` theo HĐ số: ${soHopDongPay}${ngayHopDongPay ? ` ngày ${formatShortDateNoLeadingZero(ngayHopDongPay)}` : ''}` : ''}`;
 
   const hasThuongColumn = (paymentRows || []).some(p => p.thuong !== 0 && p.thuong !== undefined && p.thuong !== null);
   const hasVanChuyenColumn = (paymentRows || []).some(p => p.van_chuyen !== 0 && p.van_chuyen !== undefined && p.van_chuyen !== null && p.van_chuyen !== '' && p.van_chuyen !== '0');
@@ -1306,31 +1320,16 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
               Ngày {parseDateParts(ngayThanhToanPay).day} tháng {parseDateParts(ngayThanhToanPay).month} năm {parseDateParts(ngayThanhToanPay).year}
             </div>
 
-            <div className="mt-3 w-full grid grid-cols-3 gap-6 text-[11px] font-serif font-normal text-black">
-              <div className="flex items-center justify-center gap-8">
-                <span className="whitespace-nowrap">Ngày thanh toán:</span>
-                <span className="whitespace-nowrap">{ngayThanhToanPay}</span>
-              </div>
-              <div className="flex items-center justify-center gap-8">
-                <span className="whitespace-nowrap">Số HĐ:</span>
-                <span className="whitespace-nowrap">{soHopDongPay}</span>
-              </div>
-              <div className="flex items-center justify-center gap-8">
-                <span className="whitespace-nowrap">Ngày HĐ:</span>
-                <span className="whitespace-nowrap">{ngayHopDongPay}</span>
-              </div>
-            </div>
           </div>
 
           {/* DETAILED LEDGER PAYMENTS TABLE */}
           <div className="mt-2">
-            <div className="bg-white text-black text-center font-bold text-[18px] uppercase tracking-wide py-1 border border-black border-b-0 font-serif">
-              BẢNG CHI TIẾT THANH TOÁN
+            <div className="bg-white text-black text-center font-bold text-[18px] uppercase py-1 border border-black border-b-0 font-serif">
+              BẢNG CHI TIẾT THANH TOÁN GỖ
             </div>
-            <div className="h-9 border-l border-r border-black bg-white"></div>
             <table className="w-full border-collapse border border-black text-center text-[11px] font-serif text-black">
               <thead>
-                <tr className="bg-white text-black text-center font-bold text-[12px] border-b border-black h-8">
+                <tr className="bg-white text-black text-center font-bold text-[11px] border-b border-black h-5">
                   <th className="border-r border-b border-black p-1.5 w-10 text-center font-bold">STT</th>
                   <th className="border-r border-b border-black p-1.5 text-center font-bold min-w-[200px]">Tên hàng</th>
                   <th className="border-r border-b border-black p-1.5 w-12 text-center font-bold">Đvt</th>
@@ -1359,7 +1358,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
               <tbody>
                 {/* Spanning Row: Wood Category & Contract */}
                 <tr>
-                  <td colSpan={colSpanTotal} className="border-r border-b border-black p-2 pl-3 text-left italic text-black bg-white font-serif text-[11px] leading-tight">
+                  <td colSpan={colSpanTotal} className="border-r border-b border-black px-1 py-0.5 pl-2 text-left italic text-black bg-white font-serif text-[11px] leading-tight">
                     {paymentContractLine}
                   </td>
                 </tr>
@@ -1372,31 +1371,31 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                     const isRedPrice = p.don_gia === 4700000;
 
                     return (
-                      <tr key={p.id || idx} className="border-b border-black h-9 hover:bg-slate-50/5">
+                      <tr key={p.id || idx} className="border-b border-black h-5 hover:bg-slate-50/5">
                         <td className="border-r border-black p-1.5 text-center font-serif text-black font-medium">
                           {sttText}
                         </td>
-                        <td className="border-r border-black p-1.5 text-center text-black font-normal">
+                        <td className="border-r border-black px-1 py-0.5 text-center text-black font-bold">
                           <input
                             type="text"
                             value={p.ten_hang}
                             onChange={(e) => handleUpdatePaymentField(idx, 'ten_hang', e.target.value)}
-                            className="bg-transparent text-center font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                            className="bg-transparent text-center font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                           />
                         </td>
-                        <td className="border-r border-black p-1.5 text-center text-black">
+                        <td className="border-r border-black px-1 py-0.5 text-center text-black">
                           {isSub ? '"' : 'm3'}
                         </td>
-                        <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
+                        <td className="border-r border-black px-1 py-0.5 text-center font-serif text-black font-normal">
                           <input
                             type="number"
                             step="0.001"
                             value={p.kl}
                             onChange={(e) => handleUpdatePaymentField(idx, 'kl', parseFloat(e.target.value) || 0)}
-                            className="bg-transparent text-center font-normal text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
+                            className="bg-transparent text-center font-bold text-black border-b border-transparent hover:border-black/20 focus:border-indigo-500 focus:outline-none w-full print:border-none print:bg-transparent"
                           />
                         </td>
-                        <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
+                        <td className="border-r border-black px-1 py-0.5 text-center font-serif text-black font-normal">
                           <input
                             type="text"
                             inputMode="numeric"
@@ -1411,7 +1410,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         </td>
                         
                         {hasThuongColumn && (
-                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
+                          <td className="border-r border-black px-1 py-0.5 text-center font-serif text-black font-normal">
                             <input
                               type="text"
                               inputMode="numeric"
@@ -1428,7 +1427,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         )}
                         
                         {hasVanChuyenColumn && (
-                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
+                          <td className="border-r border-black px-1 py-0.5 text-center font-serif text-black font-normal">
                             <input
                               type="text"
                               inputMode="numeric"
@@ -1445,7 +1444,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         )}
                         
                         {hasFscColumn && (
-                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
+                          <td className="border-r border-black px-1 py-0.5 text-center font-serif text-black font-normal">
                             <input
                               type="text"
                               inputMode="numeric"
@@ -1462,7 +1461,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         )}
                         
                         {hasThanhToanColumn && (
-                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
+                          <td className="border-r border-black px-1 py-0.5 text-center font-serif text-black font-normal">
                             <input
                               type="text"
                               inputMode="numeric"
@@ -1479,12 +1478,12 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                         )}
                         
                         {hasAnyAdjustment && (
-                          <td className="border-r border-black p-1.5 text-center font-serif text-black font-normal">
+                          <td className="border-r border-black px-1 py-0.5 text-center font-serif text-black font-normal">
                             {p.don_gia_tong ? p.don_gia_tong.toLocaleString('vi-VN') : '0'}
                           </td>
                         )}
                         
-                        <td className="p-1.5 text-center font-serif font-normal text-black">
+                        <td className="px-1 py-0.5 text-center font-serif font-normal text-black">
                           {p.thanh_tien ? p.thanh_tien.toLocaleString('vi-VN') : '0'}
                         </td>
                       </tr>
@@ -1602,7 +1601,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
                   const totalPaymentVol = paymentRows.reduce((sum, p) => sum + (p.kl || 0), 0);
                   const blankColumnsCount = colSpanTotal - 5;
                   return (
-                    <tr className="bg-white font-bold border-b border-black text-[12px] h-10">
+                    <tr className="bg-white font-bold border-b border-black text-[12px] h-6">
                       <td colSpan={3} className="border-r border-black p-2 text-center tracking-wider font-extrabold text-black">Cộng</td>
                       <td className="border-r border-black p-2 text-center font-serif font-normal text-black">
                         {totalPaymentVol.toLocaleString('vi-VN', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
@@ -1621,7 +1620,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
 
                 {/* Spell out spelling-words line: Bằng chữ */}
                 <tr className="bg-white">
-                  <td colSpan={colSpanTotal} className="p-3 border-b border-black text-left">
+                  <td colSpan={colSpanTotal} className="p-1.5 border-b border-black text-left">
                     <div className="flex items-center gap-1.5 normal-case font-bold text-[11.5px]">
                       <span className="text-black font-bold">Bằng chữ:</span>
                       <span className="text-black font-bold ml-2">
