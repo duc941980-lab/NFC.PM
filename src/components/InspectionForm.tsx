@@ -19761,6 +19761,62 @@ Bạn có thể hỏi tôi những câu như:
               {/* Printable invoice detail table segment */}
               <div className="p-8 md:p-12 select-text overflow-x-auto min-w-[700px] bg-white text-black print:p-4 print:min-w-0 font-serif">
 
+                {/* Invoice information: visible both in detail preview and printed sheet */}
+                <div className="mb-5 border border-black text-[11px] font-serif print:mb-4">
+                  <div className="grid grid-cols-2 border-b border-black">
+                    <div className="px-3 py-2 border-r border-black">
+                      <span className="font-bold">Số biên bản QC:</span>{' '}
+                      <span className="font-bold">{inv.invoiceNo || '—'}</span>
+                    </div>
+                    <div className="px-3 py-2">
+                      <span className="font-bold">Số hóa đơn:</span>{' '}
+                      <span className="font-bold">{inv.symbol || '—'}</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 border-b border-black">
+                    <div className="px-3 py-2 border-r border-black">
+                      <span className="font-bold">Ngày lập hóa đơn:</span>{' '}
+                      <span>{inv.invoiceDate ? inv.invoiceDate.split('-').reverse().join('/') : '—'}</span>
+                    </div>
+                    <div className="px-3 py-2">
+                      <span className="font-bold">Trạng thái hạch toán:</span>{' '}
+                      <span>{inv.status === 'Đã ký số' ? 'Đã ký số (Hoàn tất)' : inv.status}</span>
+                    </div>
+                  </div>
+                  <div className="px-3 py-2 border-b border-black">
+                    <span className="font-bold">Nhà cung cấp:</span>{' '}
+                    <span>{inv.supplierName || '—'}</span>
+                  </div>
+                  <div className="grid grid-cols-3 border-b border-black">
+                    <div className="px-3 py-2 border-r border-black">
+                      <span className="font-bold">Khối lượng (m³):</span>{' '}
+                      <span>{Number(inv.totalVolume || 0).toLocaleString('vi-VN', { maximumFractionDigits: 3 })}</span>
+                    </div>
+                    <div className="px-3 py-2 border-r border-black">
+                      <span className="font-bold">Cộng tiền trước thuế:</span>{' '}
+                      <span>{Number(inv.amountBeforeTax || 0).toLocaleString('vi-VN')} đ</span>
+                    </div>
+                    <div className="px-3 py-2">
+                      <span className="font-bold">Thuế suất VAT:</span>{' '}
+                      <span>{inv.taxRate ?? 0}%</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 border-b border-black">
+                    <div className="px-3 py-2 border-r border-black">
+                      <span className="font-bold">Tiền thuế VAT:</span>{' '}
+                      <span>{Number(inv.taxAmount || 0).toLocaleString('vi-VN')} đ</span>
+                    </div>
+                    <div className="px-3 py-2">
+                      <span className="font-bold">Tổng cộng tiền thanh toán:</span>{' '}
+                      <span className="font-black">{Number(inv.totalAmount || 0).toLocaleString('vi-VN')} đ</span>
+                    </div>
+                  </div>
+                  <div className="px-3 py-2 min-h-[42px]">
+                    <span className="font-bold">Ghi chú hóa đơn:</span>{' '}
+                    <span>{inv.note || '—'}</span>
+                  </div>
+                </div>
+
                 {/* Subtitle / Document name */}
                 <div className="text-center my-6 space-y-1 font-serif">
                   <h2 className="text-base font-black uppercase tracking-wide text-black">
