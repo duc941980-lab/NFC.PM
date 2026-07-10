@@ -14906,23 +14906,23 @@ Bạn có thể hỏi tôi những câu như:
                       </div>
                     ) : (
                       <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-xs">
-                        <table className="w-full min-w-[1180px] table-fixed border-collapse text-left text-sm font-medium text-slate-800">
+                        <table className="w-full min-w-[1320px] table-fixed border-collapse text-left text-sm font-medium text-slate-800">
                           <colgroup>
                             <col className="w-[52px]" />
-                            <col className="w-[150px]" />
-                            <col className="w-[120px]" />
-                            <col className="w-[220px]" />
+                            <col className="w-[190px]" />
+                            <col className="w-[145px]" />
+                            <col className="w-[240px]" />
                             <col className="w-[120px]" />
                             <col className="w-[150px]" />
                             <col className="w-[125px]" />
                             <col className="w-[165px]" />
-                            <col className="w-[190px]" />
+                            <col className="w-[210px]" />
                           </colgroup>
                           <thead>
                             <tr className="bg-slate-50/90 text-slate-600 font-extrabold border-b border-slate-200 h-16">
                               <th className="px-4 text-center whitespace-nowrap">TT</th>
-                              <th className="px-4 whitespace-nowrap">Biên bản QC / Hóa đơn</th>
-                              <th className="px-4 whitespace-nowrap">Ngày lập</th>
+                              <th className="px-5 whitespace-nowrap leading-6">Biên bản QC / Hóa đơn</th>
+                              <th className="px-5 whitespace-nowrap leading-6">Ngày lập</th>
                               <th className="px-4 whitespace-nowrap">Bên giao (NCC)</th>
                               <th className="px-4 text-right whitespace-nowrap">Tổng KL (m³)</th>
                               <th className="px-4 text-right whitespace-nowrap">Cộng tiền (đ)</th>
@@ -14937,7 +14937,7 @@ Bạn có thể hỏi tôi những câu như:
                               return (
                                 <tr key={inv.id || idx} className="min-h-[86px] hover:bg-emerald-50/30 transition border-b border-slate-100 last:border-b-0">
                                   <td className="px-4 py-4 text-center font-mono font-bold text-slate-400 align-middle">{idx + 1}</td>
-                                  <td className="px-4 py-4 align-middle">
+                                  <td className="px-5 py-4 align-middle">
                                     <div className="flex flex-col gap-1 justify-center py-1">
                                       <span className="bg-slate-100 text-slate-800 px-2.5 py-1 rounded-lg font-mono text-[11px] border border-slate-200 w-fit whitespace-nowrap" title="Số Biên bản QC">
                                         QC: {inv.invoiceNo}
@@ -14947,7 +14947,7 @@ Bạn có thể hỏi tôi những câu như:
                                       </span>
                                     </div>
                                   </td>
-                                  <td className="px-4 py-4 font-bold text-slate-700 whitespace-nowrap align-middle">{inv.invoiceDate ? inv.invoiceDate.split('-').reverse().join('/') : '—'}</td>
+                                  <td className="px-5 py-4 font-bold text-slate-700 whitespace-nowrap align-middle">{inv.invoiceDate ? inv.invoiceDate.split('-').reverse().join('/') : '—'}</td>
                                   <td className="px-4 py-4 font-bold text-slate-900 leading-relaxed align-middle break-words" title={inv.supplierName}>
                                     {inv.supplierName}
                                   </td>
@@ -19745,9 +19745,20 @@ Bạn có thể hỏi tôi những câu như:
         const totalDetailedPayment = totalBaseWood + totalOutsidePayment;
         const invoiceVariance = (inv.amountBeforeTax || 0) - totalBaseWood;
         const outsidePaymentVariance = totalDetailedPayment - (inv.amountBeforeTax || 0);
+        const formatInvoiceDateSafe = (value: unknown) => {
+          if (!value) return '';
+          const raw = String(value).trim();
+          if (!raw) return '';
+          if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+            const [year, month, day] = raw.slice(0, 10).split('-');
+            return `${day}/${month}/${year}`;
+          }
+          return raw;
+        };
+
         const contractReferences = matchedBBNTs
-          .filter(bb => bb.so_hop_dong)
-          .map(bb => `${bb.so_hop_dong}${bb.ngay_hop_dong ? ` ngày ${bb.ngay_hop_dong.split('-').reverse().join('/')}` : ''}`)
+          .filter(bb => Boolean(bb.so_hop_dong))
+          .map(bb => `${String(bb.so_hop_dong).trim()}${bb.ngay_hop_dong ? ` ngày ${formatInvoiceDateSafe(bb.ngay_hop_dong)}` : ''}`)
           .filter((value, index, arr) => arr.indexOf(value) === index);
 
         const getSupplierMockAddress = (name: string) => {
@@ -19786,52 +19797,87 @@ Bạn có thể hỏi tôi những câu như:
                     type="button"
                     onClick={() => {
                       const printable = document.getElementById('invoice-vat-print-document');
-                      if (!printable) return;
-
-                      const printWindow = window.open('', '_blank', 'width=1200,height=900');
-                      if (!printWindow) {
-                        alert('Trình duyệt đang chặn cửa sổ in. Vui lòng cho phép popup rồi thử lại.');
+                      if (!printable) {
+                        alert('Không tìm thấy nội dung bảng kê để in. Vui lòng đóng cửa sổ và mở lại chi tiết hóa đơn.');
                         return;
                       }
 
-                      printWindow.document.open();
-                      printWindow.document.write(`<!doctype html>
+                      const printableClone = printable.cloneNode(true) as HTMLElement;
+                      const contractText = contractReferences.length > 0
+                        ? contractReferences.join('; ')
+                        : 'Chưa cập nhật số hợp đồng';
+                      const bbText = inv.bbntIds?.join(', ') || inv.invoiceNo || 'N/A';
+
+                      // Dùng iframe ẩn thay cho popup để tránh trình duyệt chặn cửa sổ in.
+                      const oldFrame = document.getElementById('invoice-vat-print-frame');
+                      oldFrame?.remove();
+                      const frame = document.createElement('iframe');
+                      frame.id = 'invoice-vat-print-frame';
+                      frame.setAttribute('aria-hidden', 'true');
+                      frame.style.position = 'fixed';
+                      frame.style.right = '0';
+                      frame.style.bottom = '0';
+                      frame.style.width = '1px';
+                      frame.style.height = '1px';
+                      frame.style.border = '0';
+                      frame.style.opacity = '0';
+                      document.body.appendChild(frame);
+
+                      const frameDoc = frame.contentDocument || frame.contentWindow?.document;
+                      if (!frameDoc) {
+                        frame.remove();
+                        alert('Không thể khởi tạo trang in. Vui lòng tải lại trang và thử lại.');
+                        return;
+                      }
+
+                      frameDoc.open();
+                      frameDoc.write(`<!doctype html>
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bảng kê đối chiếu hóa đơn VAT</title>
   <style>
     @page { size: A4 portrait; margin: 10mm; }
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; background: #fff; color: #000; }
     body { font-family: "Times New Roman", Times, serif; font-size: 11pt; }
-    #invoice-vat-print-document { width: 100%; max-width: 190mm; margin: 0 auto; padding: 0; overflow: visible; }
-    #invoice-vat-title-block { display: block !important; visibility: visible !important; width: 100%; margin: 6mm 0 5mm; text-align: center; page-break-inside: avoid; }
-    #invoice-vat-title-block h2 { display: block !important; visibility: visible !important; margin: 0 0 2mm; font-size: 15pt; line-height: 1.25; font-weight: 700; text-transform: uppercase; white-space: normal; }
-    #invoice-vat-title-block p { display: block !important; visibility: visible !important; margin: 1mm 0; font-size: 10.5pt; line-height: 1.25; white-space: normal; }
+    main { width: 100%; max-width: 190mm; margin: 0 auto; }
+    .print-title { width: 100%; text-align: center; margin: 0 0 6mm; page-break-inside: avoid; }
+    .print-title h2 { margin: 0 0 2mm; font-size: 15pt; line-height: 1.25; font-weight: 700; text-transform: uppercase; }
+    .print-title p { margin: 1mm 0; font-size: 10.5pt; line-height: 1.3; }
+    .print-title .subtitle { font-style: italic; }
+    .print-title .contract { font-weight: 700; }
+    #invoice-vat-title-block { display: none !important; }
     table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    th, td { border: 1px solid #000; padding: 5px 6px; color: #000; }
-    h1, h2, h3, p { color: #000; }
+    th, td { border: 1px solid #000 !important; padding: 5px 6px; color: #000 !important; }
+    .overflow-x-auto { overflow: visible !important; }
+    .min-w-\[700px\] { min-width: 0 !important; }
+    .rounded-2xl, .rounded-xl { border-radius: 0 !important; }
     .bg-slate-50, .bg-slate-50\/50, .bg-zinc-50\/50 { background: #fff !important; }
     .text-zinc-500, .text-slate-500, .text-slate-700, .text-slate-800 { color: #000 !important; }
-    .rounded-2xl { border-radius: 0 !important; }
-    .border-dashed { border-style: solid !important; }
-    @media print {
-      html, body { width: 100%; }
-      #invoice-vat-title-block { display: block !important; visibility: visible !important; }
-      #invoice-vat-title-block * { display: block !important; visibility: visible !important; }
-    }
   </style>
 </head>
-<body>${printable.outerHTML}</body>
+<body>
+  <main>
+    <section class="print-title">
+      <h2>BẢNG KÊ CHI TIẾT LÂM SẢN HẠCH TOÁN ĐỐI CHIẾU HÓA ĐƠN VAT</h2>
+      <p class="subtitle">(Căn cứ theo số liệu thanh toán đã duyệt thuộc Biên bản số: ${bbText})</p>
+      <p class="contract">Thanh toán theo hợp đồng: ${contractText}</p>
+    </section>
+    ${printableClone.outerHTML}
+  </main>
+</body>
 </html>`);
-                      printWindow.document.close();
-                      printWindow.focus();
+                      frameDoc.close();
+
                       window.setTimeout(() => {
-                        printWindow.print();
-                        printWindow.close();
-                      }, 350);
+                        try {
+                          frame.contentWindow?.focus();
+                          frame.contentWindow?.print();
+                        } finally {
+                          window.setTimeout(() => frame.remove(), 1500);
+                        }
+                      }, 500);
                     }}
                     className="px-4.5 py-2 hover:bg-slate-250 bg-slate-100 text-xs font-black text-slate-650 hover:text-slate-900 rounded-xl transition cursor-pointer flex items-center gap-1.5"
                   >
@@ -19853,15 +19899,6 @@ Bạn có thể hỏi tôi những câu như:
 
                 {/* NOVA V8: Bỏ khối thông tin đầu phiếu để bản xem/in gọn đúng mẫu. */}
 
-                {/* Thông tin hồ sơ kế toán */}
-                <div className="mb-5 grid grid-cols-2 gap-x-8 gap-y-1.5 border border-black px-4 py-3 text-[11px] leading-relaxed font-serif print:text-[10px]">
-                  <p><strong>Biên bản QC:</strong> {inv.invoiceNo || inv.bbntIds?.join(', ') || '—'}</p>
-                  <p><strong>Hợp đồng:</strong> {contractReferences.length > 0 ? contractReferences.join('; ') : '—'}</p>
-                  <p><strong>Hóa đơn VAT:</strong> {inv.symbol || '—'}</p>
-                  <p><strong>Ngày HĐ:</strong> {inv.invoiceDate ? inv.invoiceDate.split('-').reverse().join('/') : '—'}</p>
-                  <p className="col-span-2"><strong>Nhà cung cấp:</strong> {inv.supplierName || '—'}</p>
-                </div>
-
                 {/* Tiêu đề bảng kê: luôn giữ nguyên khi xem và khi in */}
                 <div id="invoice-vat-title-block" className="invoice-reconciliation-title text-center my-6 space-y-1 font-serif break-inside-avoid print:my-4">
                   <h2 className="w-full whitespace-normal text-[15px] leading-snug font-black uppercase tracking-normal text-black print:text-[15px] print:leading-tight">
@@ -19873,6 +19910,15 @@ Bạn có thể hỏi tôi những câu như:
                   <p className="text-[10px] leading-relaxed font-bold text-black">
                     Thanh toán theo hợp đồng: {contractReferences.length > 0 ? contractReferences.join('; ') : 'Chưa cập nhật số hợp đồng'}
                   </p>
+                </div>
+
+                {/* Thông tin hồ sơ kế toán */}
+                <div className="mb-5 grid grid-cols-2 gap-x-8 gap-y-1.5 border border-black px-4 py-3 text-[11px] leading-relaxed font-serif print:text-[10px]">
+                  <p><strong>Biên bản QC:</strong> {inv.invoiceNo || inv.bbntIds?.join(', ') || '—'}</p>
+                  <p><strong>Hợp đồng:</strong> {contractReferences.length > 0 ? contractReferences.join('; ') : '—'}</p>
+                  <p><strong>Hóa đơn VAT:</strong> {inv.symbol || '—'}</p>
+                  <p><strong>Ngày HĐ:</strong> {inv.invoiceDate ? inv.invoiceDate.split('-').reverse().join('/') : '—'}</p>
+                  <p className="col-span-2"><strong>Nhà cung cấp:</strong> {inv.supplierName || '—'}</p>
                 </div>
 
                 {/* Bảng hóa đơn chỉ thể hiện phần giá trị kê khai trên hóa đơn VAT. */}
