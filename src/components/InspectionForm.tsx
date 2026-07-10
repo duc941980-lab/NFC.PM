@@ -6989,7 +6989,7 @@ Bạn có thể hỏi tôi những câu như:
                                     )}
                                   </td>
                                   <td className="px-3 py-3 text-center">
-                                    <div className="flex items-center justify-center gap-2">
+                                    <div className="flex items-center justify-center gap-2.5 whitespace-nowrap">
                                       <ExportDropdown 
                                         bienBan={bb} 
                                         onPrint={onPrint} 
@@ -14906,47 +14906,58 @@ Bạn có thể hỏi tôi những câu như:
                       </div>
                     ) : (
                       <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-xs">
-                        <table className="w-full border-collapse text-left text-sm font-medium text-slate-800">
+                        <table className="w-full min-w-[1180px] table-fixed border-collapse text-left text-sm font-medium text-slate-800">
+                          <colgroup>
+                            <col className="w-[52px]" />
+                            <col className="w-[150px]" />
+                            <col className="w-[120px]" />
+                            <col className="w-[220px]" />
+                            <col className="w-[120px]" />
+                            <col className="w-[150px]" />
+                            <col className="w-[125px]" />
+                            <col className="w-[165px]" />
+                            <col className="w-[190px]" />
+                          </colgroup>
                           <thead>
-                            <tr className="bg-slate-50/90 text-slate-600 font-extrabold border-b border-slate-200 h-14">
-                              <th className="px-3 text-center w-10">TT</th>
-                              <th className="px-4">BB QC / Hóa đơn</th>
-                              <th className="px-3">Ngày lập</th>
-                              <th className="px-3">Bên giao (NCC)</th>
-                              <th className="px-3 text-right">Tổng KL (m³)</th>
-                              <th className="px-3 text-right">Cộng tiền (đ)</th>
-                              <th className="px-3 text-right">Thuế (VAT)</th>
-                              <th className="px-3 text-right">Tổng thanh toán</th>
-                              <th className="px-3 text-center w-36">Thao tác</th>
+                            <tr className="bg-slate-50/90 text-slate-600 font-extrabold border-b border-slate-200 h-16">
+                              <th className="px-4 text-center whitespace-nowrap">TT</th>
+                              <th className="px-4 whitespace-nowrap">Biên bản QC / Hóa đơn</th>
+                              <th className="px-4 whitespace-nowrap">Ngày lập</th>
+                              <th className="px-4 whitespace-nowrap">Bên giao (NCC)</th>
+                              <th className="px-4 text-right whitespace-nowrap">Tổng KL (m³)</th>
+                              <th className="px-4 text-right whitespace-nowrap">Cộng tiền (đ)</th>
+                              <th className="px-4 text-right whitespace-nowrap">Thuế (VAT)</th>
+                              <th className="px-4 text-right whitespace-nowrap">Tổng thanh toán</th>
+                              <th className="px-4 text-center whitespace-nowrap">Thao tác</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
                             {invoices.map((inv, idx) => {
                               const taxPercent = inv.taxRate ?? 8;
                               return (
-                                <tr key={inv.id || idx} className="h-[76px] hover:bg-emerald-50/30 transition border-b border-slate-100 last:border-b-0">
-                                  <td className="px-3 text-center font-mono font-bold text-slate-400">{idx + 1}</td>
-                                  <td className="px-3">
+                                <tr key={inv.id || idx} className="min-h-[86px] hover:bg-emerald-50/30 transition border-b border-slate-100 last:border-b-0">
+                                  <td className="px-4 py-4 text-center font-mono font-bold text-slate-400 align-middle">{idx + 1}</td>
+                                  <td className="px-4 py-4 align-middle">
                                     <div className="flex flex-col gap-1 justify-center py-1">
-                                      <span className="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded font-mono text-[10px] border border-slate-200 w-fit" title="Số Biên bản QC">
+                                      <span className="bg-slate-100 text-slate-800 px-2.5 py-1 rounded-lg font-mono text-[11px] border border-slate-200 w-fit whitespace-nowrap" title="Số Biên bản QC">
                                         QC: {inv.invoiceNo}
                                       </span>
-                                      <span className="bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded font-mono text-[10px] border border-amber-250 w-fit font-black" title="Số Hóa đơn">
+                                      <span className="bg-amber-50 text-amber-800 px-2.5 py-1 rounded-lg font-mono text-[11px] border border-amber-250 w-fit font-black whitespace-nowrap" title="Số Hóa đơn">
                                         HĐ: {inv.symbol}
                                       </span>
                                     </div>
                                   </td>
-                                  <td className="px-3 font-bold text-slate-700 whitespace-nowrap">{inv.invoiceDate ? inv.invoiceDate.split('-').reverse().join('/') : '—'}</td>
-                                  <td className="px-3 font-bold text-slate-900 truncate max-w-[160px]" title={inv.supplierName}>
+                                  <td className="px-4 py-4 font-bold text-slate-700 whitespace-nowrap align-middle">{inv.invoiceDate ? inv.invoiceDate.split('-').reverse().join('/') : '—'}</td>
+                                  <td className="px-4 py-4 font-bold text-slate-900 leading-relaxed align-middle break-words" title={inv.supplierName}>
                                     {inv.supplierName}
                                   </td>
-                                  <td className="px-3 text-right font-mono font-bold text-slate-900">{formatVolNoTrailing(inv.totalVolume)} m³</td>
-                                  <td className="px-3 text-right font-mono font-semibold text-slate-700">{(inv.amountBeforeTax || 0).toLocaleString('vi-VN')} đ</td>
-                                  <td className="px-3 text-right font-mono text-slate-550">
+                                  <td className="px-4 py-4 text-right font-mono font-bold text-slate-900 whitespace-nowrap align-middle">{formatVolNoTrailing(inv.totalVolume)} m³</td>
+                                  <td className="px-4 py-4 text-right font-mono font-semibold text-slate-700 whitespace-nowrap align-middle">{(inv.amountBeforeTax || 0).toLocaleString('vi-VN')} đ</td>
+                                  <td className="px-4 py-4 text-right font-mono text-slate-550 whitespace-nowrap align-middle">
                                     {taxPercent}% ({(inv.taxAmount || 0).toLocaleString('vi-VN')} đ)
                                   </td>
-                                  <td className="px-3 text-right font-mono font-black text-emerald-800">{(inv.totalAmount || 0).toLocaleString('vi-VN')} đ</td>
-                                  <td className="px-3 text-center">
+                                  <td className="px-4 py-4 text-right font-mono font-black text-emerald-800 whitespace-nowrap align-middle">{(inv.totalAmount || 0).toLocaleString('vi-VN')} đ</td>
+                                  <td className="px-4 py-4 text-center align-middle">
                                     <div className="flex items-center justify-center gap-2">
                                       <button
                                         type="button"
@@ -19730,7 +19741,10 @@ Bạn có thể hỏi tôi những câu như:
         const totalBonus = displayRows.reduce((sum, r) => sum + ((r.kl || 0) * toMoneyNumber(r.thuong)), 0);
         const totalTransport = displayRows.reduce((sum, r) => sum + ((r.kl || 0) * toMoneyNumber(r.van_chuyen)), 0);
         const totalFsc = displayRows.reduce((sum, r) => sum + ((r.kl || 0) * toMoneyNumber(r.hd_fsc)), 0);
-        const invoiceVariance = (inv.amountBeforeTax || 0) - totalAmountBeforeTaxSum;
+        const totalOutsidePayment = totalBonus + totalTransport + totalFsc;
+        const totalDetailedPayment = totalBaseWood + totalOutsidePayment;
+        const invoiceVariance = (inv.amountBeforeTax || 0) - totalBaseWood;
+        const outsidePaymentVariance = totalDetailedPayment - (inv.amountBeforeTax || 0);
         const contractReferences = matchedBBNTs
           .filter(bb => bb.so_hop_dong)
           .map(bb => `${bb.so_hop_dong}${bb.ngay_hop_dong ? ` ngày ${bb.ngay_hop_dong.split('-').reverse().join('/')}` : ''}`)
@@ -19791,6 +19805,15 @@ Bạn có thể hỏi tôi những câu như:
 
                 {/* NOVA V8: Bỏ khối thông tin đầu phiếu để bản xem/in gọn đúng mẫu. */}
 
+                {/* Thông tin hồ sơ kế toán */}
+                <div className="mb-5 grid grid-cols-2 gap-x-8 gap-y-1.5 border border-black px-4 py-3 text-[11px] leading-relaxed font-serif print:text-[10px]">
+                  <p><strong>Biên bản QC:</strong> {inv.invoiceNo || inv.bbntIds?.join(', ') || '—'}</p>
+                  <p><strong>Hợp đồng:</strong> {contractReferences.length > 0 ? contractReferences.join('; ') : '—'}</p>
+                  <p><strong>Hóa đơn VAT:</strong> {inv.symbol || '—'}</p>
+                  <p><strong>Ngày HĐ:</strong> {inv.invoiceDate ? inv.invoiceDate.split('-').reverse().join('/') : '—'}</p>
+                  <p className="col-span-2"><strong>Nhà cung cấp:</strong> {inv.supplierName || '—'}</p>
+                </div>
+
                 {/* Subtitle / Document name */}
                 <div className="text-center my-6 space-y-1 font-serif">
                   <h2 className="mx-auto max-w-full whitespace-normal break-words text-[15px] leading-snug font-black uppercase tracking-normal text-black print:text-[14px]">
@@ -19843,13 +19866,31 @@ Bạn có thể hỏi tôi những câu như:
                   </tbody>
                 </table>
 
-                {/* Đối chiếu chỉ theo giá trị kê khai hóa đơn, không cộng các khoản thanh toán ngoài. */}
-                <div className="mb-5 grid grid-cols-2 gap-0 border border-black text-[10.5px] font-serif print:text-[10px]">
-                  <div className="border-r border-black px-3 py-2"><strong>Tổng bảng kê trước VAT:</strong> {Math.round(totalBaseWood).toLocaleString('vi-VN')} đ</div>
-                  <div className="px-3 py-2"><strong>Giá trị hóa đơn trước VAT:</strong> {Math.round(inv.amountBeforeTax || 0).toLocaleString('vi-VN')} đ</div>
-                  <div className="col-span-2 border-t border-black px-3 py-2 font-black">
-                    Chênh lệch hóa đơn: <span className={(Math.round((inv.amountBeforeTax || 0) - totalBaseWood) === 0) ? 'text-emerald-700 print:text-black' : 'text-rose-700 print:text-black'}>{Math.round((inv.amountBeforeTax || 0) - totalBaseWood).toLocaleString('vi-VN')} đ</span>
-                    {Math.round((inv.amountBeforeTax || 0) - totalBaseWood) === 0 ? ' — Đã khớp' : ((inv.amountBeforeTax || 0) - totalBaseWood) > 0 ? ' — Hóa đơn lớn hơn bảng kê' : ' — Hóa đơn nhỏ hơn bảng kê'}
+                {/* ĐỐI CHIẾU NỘI BỘ: 3 khoản ngoài hóa đơn không xuất hiện trong bảng hàng hóa nhưng vẫn được theo dõi tại đây. */}
+                <div className="mb-5 border border-black text-[10.5px] font-serif print:text-[10px]">
+                  <div className="bg-slate-50 px-3 py-2 text-center font-black uppercase border-b border-black print:bg-white">
+                    Đối chiếu thanh toán nội bộ
+                  </div>
+                  <div className="grid grid-cols-2">
+                    <div className="border-r border-b border-black px-3 py-2"><strong>Giá trị gỗ theo bảng kê:</strong></div>
+                    <div className="border-b border-black px-3 py-2 text-right font-bold">{Math.round(totalBaseWood).toLocaleString('vi-VN')} đ</div>
+                    <div className="border-r border-b border-black px-3 py-2">Thưởng (thanh toán ngoài):</div>
+                    <div className="border-b border-black px-3 py-2 text-right">{Math.round(totalBonus).toLocaleString('vi-VN')} đ</div>
+                    <div className="border-r border-b border-black px-3 py-2">Vận chuyển (thanh toán ngoài):</div>
+                    <div className="border-b border-black px-3 py-2 text-right">{Math.round(totalTransport).toLocaleString('vi-VN')} đ</div>
+                    <div className="border-r border-b border-black px-3 py-2">Hóa đơn FSC (thanh toán ngoài):</div>
+                    <div className="border-b border-black px-3 py-2 text-right">{Math.round(totalFsc).toLocaleString('vi-VN')} đ</div>
+                    <div className="border-r border-b border-black px-3 py-2 font-black">Tổng thanh toán theo bảng chi tiết:</div>
+                    <div className="border-b border-black px-3 py-2 text-right font-black">{Math.round(totalDetailedPayment).toLocaleString('vi-VN')} đ</div>
+                    <div className="border-r border-b border-black px-3 py-2 font-bold">Giá trị hóa đơn trước VAT:</div>
+                    <div className="border-b border-black px-3 py-2 text-right font-bold">{Math.round(inv.amountBeforeTax || 0).toLocaleString('vi-VN')} đ</div>
+                    <div className="border-r border-black px-3 py-2 font-black">Chênh lệch cần theo dõi thanh toán ngoài:</div>
+                    <div className="px-3 py-2 text-right font-black">
+                      <span className={Math.round(outsidePaymentVariance) === 0 ? 'text-emerald-700 print:text-black' : 'text-amber-700 print:text-black'}>
+                        {Math.round(outsidePaymentVariance).toLocaleString('vi-VN')} đ
+                      </span>
+                      {Math.round(outsidePaymentVariance) === 0 ? ' — Đã khớp' : Math.round(outsidePaymentVariance) > 0 ? ' — Còn phải thanh toán ngoài' : ' — Hóa đơn lớn hơn tổng chi tiết'}
+                    </div>
                   </div>
                 </div>
 
