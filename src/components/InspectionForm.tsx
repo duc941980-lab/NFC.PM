@@ -19784,7 +19784,55 @@ Bạn có thể hỏi tôi những câu như:
                   </button>
                   <button
                     type="button"
-                    onClick={() => window.print()}
+                    onClick={() => {
+                      const printable = document.getElementById('invoice-vat-print-document');
+                      if (!printable) return;
+
+                      const printWindow = window.open('', '_blank', 'width=1200,height=900');
+                      if (!printWindow) {
+                        alert('Trình duyệt đang chặn cửa sổ in. Vui lòng cho phép popup rồi thử lại.');
+                        return;
+                      }
+
+                      printWindow.document.open();
+                      printWindow.document.write(`<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bảng kê đối chiếu hóa đơn VAT</title>
+  <style>
+    @page { size: A4 portrait; margin: 10mm; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #fff; color: #000; }
+    body { font-family: "Times New Roman", Times, serif; font-size: 11pt; }
+    #invoice-vat-print-document { width: 100%; max-width: 190mm; margin: 0 auto; padding: 0; overflow: visible; }
+    #invoice-vat-title-block { display: block !important; visibility: visible !important; width: 100%; margin: 6mm 0 5mm; text-align: center; page-break-inside: avoid; }
+    #invoice-vat-title-block h2 { display: block !important; visibility: visible !important; margin: 0 0 2mm; font-size: 15pt; line-height: 1.25; font-weight: 700; text-transform: uppercase; white-space: normal; }
+    #invoice-vat-title-block p { display: block !important; visibility: visible !important; margin: 1mm 0; font-size: 10.5pt; line-height: 1.25; white-space: normal; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid #000; padding: 5px 6px; color: #000; }
+    h1, h2, h3, p { color: #000; }
+    .bg-slate-50, .bg-slate-50\/50, .bg-zinc-50\/50 { background: #fff !important; }
+    .text-zinc-500, .text-slate-500, .text-slate-700, .text-slate-800 { color: #000 !important; }
+    .rounded-2xl { border-radius: 0 !important; }
+    .border-dashed { border-style: solid !important; }
+    @media print {
+      html, body { width: 100%; }
+      #invoice-vat-title-block { display: block !important; visibility: visible !important; }
+      #invoice-vat-title-block * { display: block !important; visibility: visible !important; }
+    }
+  </style>
+</head>
+<body>${printable.outerHTML}</body>
+</html>`);
+                      printWindow.document.close();
+                      printWindow.focus();
+                      window.setTimeout(() => {
+                        printWindow.print();
+                        printWindow.close();
+                      }, 350);
+                    }}
                     className="px-4.5 py-2 hover:bg-slate-250 bg-slate-100 text-xs font-black text-slate-650 hover:text-slate-900 rounded-xl transition cursor-pointer flex items-center gap-1.5"
                   >
                     <Printer className="w-4 h-4" />
