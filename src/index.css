@@ -129,6 +129,47 @@
     line-height: 1.12 !important;
   }
 
+  /* Payment print: match the Excel template with a firmer Times New Roman rendering. */
+  #wood-payment-document,
+  #wood-payment-document * {
+    font-family: "Times New Roman", "Tinos", Times, serif !important;
+    color: #000000 !important;
+    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: auto;
+    font-synthesis: none;
+  }
+
+  #wood-payment-document table,
+  #wood-payment-document th,
+  #wood-payment-document td {
+    font-family: "Times New Roman", "Tinos", Times, serif !important;
+  }
+
+  #wood-payment-document tbody td {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+  }
+
+  #wood-payment-document thead th {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+  }
+
+  #wood-payment-document input,
+  #wood-payment-document textarea,
+  #wood-payment-document select {
+    font-family: "Times New Roman", "Tinos", Times, serif !important;
+    font-size: 11px !important;
+    font-weight: inherit !important;
+    letter-spacing: 0 !important;
+  }
+
+  /* Keep the contract note elegant rather than artificially bold. */
+  #wood-payment-document tbody tr:first-child td {
+    font-weight: 400 !important;
+    font-style: italic !important;
+  }
+
   /* Shrink inputs/dropdowns inside document to match new font size and reduce row height */
   #wood-inspection-document input,
   #wood-inspection-document textarea,
