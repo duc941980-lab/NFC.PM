@@ -15228,7 +15228,7 @@ Bạn có thể hỏi tôi những câu như:
                               className="bg-emerald-650 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md flex items-center gap-2 cursor-pointer transitions-all"
                             >
                               <Printer className="w-4 h-4" />
-                              IN PHIẾU KHỔ A5
+                              IN PHIẾU A5 DỌC
                             </button>
                             <button
                               type="button"
@@ -15248,12 +15248,13 @@ Bạn có thể hỏi tôi những câu như:
                               line-height: 1.15 !important;
                             }
                             #payment-doc-print-area-wrapper td {
-                              padding-top: 1px !important;
-                              padding-bottom: 1px !important;
+                              padding-top: 2px !important;
+                              padding-bottom: 2px !important;
+                              overflow-wrap: anywhere !important;
                             }
                             @media print {
                               @page {
-                                size: A5 landscape !important;
+                                size: A5 portrait !important;
                                 margin: 6mm 8mm 6mm 8mm !important;
                               }
                               body {
@@ -15267,8 +15268,8 @@ Bạn có thể hỏi tôi những câu như:
                                 position: absolute !important;
                                 left: 0 !important;
                                 top: 0 !important;
-                                width: 194mm !important; /* Fits nicely in A5 landscape width with margins */
-                                height: 136mm !important;
+                                width: 132mm !important; /* A5 dọc: 148mm trừ lề 8mm mỗi bên */
+                                min-height: 194mm !important;
                                 padding: 0 !important;
                                 margin: 0 !important;
                                 border: none !important;
@@ -15279,9 +15280,9 @@ Bạn có thể hỏi tôi những câu như:
 
                           <div 
                             id="payment-doc-print-area-wrapper"
-                            className="w-[210mm] h-[148mm] mx-auto bg-white p-[8mm] text-black border border-slate-300 shadow-md relative print:shadow-none print:border-none print:p-0 print:m-0 a5-print-page-scoped select-text"
+                            className="w-[148mm] min-h-[210mm] mx-auto bg-white p-[8mm] text-black border border-slate-300 shadow-md relative print:shadow-none print:border-none print:p-0 print:m-0 a5-print-page-scoped select-text"
                           >
-                            <table className="w-full border-collapse font-serif text-[11px] text-black bg-white select-text vouchers-table">
+                            <table className="w-full table-fixed border-collapse font-serif text-[11px] text-black bg-white select-text vouchers-table">
                               <tbody>
                                 {/* Row 1: Company header and Template Metadata */}
                                 <tr className="h-12">
@@ -16237,18 +16238,18 @@ Bạn có thể hỏi tôi những câu như:
                                   <title>Giấy đề nghị thanh toán</title>
                                   ${inheritedStyles}
                                   <style>
-                                    @page { size: A5 landscape; margin: 6mm 8mm; }
-                                    html, body { margin: 0; padding: 0; background: #fff; }
+                                    @page { size: A5 portrait; margin: 8mm; }
+                                    html, body { margin: 0; padding: 0; background: #fff; width: 148mm; min-height: 210mm; }
                                     body { font-family: "Times New Roman", Times, serif; color: #000; }
                                     #payment-doc-print-area-wrapper {
-                                      width: 194mm !important;
-                                      min-height: 136mm !important;
+                                      width: 132mm !important;
+                                      min-min-height: 194mm !important;
                                       margin: 0 auto !important;
                                       padding: 0 !important;
                                       border: 0 !important;
                                       box-shadow: none !important;
                                     }
-                                    #payment-doc-print-area-wrapper table { width: 100% !important; line-height: 1.2 !important; }
+                                    #payment-doc-print-area-wrapper table { width: 100% !important; table-layout: fixed !important; line-height: 1.2 !important; }
                                     #payment-doc-print-area-wrapper td { padding-top: 2px !important; padding-bottom: 2px !important; }
                                   </style>
                                 </head>
@@ -16264,7 +16265,7 @@ Bạn có thể hỏi tôi những câu như:
                           className="bg-emerald-650 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md flex items-center gap-2 cursor-pointer transitions-all"
                         >
                           <Printer className="w-4 h-4" />
-                          IN PHIẾU KHỔ A5
+                          IN PHIẾU A5 DỌC
                         </button>
                       </div>
                     </div>
@@ -16277,12 +16278,13 @@ Bạn có thể hỏi tôi những câu như:
                           line-height: 1.22 !important;
                         }
                         #payment-doc-print-area-wrapper td {
-                          padding-top: 1px !important;
-                          padding-bottom: 1px !important;
+                          padding-top: 2px !important;
+                          padding-bottom: 2px !important;
+                          overflow-wrap: anywhere !important;
                         }
                         @media print {
                           @page {
-                            size: A5 landscape !important;
+                            size: A5 portrait !important;
                             margin: 6mm 8mm 6mm 8mm !important;
                           }
                           body {
@@ -16296,8 +16298,8 @@ Bạn có thể hỏi tôi những câu như:
                             position: absolute !important;
                             left: 0 !important;
                             top: 0 !important;
-                            width: 194mm !important; /* Fits nicely in A5 landscape width with margins */
-                            height: 136mm !important;
+                            width: 132mm !important; /* A5 dọc: 148mm trừ lề 8mm mỗi bên */
+                            min-height: 194mm !important;
                             padding: 0 !important;
                             margin: 0 !important;
                             border: none !important;
@@ -16308,9 +16310,9 @@ Bạn có thể hỏi tôi những câu như:
 
                       <div 
                         id="payment-doc-print-area-wrapper"
-                        className="w-[210mm] h-[148mm] bg-white p-[8mm] text-black border border-slate-300 shadow-md relative print:shadow-none print:border-none print:p-0 print:m-0 a5-print-page-scoped select-text"
+                        className="w-[148mm] min-h-[210mm] bg-white p-[8mm] text-black border border-slate-300 shadow-md relative print:shadow-none print:border-none print:p-0 print:m-0 a5-print-page-scoped select-text"
                       >
-                        <table className="w-full border-collapse font-serif text-[12px] text-black bg-white select-text vouchers-table">
+                        <table className="w-full table-fixed border-collapse font-serif text-[12px] text-black bg-white select-text vouchers-table">
                           <tbody>
                             {/* Row 1: Company header and Template Metadata */}
                             <tr className="h-12">
