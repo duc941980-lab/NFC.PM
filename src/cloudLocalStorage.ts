@@ -17,6 +17,7 @@ export const CLOUD_SYNC_STORAGE_KEYS = [
   'wood_current_user_v1',
   'custom_wood_species',
   'custom_sales_employees_list',
+  'custom_sales_employees_list_backup_v1',
   'employee_salary_settings_v1',
   'custom_suppliers_list',
   'regions_suppliers_list',

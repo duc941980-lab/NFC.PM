@@ -567,11 +567,16 @@ export default function InspectionForm({
       'Phạm Hồng Hải'
     ];
     try {
-      const saved = localStorage.getItem('custom_sales_employees_list');
+      // Ưu tiên dữ liệu chính; dùng bản sao dự phòng để nhân sự không mất sau khi đăng xuất/khởi động lại.
+      const saved = localStorage.getItem('custom_sales_employees_list')
+        || localStorage.getItem('custom_sales_employees_list_backup_v1');
       if (saved !== null) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          return parsed.filter(item => item !== 'Nguyễn Văn A');
+          const normalized = parsed
+            .map(item => String(item || '').trim())
+            .filter(item => item && item !== 'Nguyễn Văn A');
+          return Array.from(new Set(normalized));
         }
       }
     } catch (e) {
@@ -579,6 +584,14 @@ export default function InspectionForm({
     }
     return [];
   });
+
+  // Luôn lưu danh sách nhân sự .GOC vào cả khóa chính và khóa dự phòng.
+  // Việc này bảo đảm dữ liệu vẫn còn khi component được dựng lại, đăng xuất hoặc khởi động lại trình duyệt.
+  useEffect(() => {
+    const serialized = JSON.stringify(customSalesEmployeesList);
+    localStorage.setItem('custom_sales_employees_list', serialized);
+    localStorage.setItem('custom_sales_employees_list_backup_v1', serialized);
+  }, [customSalesEmployeesList]);
 
   const [salarySettings, setSalarySettings] = useState<Record<string, { baseSalary: number; commissionRate: number; allowance: number }>>(() => {
     try {
@@ -918,6 +931,7 @@ export default function InspectionForm({
     const newList = customSalesEmployeesList.filter(item => item !== itemToDelete);
     setCustomSalesEmployeesList(newList);
     localStorage.setItem('custom_sales_employees_list', JSON.stringify(newList));
+    localStorage.setItem('custom_sales_employees_list_backup_v1', JSON.stringify(newList));
   };
 
   const handleAddSalesEmployee = (itemToAdd: string) => {
@@ -15326,10 +15340,13 @@ Bạn có thể hỏi tôi những câu như:
                                   </td>
                                 </tr>
 
-                                {/* Row 8: Content Title Header */}
-                                <tr className="h-5">
-                                  <td colSpan={8} className="px-2.5 py-0.5 text-left font-serif text-[11px] font-normal">
+                                {/* Row 8: Nội dung thanh toán */}
+                                <tr className="h-6">
+                                  <td colSpan={3} className="px-2.5 py-0.5 text-left font-serif text-[11px] font-normal">
                                     Nội dung thanh toán:
+                                  </td>
+                                  <td colSpan={5} className="px-2.5 py-0.5 text-left font-serif text-[11px] font-bold text-black whitespace-pre-wrap">
+                                    {(selectedProposalForPrint.reason || selectedProposalForPrint.notes || 'Thanh toán tiền gỗ').trim()}
                                   </td>
                                 </tr>
 
@@ -16357,8 +16374,8 @@ Bạn có thể hỏi tôi những câu như:
                               <td colSpan={3} className="px-2.5 py-0.5 text-left font-serif text-[12px] font-normal">
                                 Nội dung thanh toán:
                               </td>
-                              <td colSpan={5} className="px-2.5 py-0.5 text-left font-serif text-[12px] font-bold text-black">
-                                {activeProposalForPrint.reason || 'Thanh toán tiền gỗ'}
+                              <td colSpan={5} className="px-2.5 py-0.5 text-left font-serif text-[12px] font-bold text-black whitespace-pre-wrap">
+                                {(activeProposalForPrint.reason || activeProposalForPrint.notes || 'Thanh toán tiền gỗ').trim()}
                               </td>
                             </tr>
 
