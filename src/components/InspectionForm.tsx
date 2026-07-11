@@ -15372,8 +15372,8 @@ Bạn có thể hỏi tôi những câu như:
                                   </td>
                                 </tr>
 
-                                {/* Row 11: Amount details */}
-                                <tr className="h-6">
+                                {/* Chỉ hiển thị số tiền bằng số, không lặp số tiền bằng chữ */}
+                                <tr className="h-6 payment-proposal-amount-row">
                                   <td colSpan={3} className="px-2.5 py-0.5 text-left font-serif text-[11px]">
                                     Số tiền:
                                   </td>
@@ -15383,8 +15383,8 @@ Bạn có thể hỏi tôi những câu như:
                                   </td>
                                 </tr>
 
-                                {/* Row 12: Capitalized number string */}
-                                <tr className="h-7">
+                                {/* Số tiền bằng chữ chỉ xuất hiện duy nhất tại dòng này */}
+                                <tr className="h-7 payment-proposal-words-row">
                                   <td colSpan={3} className="px-2.5 py-0.5 text-[11px] font-serif text-left">
                                     Viết bằng chữ:
                                   </td>
@@ -16184,7 +16184,7 @@ Bạn có thể hỏi tôi những câu như:
                     <div className="flex justify-between items-center pb-3 border-b border-slate-150 print:hidden">
                       <div className="flex items-center gap-2 text-emerald-800 font-extrabold text-sm font-sans">
                         <Printer className="w-5 h-5 text-emerald-600 animate-pulse" />
-                        <span>Giấy đề nghị thanh toán lâm sản • <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-[11px] border border-emerald-200 font-bold uppercase">Khổ giấy A5 Chuẩn</span></span>
+                        <span>Giấy đề nghị thanh toán lâm sản • <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-[12px] border border-emerald-200 font-bold uppercase">Khổ giấy A5 Chuẩn</span></span>
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -16198,7 +16198,52 @@ Bạn có thể hỏi tôi những câu như:
                         </button>
                         <button
                           type="button"
-                          onClick={() => window.print()}
+                          onClick={() => {
+                            const printArea = document.getElementById('payment-doc-print-area-wrapper');
+                            if (!printArea) {
+                              alert('Không tìm thấy nội dung giấy đề nghị để in.');
+                              return;
+                            }
+                            const printWindow = window.open('', '_blank', 'width=1200,height=800');
+                            if (!printWindow) {
+                              alert('Trình duyệt đang chặn cửa sổ in. Vui lòng cho phép cửa sổ bật lên cho trang này.');
+                              return;
+                            }
+                            const inheritedStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+                              .map((node) => node.outerHTML)
+                              .join('\n');
+                            printWindow.document.open();
+                            printWindow.document.write(`<!doctype html>
+                              <html lang="vi">
+                                <head>
+                                  <meta charset="utf-8" />
+                                  <title>Giấy đề nghị thanh toán</title>
+                                  ${inheritedStyles}
+                                  <style>
+                                    @page { size: A5 landscape; margin: 6mm 8mm; }
+                                    html, body { margin: 0; padding: 0; background: #fff; }
+                                    body { font-family: "Times New Roman", Times, serif; color: #000; }
+                                    #payment-doc-print-area-wrapper {
+                                      width: 194mm !important;
+                                      min-height: 136mm !important;
+                                      margin: 0 auto !important;
+                                      padding: 0 !important;
+                                      border: 0 !important;
+                                      box-shadow: none !important;
+                                    }
+                                    #payment-doc-print-area-wrapper table { width: 100% !important; line-height: 1.2 !important; }
+                                    #payment-doc-print-area-wrapper td { padding-top: 2px !important; padding-bottom: 2px !important; }
+                                  </style>
+                                </head>
+                                <body>${printArea.outerHTML}</body>
+                              </html>`);
+                            printWindow.document.close();
+                            printWindow.focus();
+                            setTimeout(() => {
+                              printWindow.print();
+                              printWindow.onafterprint = () => printWindow.close();
+                            }, 500);
+                          }}
                           className="bg-emerald-650 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md flex items-center gap-2 cursor-pointer transitions-all"
                         >
                           <Printer className="w-4 h-4" />
@@ -16212,7 +16257,7 @@ Bạn có thể hỏi tôi những câu như:
                       {/* Dynamic page styling injected only while A5 print is active */}
                       <style dangerouslySetInnerHTML={{__html: `
                         #payment-doc-print-area-wrapper table {
-                          line-height: 1.15 !important;
+                          line-height: 1.22 !important;
                         }
                         #payment-doc-print-area-wrapper td {
                           padding-top: 1px !important;
@@ -16248,19 +16293,19 @@ Bạn có thể hỏi tôi những câu như:
                         id="payment-doc-print-area-wrapper"
                         className="w-[210mm] h-[148mm] bg-white p-[8mm] text-black border border-slate-300 shadow-md relative print:shadow-none print:border-none print:p-0 print:m-0 a5-print-page-scoped select-text"
                       >
-                        <table className="w-full border-collapse font-serif text-[11px] text-black bg-white select-text vouchers-table">
+                        <table className="w-full border-collapse font-serif text-[12px] text-black bg-white select-text vouchers-table">
                           <tbody>
                             {/* Row 1: Company header and Template Metadata */}
                             <tr className="h-12">
-                              <td colSpan={3} className="px-2 py-0.5 text-center font-serif text-[11px] font-bold uppercase leading-tight">
+                              <td colSpan={3} className="px-2 py-0.5 text-center font-serif text-[12px] font-bold uppercase leading-tight">
                                 CÔNG TY CP LÂM SẢN
                                 <br />
                                 NAM ĐỊNH
                               </td>
                               <td colSpan={5} className="px-2 py-0.5 text-center font-serif leading-tight">
-                                <div className="font-bold text-[12.5px]">Mẫu số: 05 – TT</div>
-                                <div className="italic text-[9.5px] font-normal mt-0.5">(Ban hành theo TT số 99/2025/TT-BTC</div>
-                                <div className="italic text-[9.5px] font-normal">ngày 27/10/2025 Bộ Tài chính )</div>
+                                <div className="font-bold text-[13.5px]">Mẫu số: 05 – TT</div>
+                                <div className="italic text-[11.5px] font-normal mt-0.5">(Ban hành theo TT số 99/2025/TT-BTC</div>
+                                <div className="italic text-[11.5px] font-normal">ngày 27/10/2025 Bộ Tài chính )</div>
                               </td>
                             </tr>
 
@@ -16272,7 +16317,7 @@ Bạn có thể hỏi tôi những câu như:
                             {/* Row 3: Title Row */}
                             <tr className="h-7">
                               <td colSpan={8} className="text-center px-2.5 py-0.5">
-                                <h1 className="text-md sm:text-lg font-bold uppercase tracking-wide font-serif text-black inline-block align-middle">
+                                <h1 className="text-xl font-bold uppercase tracking-wide font-serif text-black inline-block align-middle">
                                   GIẤY ĐỀ NGHỊ THANH TOÁN
                                 </h1>
                               </td>
@@ -16280,7 +16325,7 @@ Bạn có thể hỏi tôi những câu như:
 
                             {/* Row 4: Title Date Row */}
                             <tr className="h-5">
-                              <td colSpan={8} className="text-center italic font-serif text-[11px] leading-normal pb-0.5">
+                              <td colSpan={8} className="text-center italic font-serif text-[12px] leading-normal pb-0.5">
                                 Ngày &nbsp;&nbsp;{activeProposalForPrint.proposalDate ? activeProposalForPrint.proposalDate.split('-')[2] : '...'} &nbsp;&nbsp;&nbsp;tháng &nbsp;&nbsp;{activeProposalForPrint.proposalDate ? activeProposalForPrint.proposalDate.split('-')[1] : '...'} &nbsp;&nbsp;&nbsp;năm &nbsp;&nbsp;{activeProposalForPrint.proposalDate ? activeProposalForPrint.proposalDate.split('-')[0] : '...'}
                               </td>
                             </tr>
@@ -16292,51 +16337,54 @@ Bạn có thể hỏi tôi những câu như:
 
                             {/* Row 6: Kính gửi */}
                             <tr className="h-6">
-                              <td colSpan={8} className="px-3.5 py-0.5 font-bold italic font-serif text-[11px] text-left">
+                              <td colSpan={8} className="px-3.5 py-0.5 font-bold italic font-serif text-[12px] text-left">
                                 Kính gửi: Ông Tổng Giám Đốc Công Ty
                               </td>
                             </tr>
 
                             {/* Row 7: Proposer Info */}
                             <tr className="h-6">
-                              <td colSpan={4} className="px-2.5 py-0.5 text-left font-serif text-[11px]">
+                              <td colSpan={4} className="px-2.5 py-0.5 text-left font-serif text-[12px]">
                                 <span>Họ và tên:</span> <span className="font-normal text-black font-serif ml-1">{activeProposalForPrint.requesterName}</span>
                               </td>
-                              <td colSpan={4} className="px-2.5 py-0.5 text-left font-serif text-[11px]">
+                              <td colSpan={4} className="px-2.5 py-0.5 text-left font-serif text-[12px]">
                                 <span>BP công tác:</span> <span className="font-normal text-black font-serif ml-1">{activeProposalForPrint.notes && activeProposalForPrint.notes.includes('BP') ? activeProposalForPrint.notes : 'BP cung ứng gỗ'}</span>
                               </td>
                             </tr>
 
-                            {/* Row 8: Content Title Header */}
-                            <tr className="h-5">
-                              <td colSpan={8} className="px-2.5 py-0.5 text-left font-serif text-[11px] font-normal">
+                            {/* Row 8: Nội dung thanh toán */}
+                            <tr className="h-6">
+                              <td colSpan={3} className="px-2.5 py-0.5 text-left font-serif text-[12px] font-normal">
                                 Nội dung thanh toán:
+                              </td>
+                              <td colSpan={5} className="px-2.5 py-0.5 text-left font-serif text-[12px] font-bold text-black">
+                                {activeProposalForPrint.reason || 'Thanh toán tiền gỗ'}
                               </td>
                             </tr>
 
                             {/* Row 9: Main content detail (Tiền nhập gỗ của...) */}
                             <tr className="h-6">
-                              <td colSpan={3} className="px-2.5 py-0.5 text-left font-serif text-[11px]">
+                              <td colSpan={3} className="px-2.5 py-0.5 text-left font-serif text-[12px]">
                                 Tiền nhập gỗ keo xẻ của:
                               </td>
-                              <td colSpan={5} className="px-2.5 py-0.5 text-left font-serif text-[11px] font-normal text-black">
+                              <td colSpan={5} className="px-2.5 py-0.5 text-left font-serif text-[12px] font-normal text-black">
                                 {activeProposalForPrint.supplierName}
                               </td>
                             </tr>
 
                             {/* Row 10: Connected invoice/reference row */}
                             <tr className="h-6">
-                              <td colSpan={3} className="px-2.5 py-0.5 text-left font-serif text-[11px]">
+                              <td colSpan={3} className="px-2.5 py-0.5 text-left font-serif text-[12px]">
                                 {activeProposalForPrint.invoiceId ? 'Theo Hóa đơn VAT số:' : 'Theo Biên bản số:'}
                               </td>
-                              <td colSpan={5} className="px-2.5 py-0.5 text-left font-serif text-[11px] font-normal text-rose-700">
+                              <td colSpan={5} className="px-2.5 py-0.5 text-left font-serif text-[12px] font-normal text-rose-700">
                                 <span className="font-bold">
                                   {activeProposalForPrint.invoiceId ? (() => {
                                     const matchingInv = invoices.find(i => i.id === activeProposalForPrint.invoiceId);
                                     return matchingInv ? (matchingInv.symbol || matchingInv.invoiceNo) : activeProposalForPrint.invoiceId.replace(/^inv-/, '');
                                   })() : (activeProposalForPrint.bbntId || '...')}
                                 </span>
-                                <span className="text-slate-500 text-[10px] italic ml-3 font-normal">
+                                <span className="text-slate-500 text-[12px] italic ml-3 font-normal">
                                   Ngày hóa đơn: &nbsp;
                                   {(() => {
                                     if (activeProposalForPrint.invoiceId) {
@@ -16351,30 +16399,30 @@ Bạn có thể hỏi tôi những câu như:
                               </td>
                             </tr>
 
-                            {/* Row 11: Amount details */}
-                            <tr className="h-6">
-                              <td colSpan={3} className="px-2.5 py-0.5 text-left font-serif text-[11px]">
+                            {/* Row 11: Chỉ hiển thị số tiền bằng số, không lặp số tiền bằng chữ */}
+                            <tr className="h-6 payment-proposal-amount-row">
+                              <td colSpan={3} className="px-2.5 py-0.5 text-left font-serif text-[12px]">
                                 Số tiền:
                               </td>
-                              <td colSpan={5} className="px-2.5 py-0.5 text-left font-serif text-[12.5px] text-black">
+                              <td colSpan={5} className="px-2.5 py-0.5 text-left font-serif text-[13.5px] text-black">
                                 <span className="font-bold">{activeProposalForPrint.amount.toLocaleString('vi-VN')}</span>
-                                <span className="text-[11px] ml-1.5 font-normal">đồng</span>
+                                <span className="text-[12px] ml-1.5 font-normal">đồng</span>
                               </td>
                             </tr>
 
-                            {/* Row 12: Capitalized number string */}
-                            <tr className="h-7">
-                              <td colSpan={3} className="px-2.5 py-0.5 text-[11px] font-serif text-left">
+                            {/* Row 12: Số tiền bằng chữ chỉ xuất hiện duy nhất tại dòng này */}
+                            <tr className="h-7 payment-proposal-words-row">
+                              <td colSpan={3} className="px-2.5 py-0.5 text-[12px] font-serif text-left">
                                 Viết bằng chữ:
                               </td>
-                              <td colSpan={5} className="px-2.5 py-0.5 text-left italic font-serif text-[10.5px] text-black leading-snug">
+                              <td colSpan={5} className="px-2.5 py-0.5 text-left italic font-serif text-[11.5px] text-black leading-snug">
                                 {translateMoneyToWords(activeProposalForPrint.amount)}
                               </td>
                             </tr>
 
                             {/* Row 13: Accompanying docs (Chứng từ đính kèm) */}
                             <tr className="h-6">
-                              <td colSpan={8} className="px-2.5 py-0.5 text-left font-serif text-[11px]">
+                              <td colSpan={8} className="px-2.5 py-0.5 text-left font-serif text-[12px]">
                                 Kèm theo: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; chứng từ gốc liên quan.
                               </td>
                             </tr>
@@ -16386,25 +16434,25 @@ Bạn có thể hỏi tôi những câu như:
 
                             {/* Row 15: Signature names labels */}
                             <tr className="h-14">
-                              <td colSpan={2} className="text-center font-bold font-serif text-[11px] pt-1.5 leading-normal">
-                                Giám Đốc
+                              <td colSpan={2} className="text-center font-bold font-serif text-[12px] pt-1.5 leading-normal">
+                                Tổng Giám Đốc
                                 <br />
-                                <span className="text-[9.5px] font-normal italic block mt-0.5">(Ký, họ tên)</span>
+                                <span className="text-[11.5px] font-normal italic block mt-0.5">(Ký, họ tên)</span>
                               </td>
-                              <td colSpan={2} className="text-center font-bold font-serif text-[11px] pt-1.5 leading-normal">
+                              <td colSpan={2} className="text-center font-bold font-serif text-[12px] pt-1.5 leading-normal">
                                 Kế Toán Trưởng
                                 <br />
-                                <span className="text-[9.5px] font-normal italic block mt-0.5">(Ký, họ tên)</span>
+                                <span className="text-[11.5px] font-normal italic block mt-0.5">(Ký, họ tên)</span>
                               </td>
-                              <td colSpan={2} className="text-center font-bold font-serif text-[11px] pt-1.5 leading-normal">
+                              <td colSpan={2} className="text-center font-bold font-serif text-[12px] pt-1.5 leading-normal">
                                 Phụ trách bộ phận
                                 <br />
-                                <span className="text-[9.5px] font-normal italic block mt-0.5">(Ký, họ tên)</span>
+                                <span className="text-[11.5px] font-normal italic block mt-0.5">(Ký, họ tên)</span>
                               </td>
-                              <td colSpan={2} className="text-center font-bold font-serif text-[11px] pt-1.5 leading-normal">
+                              <td colSpan={2} className="text-center font-bold font-serif text-[12px] pt-1.5 leading-normal">
                                 Người đề nghị
                                 <br />
-                                <span className="text-[9.5px] font-normal italic block mt-0.5">(Ký, họ tên)</span>
+                                <span className="text-[11.5px] font-normal italic block mt-0.5">(Ký, họ tên)</span>
                               </td>
                             </tr>
 
@@ -16425,7 +16473,7 @@ Bạn có thể hỏi tôi những câu như:
                               <td colSpan={2}></td>
                               <td colSpan={2}></td>
                               <td colSpan={2}></td>
-                              <td colSpan={2} className="text-center font-bold font-serif text-[11px] pt-1 leading-normal italic">
+                              <td colSpan={2} className="text-center font-bold font-serif text-[12px] pt-1 leading-normal italic">
                                 {activeProposalForPrint.requesterName}
                               </td>
                             </tr>
