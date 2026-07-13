@@ -10,6 +10,8 @@ import { exportInspectionToExcel } from './excelExport';
 import InspectionForm from './components/InspectionForm';
 import InspectionPrint from './components/InspectionPrint';
 import AuthScreen from './components/AuthScreen';
+import UserManagement from './components/UserManagement';
+import { hydrateCloudLocalStorage, installCloudLocalStorageSync } from './cloudLocalStorage';
 import { 
   getInspections, 
   saveInspectionToDb, 
@@ -33,7 +35,8 @@ import {
   Flame,
   Globe,
   Database,
-  Monitor
+  Monitor,
+  ShieldCheck
 } from 'lucide-react';
 
 const LOCAL_STORAGE_KEY = 'wood_inspections_db';
@@ -53,17 +56,8 @@ export default function App() {
   const [syncStatus, setSyncStatus] = useState<string>('');
 
   // Auth state management
-  const [currentUser, setCurrentUser] = useState<{ username: string; email: string; fullName: string; role: string; avatar?: string } | null>(() => {
-    const raw = localStorage.getItem(LOCAL_STORAGE_CURRENT_USER_KEY);
-    if (raw) {
-      try {
-        return JSON.parse(raw);
-      } catch (e) {
-        return null;
-      }
-    }
-    return null;
-  });
+  const [currentUser, setCurrentUser] = useState<{ username: string; email: string; fullName: string; role: string; roleCode?: string; permissions?: string[]; avatar?: string } | null>(null);
+  const [showUserManagement, setShowUserManagement] = useState(false);
 
   const handleUpdateUser = (updatedUser: { username: string; email: string; fullName: string; role: string; avatar?: string }) => {
     setCurrentUser(updatedUser);
@@ -212,51 +206,11 @@ export default function App() {
       }
     }
     
-   let mounted = true;
+   // Không tự khôi phục phiên đăng nhập sau khi tải lại trình duyệt.
+   // Chỉ tải dữ liệu sau khi người dùng đăng nhập thành công.
+   if (currentUser) loadWorkplaceData();
 
-const bootstrap = async () => {
-  const { data } = await supabase!.auth.getSession();
-
-  if (!mounted) return;
-
-  if (data.session) {
-    await loadWorkplaceData();
-  } else {
-    setRecords([]);
-    setDbSyncing(false);
-  }
-};
-
-bootstrap();
-
-const { data: authListener } = supabase!.auth.onAuthStateChange(
-  async (_event, session) => {
-    if (!mounted) return;
-
-    if (session) {
-      await loadWorkplaceData();
-    } else {
-      setRecords([]);
-      setDbSyncing(false);
-    }
-  }
-);
-
-return () => {
-  mounted = false;
-  authListener.subscription.unsubscribe();
-};
-
-// const channel = subscribeInspections(() => {
- // console.log("Realtime inspection update");
- // loadWorkplaceData();
-// });
-
-// return () => {
-//  channel?.unsubscribe();
-// };
-
-}, []);
+}, [currentUser?.email]);
 
   // 2. Automated background watcher to propagate account registries & updates to Supabase
   useEffect(() => {
@@ -440,9 +394,12 @@ return () => {
 
   if (!currentUser) {
     return (
-      <AuthScreen 
-        onLoginSuccess={(user) => setCurrentUser(user)} 
-        userEmail="duc941980@gmail.com" 
+      <AuthScreen
+        onLoginSuccess={async (user) => {
+          installCloudLocalStorageSync();
+          await hydrateCloudLocalStorage();
+          setCurrentUser(user);
+        }}
       />
     );
   }
@@ -450,7 +407,21 @@ return () => {
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] font-sans antialiased text-gray-800">
-      
+      {(currentUser.email.toLowerCase() === 'duc941980@gmail.com' || currentUser.roleCode === 'admin' || currentUser.role.toLowerCase().includes('quản trị')) && (
+        <button
+          type="button"
+          onClick={() => setShowUserManagement(true)}
+          className="fixed top-3 right-3 z-[9000] px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-black shadow-xl flex items-center gap-2 hover:bg-slate-800"
+        >
+          <ShieldCheck className="w-4 h-4 text-emerald-400" /> Tài khoản & phân quyền
+        </button>
+      )}
+      <UserManagement
+        open={showUserManagement}
+        onClose={() => setShowUserManagement(false)}
+        currentUserEmail={currentUser.email}
+        onRegistryChanged={(users) => localStorage.setItem('wood_users_db_v1', JSON.stringify(users))}
+      />
       {/* Main Interactive Screen Container */}
       <main className="w-full">
 

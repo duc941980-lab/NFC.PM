@@ -296,8 +296,8 @@ interface InspectionFormProps {
   onDuplicate?: (bb: BienBan) => void;
   onExportExcel?: (bb: BienBan) => void;
   onPrint?: (bb: BienBan, printMode?: 'qc' | 'payment') => void;
-  currentUser?: { username: string; email: string; fullName: string; role: string; avatar?: string };
-  onUpdateUser?: (updatedFeedback: { username: string; email: string; fullName: string; role: string; avatar?: string }) => void;
+  currentUser?: { username: string; email: string; fullName: string; role: string; roleCode?: string; permissions?: string[]; avatar?: string };
+  onUpdateUser?: (updatedFeedback: { username: string; email: string; fullName: string; role: string; roleCode?: string; permissions?: string[]; avatar?: string }) => void;
   onLogout?: () => void;
 }
 
@@ -1711,6 +1711,11 @@ export default function InspectionForm({
       return true;
     }
 
+    // Ưu tiên quyền đã tải cùng tài khoản đăng nhập.
+    if (Array.isArray(currentUser?.permissions)) {
+      return currentUser.permissions.includes(sectionId);
+    }
+
     // Otherwise, check custom database record
     const rawUsers = localStorage.getItem('wood_users_db_v1');
     if (rawUsers) {
@@ -1727,7 +1732,7 @@ export default function InspectionForm({
         // Fallback
       }
     }
-    return true;
+    return false;
   };
   
   // Notification bell dropdown visibility state

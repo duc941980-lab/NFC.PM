@@ -3,11 +3,9 @@ import { AlertCircle, ArrowRight, Building, CheckCircle2, Eye, EyeOff, Lock, Mai
 import { isSupabaseConfigured, supabase } from '../supabaseClient';
 
 interface AuthScreenProps {
-  onLoginSuccess: (user: { username: string; email: string; fullName: string; role: string; avatar?: string }) => void;
+  onLoginSuccess: (user: { username: string; email: string; fullName: string; role: string; roleCode?: string; permissions?: string[]; avatar?: string }) => void | Promise<void>;
   userEmail?: string;
 }
-
-const LOCAL_STORAGE_CURRENT_USER_KEY = 'wood_current_user_v1';
 
 type ProfileRow = {
   email: string;
@@ -93,18 +91,30 @@ export default function AuthScreen({ onLoginSuccess, userEmail }: AuthScreenProp
         return;
       }
 
+      const { data: registryRow } = await supabase
+        .from('users')
+        .select('data,raw_data')
+        .eq('email', profile.email.toLowerCase())
+        .maybeSingle();
+      const registry = (registryRow?.raw_data || registryRow?.data || {}) as any;
+      if (registry.isActive === false || registry.is_active === false) {
+        await supabase.auth.signOut();
+        setErrorMsg('Tài khoản này đang bị khóa. Vui lòng liên hệ quản trị viên.');
+        return;
+      }
+
       const appUser = {
-        username: profile.username || profile.email.split('@')[0],
+        username: profile.username || registry.username || profile.email.split('@')[0],
         email: profile.email,
-        fullName: profile.full_name || profile.email,
-        role: roleLabel(profile.role_code),
-        avatar: profile.avatar_url || undefined,
+        fullName: profile.full_name || registry.fullName || profile.email,
+        role: roleLabel(profile.role_code || registry.roleCode),
+        roleCode: profile.role_code || registry.roleCode || 'viewer',
+        permissions: Array.isArray(registry.permissions) ? registry.permissions : [],
+        avatar: profile.avatar_url || registry.avatar || undefined,
       };
 
-      localStorage.setItem(LOCAL_STORAGE_CURRENT_USER_KEY, JSON.stringify(appUser));
-      setSuccessMsg('Đăng nhập Supabase thành công! Đang tải hệ thống...');
-
-      setTimeout(() => onLoginSuccess(appUser), 500);
+      setSuccessMsg('Đăng nhập thành công! Đang tải hệ thống...');
+      await onLoginSuccess(appUser);
     } catch (err) {
       console.error('Supabase login failed:', err);
       setErrorMsg('Có lỗi khi đăng nhập. Vui lòng mở Console/Terminal để xem chi tiết.');
