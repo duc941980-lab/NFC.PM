@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { getSuppliers } from "../services/supplierService";
+import { DEFAULT_PRINT_TEMPLATES, PRINT_TEMPLATE_CATALOG, PRINT_TEMPLATE_STORAGE_KEY, PrintTemplateCode, PrintTemplateSettings, loadPrintTemplates, savePrintTemplates } from '../printTemplateSettings';
 import React, { useState, useEffect } from 'react';
 import { BienBan, QuyCachA, QuyCachB, ThanhPhan, DongDuyetGia, DongThanhToan, RegionSuppliers, IncurredCostRow, Invoice, PaymentProposal } from '../types';
 import WoodPlanDashboard, { 
@@ -1482,41 +1483,46 @@ export default function InspectionForm({
   }, [selectedSection]);
 
 
-  type PrintTemplateSettings = {
-    fontFamily: string;
-    fontSize: number;
-    signerTitle: string;
-    signerName: string;
-    logoDataUrl: string;
-    paperSize: 'A5' | 'A4';
-    orientation: 'landscape' | 'portrait';
-  };
-
-  const DEFAULT_PRINT_TEMPLATE_SETTINGS: PrintTemplateSettings = {
-    fontFamily: 'Times New Roman',
-    fontSize: 13,
-    signerTitle: 'Tổng Giám Đốc',
-    signerName: '',
-    logoDataUrl: '',
-    paperSize: 'A5',
-    orientation: 'landscape',
-  };
-
-  const [printTemplateSettings, setPrintTemplateSettings] = useState<PrintTemplateSettings>(() => {
-    try {
-      const saved = localStorage.getItem('nfc_print_template_settings_v1');
-      return saved ? { ...DEFAULT_PRINT_TEMPLATE_SETTINGS, ...JSON.parse(saved) } : DEFAULT_PRINT_TEMPLATE_SETTINGS;
-    } catch {
-      return DEFAULT_PRINT_TEMPLATE_SETTINGS;
-    }
-  });
+  const [selectedPrintTemplateCode, setSelectedPrintTemplateCode] = useState<PrintTemplateCode>('payment_request');
+  const [allPrintTemplateSettings, setAllPrintTemplateSettings] = useState<Record<PrintTemplateCode, PrintTemplateSettings>>(() => loadPrintTemplates());
+  const printTemplateSettings = allPrintTemplateSettings[selectedPrintTemplateCode];
 
   useEffect(() => {
-    localStorage.setItem('nfc_print_template_settings_v1', JSON.stringify(printTemplateSettings));
-  }, [printTemplateSettings]);
+    savePrintTemplates(allPrintTemplateSettings);
+  }, [allPrintTemplateSettings]);
 
   const updatePrintTemplateSetting = <K extends keyof PrintTemplateSettings>(key: K, value: PrintTemplateSettings[K]) => {
-    setPrintTemplateSettings(prev => ({ ...prev, [key]: value }));
+    setAllPrintTemplateSettings(prev => ({
+      ...prev,
+      [selectedPrintTemplateCode]: { ...prev[selectedPrintTemplateCode], [key]: value },
+    }));
+  };
+
+  const resetCurrentPrintTemplate = () => {
+    setAllPrintTemplateSettings(prev => ({
+      ...prev,
+      [selectedPrintTemplateCode]: { ...DEFAULT_PRINT_TEMPLATES[selectedPrintTemplateCode] },
+    }));
+  };
+
+  const copyCurrentPrintTemplateToAll = () => {
+    const source = allPrintTemplateSettings[selectedPrintTemplateCode];
+    if (!window.confirm('Áp dụng font, cỡ chữ, logo, lề và người ký của mẫu hiện tại cho tất cả biểu mẫu?')) return;
+    setAllPrintTemplateSettings(prev => Object.fromEntries(
+      Object.entries(prev).map(([code, current]) => [code, {
+        ...current,
+        fontFamily: source.fontFamily,
+        fontSize: source.fontSize,
+        titleFontSize: source.titleFontSize,
+        logoDataUrl: source.logoDataUrl,
+        showLogo: source.showLogo,
+        companyName: source.companyName,
+        signerTitle: source.signerTitle,
+        signerName: source.signerName,
+        secondarySignerTitle: source.secondarySignerTitle,
+        secondarySignerName: source.secondarySignerName,
+      }]),
+    ) as Record<PrintTemplateCode, PrintTemplateSettings>);
   };
 
   const handlePrintLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1531,7 +1537,10 @@ export default function InspectionForm({
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => updatePrintTemplateSetting('logoDataUrl', String(reader.result || ''));
+    reader.onload = () => {
+      updatePrintTemplateSetting('logoDataUrl', String(reader.result || ''));
+      updatePrintTemplateSetting('showLogo', true);
+    };
     reader.readAsDataURL(file);
   };
 
@@ -1562,7 +1571,7 @@ export default function InspectionForm({
     { key: 'wood_users_db_v1', label: 'Tài khoản người dùng', icon: Key, desc: 'Cơ sở dữ liệu cán bộ đăng nhập hệ thống' },
     { key: 'excluded_sales_volumes', label: 'Dòng sản lượng ẩn', icon: EyeOff, desc: 'Danh sách ID dòng sản lượng đã tạm ẩn' },
     { key: 'permanently_deleted_sales_volumes', label: 'Dòng sản lượng xóa', icon: Trash2, desc: 'ID dòng sản lượng đã xóa vĩnh viễn' },
-    { key: 'nfc_print_template_settings_v1', label: 'Cài đặt mẫu in', icon: Printer, desc: 'Font, cỡ chữ, người ký, logo và khổ giấy' },
+    { key: PRINT_TEMPLATE_STORAGE_KEY, label: 'Cài đặt toàn bộ mẫu in', icon: Printer, desc: 'Cấu hình riêng font, khổ giấy, lề, logo và người ký cho từng biểu mẫu' },
     { key: 'nfc_gemini_api_key_v1', label: 'Gemini API Key', icon: Bot, desc: 'Cấu hình khóa trí tuệ nhân tạo Gemini' }
   ];
 
@@ -18867,75 +18876,122 @@ Bạn có thể hỏi tôi những câu như:
             </div>
           )}
 
-          {/* TAB: BACKUP & RESTORE UTILITY */}
+          {/* PRINT TEMPLATE MANAGEMENT CENTER */}
           {selectedSection === 'print_settings' && (
             <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-fadeIn font-sans">
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-6 py-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-white">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md"><Printer className="w-6 h-6" /></div>
-                    <div>
-                      <h2 className="text-xl font-black text-slate-800">Cài đặt mẫu in</h2>
-                      <p className="text-sm text-slate-500 mt-0.5">Thay đổi hình thức biểu mẫu mà không ảnh hưởng dữ liệu đã nhập.</p>
+                <div className="px-6 py-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md"><Printer className="w-6 h-6" /></div>
+                      <div>
+                        <h2 className="text-xl font-black text-slate-800">Trung tâm cài đặt mẫu in</h2>
+                        <p className="text-sm text-slate-500 mt-0.5">Thiết lập riêng từng biểu mẫu mà không làm thay đổi dữ liệu nghiệp vụ.</p>
+                      </div>
                     </div>
+                    <button type="button" onClick={copyCurrentPrintTemplateToAll} className="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-black hover:bg-slate-800 flex items-center gap-2 self-start lg:self-auto">
+                      <Copy className="w-4 h-4" /> Áp dụng hình thức cho tất cả mẫu
+                    </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
-                  <div className="space-y-5">
-                    <div>
-                      <label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Font chữ</label>
-                      <select value={printTemplateSettings.fontFamily} onChange={e => updatePrintTemplateSetting('fontFamily', e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3 bg-white font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
-                        <option value="Times New Roman">Times New Roman</option>
-                        <option value="Arial">Arial</option>
-                        <option value="Tahoma">Tahoma</option>
-                        <option value="Georgia">Georgia</option>
-                      </select>
+                <div className="grid grid-cols-1 xl:grid-cols-[310px_minmax(0,1fr)] min-h-[720px]">
+                  <aside className="border-r border-slate-200 bg-slate-50 p-4">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 px-2 mb-3">Danh sách biểu mẫu</p>
+                    <div className="space-y-2">
+                      {PRINT_TEMPLATE_CATALOG.map(template => (
+                        <button
+                          type="button"
+                          key={template.code}
+                          onClick={() => setSelectedPrintTemplateCode(template.code)}
+                          className={`w-full text-left p-3.5 rounded-xl border transition-all ${selectedPrintTemplateCode === template.code ? 'bg-emerald-600 border-emerald-600 text-white shadow-md' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50'}`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <FileText className={`w-5 h-5 mt-0.5 shrink-0 ${selectedPrintTemplateCode === template.code ? 'text-white' : 'text-emerald-600'}`} />
+                            <div>
+                              <div className="font-black text-sm leading-tight">{template.name}</div>
+                              <div className={`text-[11px] mt-1 leading-snug ${selectedPrintTemplateCode === template.code ? 'text-emerald-50' : 'text-slate-500'}`}>{template.description}</div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                    <div>
-                      <label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Cỡ chữ: {printTemplateSettings.fontSize}px</label>
-                      <input type="range" min="10" max="18" step="1" value={printTemplateSettings.fontSize} onChange={e => updatePrintTemplateSetting('fontSize', Number(e.target.value))} className="w-full accent-emerald-600" />
-                      <div className="flex justify-between text-[11px] text-slate-400 mt-1"><span>10px</span><span>18px</span></div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Chức danh người ký</label>
-                      <input value={printTemplateSettings.signerTitle} onChange={e => updatePrintTemplateSetting('signerTitle', e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ví dụ: Tổng Giám Đốc" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Tên người ký (không bắt buộc)</label>
-                      <input value={printTemplateSettings.signerName} onChange={e => updatePrintTemplateSetting('signerName', e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Nhập họ tên người ký" />
-                    </div>
-                  </div>
+                  </aside>
 
-                  <div className="space-y-5">
-                    <div>
-                      <label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Logo doanh nghiệp</label>
-                      <div className="rounded-2xl border-2 border-dashed border-slate-300 p-5 text-center bg-slate-50">
-                        {printTemplateSettings.logoDataUrl ? <img src={printTemplateSettings.logoDataUrl} alt="Logo mẫu in" className="h-20 max-w-[220px] object-contain mx-auto mb-3" /> : <div className="h-20 flex items-center justify-center text-slate-400 font-bold">Chưa có logo</div>}
-                        <div className="flex justify-center gap-2">
-                          <label className="cursor-pointer px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black hover:bg-emerald-700"><Upload className="w-4 h-4 inline mr-1" />Chọn logo<input type="file" accept="image/*" onChange={handlePrintLogoUpload} className="hidden" /></label>
-                          {printTemplateSettings.logoDataUrl && <button type="button" onClick={() => updatePrintTemplateSetting('logoDataUrl', '')} className="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-600 text-xs font-black hover:bg-slate-100">Bỏ logo</button>}
+                  <div className="p-5 lg:p-7 space-y-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+                      <div>
+                        <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">Đang chỉnh sửa</p>
+                        <h3 className="text-2xl font-black text-slate-900 mt-1">{printTemplateSettings.name}</h3>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-black">{printTemplateSettings.paperSize} · {printTemplateSettings.orientation === 'landscape' ? 'Ngang' : 'Dọc'}</span>
+                        <button type="button" onClick={resetCurrentPrintTemplate} className="px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-600 text-xs font-black hover:bg-slate-100 flex items-center gap-2"><RotateCcw className="w-4 h-4" />Mặc định</button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <section className="space-y-4">
+                        <div className="rounded-2xl border border-slate-200 p-5 bg-white">
+                          <h4 className="font-black text-slate-800 mb-4 flex items-center gap-2"><FileText className="w-5 h-5 text-emerald-600" /> Nội dung và kiểu chữ</h4>
+                          <div className="space-y-4">
+                            <div><label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Tên công ty</label><input value={printTemplateSettings.companyName} onChange={e => updatePrintTemplateSetting('companyName', e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" /></div>
+                            <div><label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Tiêu đề biểu mẫu</label><input value={printTemplateSettings.titleText} onChange={e => updatePrintTemplateSetting('titleText', e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" /></div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div><label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Font chữ</label><select value={printTemplateSettings.fontFamily} onChange={e => updatePrintTemplateSetting('fontFamily', e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3 bg-white font-semibold"><option value="Times New Roman">Times New Roman</option><option value="Arial">Arial</option><option value="Tahoma">Tahoma</option><option value="Georgia">Georgia</option><option value="Calibri">Calibri</option></select></div>
+                              <div><label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Cỡ chữ nội dung</label><input type="number" min="9" max="24" value={printTemplateSettings.fontSize} onChange={e => updatePrintTemplateSetting('fontSize', Number(e.target.value))} className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold" /></div>
+                            </div>
+                            <div><label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Cỡ chữ tiêu đề: {printTemplateSettings.titleFontSize}px</label><input type="range" min="14" max="28" value={printTemplateSettings.titleFontSize} onChange={e => updatePrintTemplateSetting('titleFontSize', Number(e.target.value))} className="w-full accent-emerald-600" /></div>
+                          </div>
                         </div>
-                      </div>
+
+                        <div className="rounded-2xl border border-slate-200 p-5 bg-white">
+                          <h4 className="font-black text-slate-800 mb-4 flex items-center gap-2"><Users className="w-5 h-5 text-emerald-600" /> Người ký</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div><label className="block text-xs font-black uppercase text-slate-600 mb-2">Chức danh 1</label><input value={printTemplateSettings.signerTitle} onChange={e => updatePrintTemplateSetting('signerTitle', e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold" /></div>
+                            <div><label className="block text-xs font-black uppercase text-slate-600 mb-2">Họ tên 1</label><input value={printTemplateSettings.signerName} onChange={e => updatePrintTemplateSetting('signerName', e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold" placeholder="Không bắt buộc" /></div>
+                            <div><label className="block text-xs font-black uppercase text-slate-600 mb-2">Chức danh 2</label><input value={printTemplateSettings.secondarySignerTitle} onChange={e => updatePrintTemplateSetting('secondarySignerTitle', e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold" /></div>
+                            <div><label className="block text-xs font-black uppercase text-slate-600 mb-2">Họ tên 2</label><input value={printTemplateSettings.secondarySignerName} onChange={e => updatePrintTemplateSetting('secondarySignerName', e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold" placeholder="Không bắt buộc" /></div>
+                          </div>
+                        </div>
+                      </section>
+
+                      <section className="space-y-4">
+                        <div className="rounded-2xl border border-slate-200 p-5 bg-white">
+                          <h4 className="font-black text-slate-800 mb-4 flex items-center gap-2"><Printer className="w-5 h-5 text-emerald-600" /> Khổ giấy và lề</h4>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div><label className="block text-xs font-black uppercase text-slate-600 mb-2">Khổ giấy</label><select value={printTemplateSettings.paperSize} onChange={e => updatePrintTemplateSetting('paperSize', e.target.value as 'A5' | 'A4')} className="w-full rounded-xl border border-slate-300 px-4 py-3 bg-white font-semibold"><option value="A5">A5</option><option value="A4">A4</option></select></div>
+                            <div><label className="block text-xs font-black uppercase text-slate-600 mb-2">Chiều giấy</label><select value={printTemplateSettings.orientation} onChange={e => updatePrintTemplateSetting('orientation', e.target.value as 'landscape' | 'portrait')} className="w-full rounded-xl border border-slate-300 px-4 py-3 bg-white font-semibold"><option value="landscape">Ngang</option><option value="portrait">Dọc</option></select></div>
+                            {[['marginTop','Lề trên'],['marginRight','Lề phải'],['marginBottom','Lề dưới'],['marginLeft','Lề trái']].map(([key,label]) => <div key={key}><label className="block text-xs font-black uppercase text-slate-600 mb-2">{label} (mm)</label><input type="number" min="0" max="30" value={printTemplateSettings[key as 'marginTop']} onChange={e => updatePrintTemplateSetting(key as 'marginTop', Number(e.target.value))} className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold" /></div>)}
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-slate-200 p-5 bg-white">
+                          <div className="flex items-center justify-between gap-3 mb-4"><h4 className="font-black text-slate-800 flex items-center gap-2"><ImageIcon className="w-5 h-5 text-emerald-600" /> Logo doanh nghiệp</h4><label className="flex items-center gap-2 text-xs font-bold text-slate-600"><input type="checkbox" checked={printTemplateSettings.showLogo} onChange={e => updatePrintTemplateSetting('showLogo', e.target.checked)} className="accent-emerald-600" /> Hiển thị logo</label></div>
+                          <div className="rounded-2xl border-2 border-dashed border-slate-300 p-5 text-center bg-slate-50">
+                            {printTemplateSettings.logoDataUrl ? <img src={printTemplateSettings.logoDataUrl} alt="Logo mẫu in" className="h-20 max-w-[220px] object-contain mx-auto mb-3" /> : <div className="h-20 flex items-center justify-center text-slate-400 font-bold">Chưa có logo</div>}
+                            <div className="flex justify-center gap-2"><label className="cursor-pointer px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black hover:bg-emerald-700"><Upload className="w-4 h-4 inline mr-1" />Chọn logo<input type="file" accept="image/*" onChange={handlePrintLogoUpload} className="hidden" /></label>{printTemplateSettings.logoDataUrl && <button type="button" onClick={() => updatePrintTemplateSetting('logoDataUrl', '')} className="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-600 text-xs font-black">Bỏ logo</button>}</div>
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                          <div className="flex items-center justify-between mb-3"><p className="text-xs font-black uppercase text-emerald-800">Xem trước nhanh</p><label className="flex items-center gap-2 text-xs font-bold text-emerald-800"><input type="checkbox" checked={printTemplateSettings.showDate} onChange={e => updatePrintTemplateSetting('showDate', e.target.checked)} className="accent-emerald-600" /> Hiện ngày tháng</label></div>
+                          <div className="bg-white border border-slate-300 rounded-lg p-5 shadow-sm min-h-[260px]" style={{fontFamily: printTemplateSettings.fontFamily, fontSize: `${printTemplateSettings.fontSize}px`}}>
+                            <div className="grid grid-cols-[80px_1fr_80px] items-start gap-3">
+                              <div>{printTemplateSettings.showLogo && printTemplateSettings.logoDataUrl && <img src={printTemplateSettings.logoDataUrl} className="h-14 w-20 object-contain" />}</div>
+                              <div className="text-center"><div className="font-bold uppercase text-sm">{printTemplateSettings.companyName}</div><div className="font-black uppercase mt-4 nfc-print-title" style={{fontSize: `${printTemplateSettings.titleFontSize}px`}}>{printTemplateSettings.titleText}</div>{printTemplateSettings.showDate && <div className="italic mt-2">Ngày ... tháng ... năm ...</div>}</div><div />
+                            </div>
+                            <div className="border border-slate-400 mt-5 p-4 min-h-[80px]">Nội dung biểu mẫu và số liệu sẽ hiển thị tại đây.</div>
+                            <div className="grid grid-cols-2 gap-8 mt-6 text-center"><div><div className="font-bold uppercase">{printTemplateSettings.secondarySignerTitle}</div>{printTemplateSettings.secondarySignerName && <div className="font-bold mt-12">{printTemplateSettings.secondarySignerName}</div>}</div><div><div className="font-bold uppercase">{printTemplateSettings.signerTitle}</div>{printTemplateSettings.signerName && <div className="font-bold mt-12">{printTemplateSettings.signerName}</div>}</div></div>
+                          </div>
+                        </div>
+                      </section>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div><label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Khổ giấy</label><select value={printTemplateSettings.paperSize} onChange={e => updatePrintTemplateSetting('paperSize', e.target.value as 'A5' | 'A4')} className="w-full rounded-xl border border-slate-300 px-4 py-3 bg-white font-semibold"><option value="A5">A5</option><option value="A4">A4</option></select></div>
-                      <div><label className="block text-xs font-black uppercase tracking-wide text-slate-600 mb-2">Chiều giấy</label><select value={printTemplateSettings.orientation} onChange={e => updatePrintTemplateSetting('orientation', e.target.value as 'landscape' | 'portrait')} className="w-full rounded-xl border border-slate-300 px-4 py-3 bg-white font-semibold"><option value="landscape">Ngang</option><option value="portrait">Dọc</option></select></div>
-                    </div>
-                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                      <p className="text-xs font-black uppercase text-emerald-800 mb-2">Xem trước nhanh</p>
-                      <div className="bg-white border border-slate-300 rounded-lg p-4 shadow-sm" style={{fontFamily: printTemplateSettings.fontFamily, fontSize: `${printTemplateSettings.fontSize}px`}}>
-                        <div className="flex items-start justify-between gap-4">{printTemplateSettings.logoDataUrl && <img src={printTemplateSettings.logoDataUrl} className="h-12 w-20 object-contain" />}<div className="text-center flex-1"><div className="font-bold uppercase">GIẤY ĐỀ NGHỊ THANH TOÁN</div><div className="italic mt-1">Nội dung mẫu in</div></div></div>
-                        <div className="text-center font-bold mt-6">{printTemplateSettings.signerTitle || 'Người ký'}</div>
-                        {printTemplateSettings.signerName && <div className="text-center mt-8 font-bold">{printTemplateSettings.signerName}</div>}
-                      </div>
+
+                    <div className="rounded-xl bg-sky-50 border border-sky-200 px-4 py-3 text-sm text-sky-800">
+                      <strong>Lưu tự động:</strong> Mỗi mẫu có cấu hình riêng. Việc đổi font, logo, người ký hoặc khổ giấy không làm thay đổi dữ liệu QC, hóa đơn, thanh toán và nhân sự.
                     </div>
                   </div>
-                </div>
-
-                <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center">
-                  <p className="text-xs text-slate-500">Cài đặt được lưu tự động trên thiết bị này.</p>
-                  <button type="button" onClick={() => setPrintTemplateSettings(DEFAULT_PRINT_TEMPLATE_SETTINGS)} className="px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-600 text-xs font-black hover:bg-slate-100 flex items-center gap-2"><RotateCcw className="w-4 h-4" />Khôi phục mặc định</button>
                 </div>
               </div>
             </div>
@@ -20049,6 +20105,7 @@ Bạn có thể hỏi tôi những câu như:
                         </tr>`;
                       }).join('');
 
+                      const vatPrintSettings = allPrintTemplateSettings.vat_statement;
                       const printWindow = window.open('', '_blank', 'width=1100,height=850,noopener,noreferrer');
                       if (!printWindow) {
                         alert('Trình duyệt đang chặn cửa sổ in. Vui lòng cho phép cửa sổ bật lên (pop-up) cho trang này rồi thử lại.');
@@ -20062,13 +20119,13 @@ Bạn có thể hỏi tôi những câu như:
   <meta charset="utf-8" />
   <title>Bảng kê đối chiếu hóa đơn VAT</title>
   <style>
-    @page { size: A4 portrait; margin: 10mm; }
+    @page { size: ${vatPrintSettings.paperSize} ${vatPrintSettings.orientation}; margin: ${vatPrintSettings.marginTop}mm ${vatPrintSettings.marginRight}mm ${vatPrintSettings.marginBottom}mm ${vatPrintSettings.marginLeft}mm; }
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; background: #fff; color: #000; }
-    body { font-family: "Times New Roman", Times, serif; font-size: 11pt; }
+    body { font-family: "${vatPrintSettings.fontFamily}", serif; font-size: ${vatPrintSettings.fontSize}px; }
     .page { width: 100%; max-width: 190mm; margin: 0 auto; padding: 2mm 0; }
     .title { text-align: center; margin: 0 0 5mm; page-break-inside: avoid; }
-    .title h1 { margin: 0 0 2mm; font-size: 15pt; line-height: 1.25; font-weight: 700; }
+    .title h1 { margin: 0 0 2mm; font-size: ${vatPrintSettings.titleFontSize}px; line-height: 1.25; font-weight: 700; }
     .title p { margin: 1mm 0; font-size: 10.5pt; line-height: 1.3; }
     .title .subtitle { font-style: italic; }
     .title .contract { font-weight: 700; }
@@ -20093,7 +20150,9 @@ Bạn có thể hỏi tôi những câu như:
 <body>
   <main class="page">
     <section class="title">
-      <h1>BẢNG KÊ CHI TIẾT LÂM SẢN HẠCH TOÁN ĐỐI CHIẾU HÓA ĐƠN VAT</h1>
+      ${vatPrintSettings.showLogo && vatPrintSettings.logoDataUrl ? `<img src="${vatPrintSettings.logoDataUrl}" alt="Logo" style="height:16mm;max-width:40mm;object-fit:contain;margin:0 auto 2mm" />` : ''}
+      ${vatPrintSettings.companyName ? `<div style="font-weight:700;margin-bottom:2mm">${escapeHtml(vatPrintSettings.companyName)}</div>` : ''}
+      <h1>${escapeHtml(vatPrintSettings.titleText || 'BẢNG KÊ CHI TIẾT LÂM SẢN HẠCH TOÁN ĐỐI CHIẾU HÓA ĐƠN VAT')}</h1>
       <p class="subtitle">(Căn cứ theo số liệu thanh toán đã duyệt thuộc Biên bản số: ${escapeHtml(bbText)})</p>
       <p class="contract">Thanh toán theo hợp đồng: ${escapeHtml(contractText)}</p>
     </section>

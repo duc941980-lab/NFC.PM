@@ -9,6 +9,7 @@ import { numberToVietnameseWords, formatVolume, translateMoneyToWords } from '..
 import { Printer, ArrowLeft, Layers, CreditCard, Receipt, FileSpreadsheet, FileText, Image as ImageIcon, FileDown, Loader2, ExternalLink } from 'lucide-react';
 import { exportInspectionToExcel, exportPaymentToExcel } from '../excelExport';
 import { exportToImage } from '../utils/exportHelpers';
+import { buildPrintCss, getPrintTemplate } from '../printTemplateSettings';
 
 interface InspectionPrintProps {
   bienBan: BienBan;
@@ -18,6 +19,8 @@ interface InspectionPrintProps {
 }
 
 export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'qc', currentUser }: InspectionPrintProps) {
+  const qcPrintSettings = getPrintTemplate('qc_report');
+  const paymentPrintSettings = getPrintTemplate('payment_detail');
   const [isInIframe, setIsInIframe] = useState(false);
 
   const parseDateParts = (dateStr: string) => {
@@ -78,7 +81,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
   // --- PAGE 1 EDITABLE STATES ---
   const [quyTrinhTitle1, setQuyTrinhTitle1] = useState("QUY TRÌNH KIỂM HÀNG ĐẦU VÀO");
   const [maSoQc, setMaSoQc] = useState("BM01/QT01/QLCL1");
-  const [bienBanTitle1, setBienBanTitle1] = useState("BIÊN BẢN NGHIỆM THU GỖ KEO XẺ THÔ");
+  const [bienBanTitle1, setBienBanTitle1] = useState(qcPrintSettings.titleText || "BIÊN BẢN NGHIỆM THU GỖ KEO XẺ THÔ");
   const [lanBanHanhQc, setLanBanHanhQc] = useState("07");
   const [ngayBanHanhQc, setNgayBanHanhQc] = useState("15/04/2023");
 
@@ -147,7 +150,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
   // --- PAGE 2 EDITABLE STATES ---
   const [quyTrinhTitle2, setQuyTrinhTitle2] = useState("QUY TRÌNH THANH TOÁN LÂM SẢN");
   const [maSoPay, setMaSoPay] = useState("BM02/QT02/TCKT");
-  const [bienBanTitle2, setBienBanTitle2] = useState("BẢNG CHI TIẾT THANH TOÁN GỖ");
+  const [bienBanTitle2, setBienBanTitle2] = useState(paymentPrintSettings.titleText || "BẢNG CHI TIẾT THANH TOÁN GỖ");
   const [lanBanHanhPay, setLanBanHanhPay] = useState("03");
   const [ngayThanhToanPay, setNgayThanhToanPay] = useState(() => {
     return bienBan.ngay_nt ? new Date(bienBan.ngay_nt).toLocaleDateString('vi-VN') : "";
@@ -575,6 +578,7 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
 
   return (
     <div className="bg-slate-100 min-h-screen p-4 md:p-8 text-black print:bg-white print:p-0">
+      <style>{buildPrintCss(qcPrintSettings, '#wood-inspection-document') + buildPrintCss(paymentPrintSettings, '#wood-payment-document')}</style>
 
       {/* Dynamic Action Control Bar (Hidden on printout) */}
       <div className="max-w-4xl mx-auto flex flex-col gap-4 bg-white border border-slate-200 p-5 rounded-2xl shadow-sm mb-6 print:hidden">
@@ -813,14 +817,16 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
       {(printMode === 'qc' || printMode === 'both') && (
         <div 
           id="wood-inspection-document"
-          className={`max-w-4xl mx-auto bg-white border border-black p-6 md:p-10 shadow-sm print:shadow-none print:border-none print:p-0 text-[12.5px] leading-snug ${
+          className={`nfc-print-document max-w-4xl mx-auto bg-white border border-black p-6 md:p-10 shadow-sm print:shadow-none print:border-none print:p-0 text-[12.5px] leading-snug ${
             selectedFont === 'times' ? 'document-font-times' : selectedFont === 'sans' ? 'document-font-sans' : 'document-font-serif'
           } ${!isEditable ? 'document-read-only' : ''} ${
             printMode === 'both' ? 'print:break-after-page' : ''
           }`}
           style={{ 
             pageBreakAfter: printMode === 'both' ? 'always' : 'auto',
-            breakAfter: printMode === 'both' ? 'page' : 'auto'
+            breakAfter: printMode === 'both' ? 'page' : 'auto',
+            fontFamily: qcPrintSettings.fontFamily,
+            fontSize: `${qcPrintSettings.fontSize}px`,
           }}
         >
           
@@ -1297,10 +1303,10 @@ export default function InspectionPrint({ bienBan, onBack, initialPrintMode = 'q
       {(printMode === 'payment' || printMode === 'both') && (
         <div 
           id="wood-payment-document"
-          className={`max-w-[794px] mx-auto bg-white border border-black p-8 md:p-10 shadow-sm print:shadow-none print:border-none print:p-0 text-xs leading-tight ${
+          className={`nfc-print-document max-w-[794px] mx-auto bg-white border border-black p-8 md:p-10 shadow-sm print:shadow-none print:border-none print:p-0 text-xs leading-tight ${
             selectedFont === 'times' ? 'document-font-times' : selectedFont === 'sans' ? 'document-font-sans' : 'document-font-serif'
           } ${!isEditable ? 'document-read-only' : ''}`}
-          style={{}}
+          style={{ fontFamily: paymentPrintSettings.fontFamily, fontSize: `${paymentPrintSettings.fontSize}px` }}
         >
           
           {/* HEADER BAR SHEET 2 - MATCH PAYMENT EXCEL TEMPLATE */}
