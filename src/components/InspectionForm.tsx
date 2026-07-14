@@ -69,6 +69,7 @@ import {
   Calendar,
   X,
   Upload,
+  ImageIcon,
   RefreshCw,
   Monitor,
   Factory,
