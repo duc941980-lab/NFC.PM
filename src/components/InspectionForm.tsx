@@ -139,7 +139,6 @@ const DEFAULT_STANDARD_SIZES: StandardSize[] = [
 
 const getSectionName = (sec: string): string => {
   switch (sec) {
-    case 'nfc': return 'Trang Chủ & Báo Cáo NLG';
     case 'qc_dashboard': return 'Dashboard QC';
     case 'qc': return 'Kiểm Hàng Đầu Vào';
     case 'plan_tracking': return 'Dashboard NLG';
@@ -1466,10 +1465,10 @@ export default function InspectionForm({
 
   // Form tab selection
   const [activeTab, setActiveTab2] = useState<'info' | 'partB' | 'partC' | 'price' | 'payment'>('info');
-  const [selectedSection, setSelectedSection] = useState<'nfc' | 'plan' | 'info' | 'qc' | 'price' | 'materials' | 'invoice' | 'payment_docs' | 'debt' | 'regions' | 'qc_dashboard' | 'debt_dashboard' | 'dashboard_v3' | 'calendar' | 'calculator' | 'salary' | 'notes' | 'nlg_personnel' | 'work_photos' | 'print_settings' | 'backup_restore'>(() => {
+  const [selectedSection, setSelectedSection] = useState<'plan' | 'info' | 'qc' | 'price' | 'materials' | 'invoice' | 'payment_docs' | 'debt' | 'regions' | 'qc_dashboard' | 'debt_dashboard' | 'dashboard_v3' | 'calendar' | 'calculator' | 'salary' | 'notes' | 'nlg_personnel' | 'work_photos' | 'print_settings' | 'backup_restore'>(() => {
     const saved = localStorage.getItem('last_selected_section');
     const validSections = [
-      'nfc', 'plan', 'info', 'qc', 'price', 'materials', 'invoice', 
+      'plan', 'info', 'qc', 'price', 'materials', 'invoice', 
       'payment_docs', 'debt', 'regions', 'qc_dashboard', 'debt_dashboard', 
       'dashboard_v3', 'calendar', 'calculator', 'salary', 'notes', 
       'nlg_personnel', 'work_photos', 'print_settings', 'backup_restore'
@@ -1477,7 +1476,7 @@ export default function InspectionForm({
     if (saved && validSections.includes(saved)) {
       return saved as any;
     }
-    return 'nfc';
+    return 'qc_dashboard';
   });
 
   useEffect(() => {
@@ -5671,7 +5670,7 @@ Bạn có thể hỏi tôi những câu như:
           
           {/* Brand Area */}
           <div 
-            onClick={() => setSelectedSection('nfc')}
+            onClick={() => setSelectedSection('qc_dashboard')}
             className="h-16 border-b border-slate-800/40 flex items-center gap-3 px-5 shrink-0 hover:text-white cursor-pointer select-none transition"
           >
             <div className="w-8 h-8 rounded-xl bg-[#029864] text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-emerald-500/20 font-sans">
@@ -5758,36 +5757,6 @@ Bạn có thể hỏi tôi những câu như:
           {/* Sidebar Menu Scroll Area */}
           <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-thin select-none text-left">
             
-            {/* TỔNG QUAN SECTION */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 px-3 pb-2.5 pt-2 select-none">
-                <span className="w-1.5 h-3.5 bg-[#01a65a] rounded-full shrink-0 shadow-[0_0_8px_rgba(1,166,90,0.7)]" />
-                <span className="text-[11px] font-black uppercase text-[#04d68e] tracking-widest font-sans drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
-                  Tổng Quan
-                </span>
-              </div>
-              
-              <button
-                type="button"
-                onClick={() => setSelectedSection('nfc')}
-                className={`w-full py-2.5 px-3 rounded-xl flex items-center justify-between transition-all duration-150 cursor-pointer text-[12.5px] font-bold ${
-                  selectedSection === 'nfc' 
-                    ? 'bg-[#029864] text-white shadow-lg shadow-emerald-950/20' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Monitor className={`w-4 h-4 ${selectedSection === 'nfc' ? 'text-white' : 'text-slate-400'}`} />
-                  <span>Trang Chủ</span>
-                </div>
-                {!checkSectionPermission('nfc') ? (
-                  <Lock className="w-3 h-3 text-slate-500 shrink-0" />
-                ) : (
-                  selectedSection === 'nfc' && <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                )}
-              </button>
-            </div>
-
             {/* NGHIỆP VỤ QC */}
             <div className="space-y-1 pt-4">
               <div className="flex items-center gap-2 px-3 pb-2.5 pt-1 select-none">
@@ -6209,13 +6178,13 @@ Bạn có thể hỏi tôi những câu như:
                 <button 
                   type="button"
                   className="text-slate-500 hover:text-slate-900 focus:outline-none cursor-pointer"
-                  onClick={() => setSelectedSection('nfc')}
+                  onClick={() => setSelectedSection('qc_dashboard')}
                 >
                   <Monitor className="w-5 h-5" />
                 </button>
                 <span 
                   className="hover:text-blue-600 transition cursor-pointer select-none"
-                  onClick={() => setSelectedSection('nfc')}
+                  onClick={() => setSelectedSection('qc_dashboard')}
                 >
                   Home
                 </span>
@@ -6402,7 +6371,7 @@ Bạn có thể hỏi tôi những câu như:
           </datalist>
 
           {/* NFC.COMPANY PORTAL DASHBOARD */}
-          {selectedSection === 'nfc' && (() => {
+          {selectedSection === 'qc_dashboard' && (() => {
             const rList = historyInspections;
 
             // --- BÁO CÁO NHANH QC ---
@@ -19732,7 +19701,7 @@ Bạn có thể hỏi tôi những câu như:
                                 <button
                                   type="button"
                                   onClick={() => setEditPermissions([
-                                    'nfc', 'qc_dashboard', 'qc', 'plan_tracking', 'plan', 'materials', 'debt', 'payment_docs', 'info', 'price', 'invoice', 'regions', 'nlg_personnel', 'calendar', 'calculator', 'notes'
+                                    'qc_dashboard', 'qc', 'plan_tracking', 'plan', 'materials', 'debt', 'payment_docs', 'info', 'price', 'invoice', 'regions', 'nlg_personnel', 'calendar', 'calculator', 'notes'
                                   ])}
                                   className="text-blue-600 hover:underline cursor-pointer"
                                 >
@@ -19751,7 +19720,6 @@ Bạn có thể hỏi tôi những câu như:
                             
                             <div className="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto p-2 bg-slate-50 border border-slate-150 rounded-xl scrollbar-thin">
                               {[
-                                { id: 'nfc', label: 'Trang Chủ & Dashboard' },
                                 { id: 'qc_dashboard', label: 'Dashboard Thống Kê QC' },
                                 { id: 'qc', label: 'Kiểm Hàng Đầu Vào (KCS)' },
                                 { id: 'plan_tracking', label: 'Bảng Lâm Sản Giao Nhận' },
@@ -19854,7 +19822,7 @@ Bạn có thể hỏi tôi những câu như:
                               setEditRole(user.role || '');
                               setEditPassword(user.password || '');
                               setEditPermissions(user.permissions || [
-                                'nfc', 'qc_dashboard', 'qc', 'plan_tracking', 'plan', 'materials', 'debt', 'payment_docs', 'info', 'price', 'invoice', 'regions', 'nlg_personnel', 'calendar', 'calculator', 'notes'
+                                'qc_dashboard', 'qc', 'plan_tracking', 'plan', 'materials', 'debt', 'payment_docs', 'info', 'price', 'invoice', 'regions', 'nlg_personnel', 'calendar', 'calculator', 'notes'
                               ]);
                             }}
                             className="p-2 hover:bg-blue-50 text-slate-405 hover:text-[#007bff] border border-slate-200 hover:border-blue-200 rounded-xl transition cursor-pointer"

@@ -3,9 +3,6 @@ export type PrintTemplateCode =
   | 'payment_detail'
   | 'vat_statement'
   | 'qc_report'
-  | 'goods_receipt'
-  | 'goods_issue'
-  | 'cash_receipt'
   | 'cash_payment'
   | 'debt_reconciliation'
   | 'generic_report';
@@ -40,9 +37,6 @@ export const PRINT_TEMPLATE_CATALOG: Array<{ code: PrintTemplateCode; name: stri
   { code: 'payment_detail', name: 'Bảng chi tiết thanh toán', description: 'Bảng thanh toán gỗ theo biên bản QC' },
   { code: 'vat_statement', name: 'Bảng kê hóa đơn VAT', description: 'Bảng kê đối chiếu hóa đơn VAT' },
   { code: 'qc_report', name: 'Biên bản QC', description: 'Biên bản nghiệm thu và kiểm hàng' },
-  { code: 'goods_receipt', name: 'Phiếu nhập kho', description: 'Phiếu nhập vật tư, hàng hóa' },
-  { code: 'goods_issue', name: 'Phiếu xuất kho', description: 'Phiếu xuất vật tư, hàng hóa' },
-  { code: 'cash_receipt', name: 'Phiếu thu', description: 'Chứng từ thu tiền' },
   { code: 'cash_payment', name: 'Phiếu chi', description: 'Chứng từ chi tiền' },
   { code: 'debt_reconciliation', name: 'Đối chiếu công nợ', description: 'Bảng xác nhận và đối chiếu công nợ' },
   { code: 'generic_report', name: 'Biểu mẫu khác', description: 'Cấu hình mặc định cho các báo cáo còn lại' },
@@ -76,9 +70,6 @@ export const DEFAULT_PRINT_TEMPLATES: Record<PrintTemplateCode, PrintTemplateSet
   payment_detail: { ...base('payment_detail', 'Bảng chi tiết thanh toán gỗ'), fontSize: 13, titleFontSize: 17 },
   vat_statement: { ...base('vat_statement', 'Bảng kê chi tiết lâm sản hạch toán đối chiếu hóa đơn VAT'), fontSize: 12, titleFontSize: 16 },
   qc_report: { ...base('qc_report', 'Biên bản nghiệm thu gỗ keo xẻ thô'), fontSize: 12, titleFontSize: 16 },
-  goods_receipt: base('goods_receipt', 'Phiếu nhập kho'),
-  goods_issue: base('goods_issue', 'Phiếu xuất kho'),
-  cash_receipt: { ...base('cash_receipt', 'Phiếu thu'), paperSize: 'A5', orientation: 'landscape' },
   cash_payment: { ...base('cash_payment', 'Phiếu chi'), paperSize: 'A5', orientation: 'landscape' },
   debt_reconciliation: base('debt_reconciliation', 'Bảng đối chiếu công nợ'),
   generic_report: base('generic_report', 'Báo cáo'),
