@@ -18,6 +18,7 @@ import WoodPlanDashboard, {
 } from './WoodPlanDashboard';
 import WoodPlanTracking from './WoodPlanTracking';
 import { isSupabaseConfigured } from '../supabaseClient';
+import { persistCloudStorageKeyNow } from '../cloudLocalStorage';
 import AdminLteDashboard from './AdminLteDashboard';
 import WoodCalculator from './WoodCalculator';
 import { exportPaymentToExcel, exportDebtToExcel, exportInvoiceToExcel, exportProposalToExcel } from '../excelExport';
@@ -1665,7 +1666,10 @@ export default function InspectionForm({
   });
 
   useEffect(() => {
-    localStorage.setItem('nfc_reminder_notes_v1', JSON.stringify(reminderNotes));
+    // Lưu thẳng lên Supabase để bản ghi đã xóa không quay lại sau khi cập nhật code.
+    persistCloudStorageKeyNow('nfc_reminder_notes_v1', reminderNotes).catch((error) =>
+      console.error('Không thể lưu Ghi chú & Nhắc việc:', error)
+    );
   }, [reminderNotes]);
 
   const [isCreatingNote, setIsCreatingNote] = useState(false);
@@ -2127,7 +2131,10 @@ Bạn có thể hỏi tôi những câu như:
   });
 
   useEffect(() => {
-    localStorage.setItem('wood_payment_proposals_v1', JSON.stringify(paymentProposals));
+    // Lưu ngay lên Supabase; không dùng bản cache cũ khi triển khai phiên bản mới.
+    persistCloudStorageKeyNow('wood_payment_proposals_v1', paymentProposals).catch((error) =>
+      console.error('Không thể lưu Giấy đề nghị thanh toán:', error)
+    );
   }, [paymentProposals]);
 
   const [isAddingProposal, setIsAddingProposal] = useState(false);
@@ -9735,7 +9742,11 @@ Bạn có thể hỏi tôi những câu như:
             };
 
             const handleDeleteNote = (id: string) => {
-              setReminderNotes(prev => prev.filter(note => note.id !== id));
+              setReminderNotes(prev => {
+                const next = prev.filter(note => note.id !== id);
+                void persistCloudStorageKeyNow('nfc_reminder_notes_v1', next);
+                return next;
+              });
               if (editingNote && editingNote.id === id) {
                 setEditingNote(null);
                 setIsCreatingNote(false);
@@ -16196,7 +16207,9 @@ Bạn có thể hỏi tôi những câu như:
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        setPaymentProposals(paymentProposals.filter(p => p.id !== prop.id));
+                                        const nextProposals = paymentProposals.filter(p => p.id !== prop.id);
+                                        setPaymentProposals(nextProposals);
+                                        void persistCloudStorageKeyNow('wood_payment_proposals_v1', nextProposals);
                                         setConfirmDeleteProposalId(null);
                                       }}
                                       className="text-[9.5px] font-black text-rose-600 hover:text-rose-850 uppercase cursor-pointer"

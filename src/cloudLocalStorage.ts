@@ -88,6 +88,33 @@ function scheduleSave(key: string) {
   }, 500);
 }
 
+
+/** Ghi ngay một key nghiệp vụ lên Supabase, không chờ debounce.
+ * Dùng cho thao tác xóa để dữ liệu cũ không quay lại khi deploy/reload ngay sau đó.
+ */
+export async function persistCloudStorageKeyNow(key: string, value: unknown): Promise<void> {
+  if (typeof window === 'undefined' || !PERSISTED_KEYS.has(key)) return;
+  const raw = encodeValue(value);
+  memoryStore.set(key, raw);
+  pending.delete(key);
+  if (!supabase || !isSupabaseConfigured) return;
+  const { error } = await supabase
+    .from('app_settings')
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+  if (error) throw new Error(`[supabaseStore] Không thể lưu ngay key ${key}: ${error.message}`);
+}
+
+/** Chờ ghi hết các thay đổi đang debounce trước khi reload/deploy/đăng xuất. */
+export async function flushCloudLocalStorageSync(): Promise<void> {
+  if (saveTimer) {
+    window.clearTimeout(saveTimer);
+    saveTimer = undefined;
+  }
+  const keys = Array.from(pending);
+  pending.clear();
+  for (const key of keys) await saveOneKey(key);
+}
+
 export async function hydrateCloudLocalStorage() {
   if (typeof window === 'undefined') return;
   memoryStore.clear();

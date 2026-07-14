@@ -5,7 +5,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { BienBan } from './types';
-import { getSampleInspection } from './utils';
 import { exportInspectionToExcel } from './excelExport';
 import InspectionForm from './components/InspectionForm';
 import InspectionPrint from './components/InspectionPrint';
@@ -167,16 +166,9 @@ export default function App() {
         // Không merge/fallback từ browser localStorage nữa.
         let mergedList = [...dbRecords];
         
-        // If everything is blank, insert the pre-compiled wood mill inspection sample only on first setup
-        const isSeeded = localStorage.getItem('wood_database_seeded_v1') === 'true';
-        if (mergedList.length === 0 && !isSeeded) {
-          const sample = getSampleInspection();
-          await saveInspectionToDb(sample.id, sample);
-          mergedList = [sample];
-          localStorage.setItem('wood_database_seeded_v1', 'true');
-        } else if (mergedList.length > 0) {
-          localStorage.setItem('wood_database_seeded_v1', 'true');
-        }
+        // Không tự tạo lại biên bản QC mẫu khi CSDL đang trống.
+        // Nhờ vậy dữ liệu người dùng đã xóa sẽ không quay lại sau mỗi lần cập nhật code.
+        localStorage.setItem('wood_database_seeded_v1', 'true');
         
         // Clean records if they contain Phạm Thành Nam, Lê Hoàng Hải, or Nguyễn Văn Hùng
         const cleaned = mergedList.map(record => {
@@ -313,9 +305,9 @@ export default function App() {
   };
 
   // 5. Record delete
-  const handleDeleteInspection = (id: string) => {
+  const handleDeleteInspection = async (id: string) => {
     const nextList = records.filter(r => r.id !== id);
-    saveToLocalStorage(nextList);
+    await saveToLocalStorage(nextList);
     if (activeRecord?.id === id) {
       setActiveRecord(undefined);
     }
